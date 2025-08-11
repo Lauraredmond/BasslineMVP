@@ -386,26 +386,59 @@ const MusicSync = () => {
     }
   };
 
-  // Simulate beat-based narrative changes
+  // Intelligent beat-based narrative changes
   useEffect(() => {
     if (!isWorkoutActive || !isPlaying) return;
 
-    const narrativeInterval = setInterval(() => {
-      setCurrentNarrative(prev => {
-        const maxNarratives = getCoachingNarratives(workoutPhases[currentPhase]?.name).length;
-        return (prev + 1) % maxNarratives;
-      });
-    }, 4000); // Change narrative every 4 seconds to simulate beat sync
+    let narrativeInterval: NodeJS.Timeout;
+    let progressInterval: NodeJS.Timeout;
 
-    const progressInterval = setInterval(() => {
-      setPhaseProgress(prev => Math.min(prev + 2, 100));
-    }, 1000); // Update progress every second
+    if (workoutPlan && currentTrackPhase && playbackState) {
+      // Intelligent timing based on track tempo and structure
+      const track = currentTrackPhase.track;
+      const tempo = track.audio_features?.tempo || 120;
+      const beatsPerSecond = tempo / 60;
+      
+      // Change narrative every 8-16 beats (more musical timing)
+      const narrativeBeatInterval = Math.random() > 0.5 ? 8 : 16;
+      const narrativeTimeInterval = (narrativeBeatInterval / beatsPerSecond) * 1000;
+      
+      narrativeInterval = setInterval(() => {
+        setCurrentNarrative(prev => {
+          const maxNarratives = currentTrackPhase.phase.narratives.length;
+          return (prev + 1) % maxNarratives;
+        });
+      }, Math.max(3000, Math.min(8000, narrativeTimeInterval))); // Clamp between 3-8 seconds
+
+      // Progress based on actual track progress if available
+      progressInterval = setInterval(() => {
+        if (playbackState && playbackState.progress_ms && playbackState.item) {
+          const trackProgress = playbackState.progress_ms / playbackState.item.duration_ms;
+          const phaseProgress = trackProgress * 100;
+          setPhaseProgress(phaseProgress);
+        } else {
+          setPhaseProgress(prev => Math.min(prev + 1.5, 100));
+        }
+      }, 1000);
+    } else {
+      // Fallback to time-based for non-Spotify
+      narrativeInterval = setInterval(() => {
+        setCurrentNarrative(prev => {
+          const maxNarratives = getCoachingNarratives(workoutPhases[currentPhase]?.name).length;
+          return (prev + 1) % maxNarratives;
+        });
+      }, 5000); // Slightly longer for fallback
+
+      progressInterval = setInterval(() => {
+        setPhaseProgress(prev => Math.min(prev + 2, 100));
+      }, 1000);
+    }
 
     return () => {
       clearInterval(narrativeInterval);
       clearInterval(progressInterval);
     };
-  }, [isWorkoutActive, isPlaying, currentPhase, workoutPhases]);
+  }, [isWorkoutActive, isPlaying, currentPhase, workoutPhases, workoutPlan, currentTrackPhase, playbackState]);
 
   // Reset narrative and progress when phase changes
   useEffect(() => {
@@ -469,12 +502,51 @@ const MusicSync = () => {
     return narratives[currentNarrative] || narratives[0];
   };
   
-  // Get current beat cue if available
+  // Get current beat cue if available (intelligent timing)
   const getCurrentBeatCue = () => {
-    if (workoutPlan && currentTrackPhase && currentTrackPhase.phase.beatCues.length > 0) {
-      // Simulate beat-based cues (in real implementation, this would sync with actual audio)
-      const cueIndex = Math.floor(Date.now() / 8000) % currentTrackPhase.phase.beatCues.length;
-      return currentTrackPhase.phase.beatCues[cueIndex];
+    if (workoutPlan && currentTrackPhase && currentTrackPhase.phase.beatCues.length > 0 && playbackState) {
+      const track = currentTrackPhase.track;
+      const tempo = track.audio_features?.tempo || 120;
+      const beatsPerSecond = tempo / 60;
+      
+      // More intelligent cue timing based on track position and tempo
+      const trackProgressSeconds = (playbackState.progress_ms || 0) / 1000;
+      const beatPosition = Math.floor(trackProgressSeconds * beatsPerSecond);
+      
+      // Different cues appear at different beat intervals
+      const beatCues = currentTrackPhase.phase.beatCues;
+      
+      // Find the most appropriate cue based on beat timing and track structure
+      for (const cue of beatCues) {
+        if (cue.timing === 'bar_start' && cue.interval) {
+          // Show this cue every N bars (assuming 4 beats per bar)
+          if (beatPosition % (cue.interval * 4) < 4) {
+            return cue;
+          }
+        } else if (cue.timing === 'chorus') {
+          // Show chorus cues in the middle third of the track (estimated)
+          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
+          if (trackProgress > 0.3 && trackProgress < 0.7) {
+            return cue;
+          }
+        } else if (cue.timing === 'verse') {
+          // Show verse cues in early part of track
+          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
+          if (trackProgress < 0.4) {
+            return cue;
+          }
+        } else if (cue.timing === 'build_up') {
+          // Show build-up cues in the latter part
+          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
+          if (trackProgress > 0.6) {
+            return cue;
+          }
+        }
+      }
+      
+      // Fallback to cycling through cues
+      const cueIndex = Math.floor(beatPosition / 16) % beatCues.length;
+      return beatCues[cueIndex];
     }
     return null;
   };
@@ -864,14 +936,59 @@ const MusicSync = () => {
                 <div className="space-y-3 mt-6">
                   <div className="flex gap-3">
                     <Button
-                      onClick={() => setCurrentPhase(Math.max(0, currentPhase - 1))}
+                      onClick={async () => {
+                        const newPhase = Math.max(0, currentPhase - 1);
+                        setCurrentPhase(newPhase);
+                        
+                        // If using Spotify with workout plan, skip to the previous track
+                        if (selectedService === 'spotify' && workoutPlan && selectedDevice) {
+                          const previousPhaseTrack = workoutPlan.phases[newPhase];
+                          if (previousPhaseTrack) {
+                            try {
+                              // Navigate to the specific track for this phase
+                              await spotifyService.playTrackFromPlaylist(
+                                selectedPlaylist, 
+                                `spotify:track:${previousPhaseTrack.track.id}`,
+                                selectedDevice
+                              );
+                            } catch (error) {
+                              console.log('Could not skip to previous track, using manual skip');
+                              await spotifyService.skipToPrevious(selectedDevice);
+                            }
+                          }
+                        }
+                      }}
                       disabled={currentPhase === 0}
                       className="flex-1 bg-burgundy-dark/50 hover:bg-burgundy-dark/70 text-cream border border-cream/30"
                     >
                       Previous Phase
                     </Button>
                     <Button
-                      onClick={() => setCurrentPhase(Math.min(workoutPhases.length - 1, currentPhase + 1))}
+                      onClick={async () => {
+                        const newPhase = Math.min(workoutPhases.length - 1, currentPhase + 1);
+                        setCurrentPhase(newPhase);
+                        
+                        // If using Spotify with workout plan, skip to the next track
+                        if (selectedService === 'spotify' && workoutPlan && selectedDevice) {
+                          const nextPhaseTrack = workoutPlan.phases[newPhase];
+                          if (nextPhaseTrack) {
+                            try {
+                              // Navigate to the specific track for this phase
+                              await spotifyService.playTrackFromPlaylist(
+                                selectedPlaylist, 
+                                `spotify:track:${nextPhaseTrack.track.id}`,
+                                selectedDevice
+                              );
+                            } catch (error) {
+                              console.log('Could not skip to next track, using manual skip');
+                              await spotifyService.skipToNext(selectedDevice);
+                            }
+                          } else {
+                            // Fallback to regular next track
+                            await spotifyService.skipToNext(selectedDevice);
+                          }
+                        }
+                      }}
                       disabled={currentPhase === workoutPhases.length - 1}
                       className="flex-1 bg-energy-gradient hover:opacity-90 text-cream"
                     >

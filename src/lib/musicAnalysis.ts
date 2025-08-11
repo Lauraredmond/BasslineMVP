@@ -226,14 +226,16 @@ class MusicAnalysisEngine {
     const mappings: TrackPhaseMapping[] = [];
     let currentTime = 0;
 
-    // Define target workout structure (percentages of total time)
+    // Define target spinning class structure (proper cycling workout progression)
     const workoutStructure = [
-      { phase: 'warmup', percentage: 0.15 },
-      { phase: 'sprint', percentage: 0.15 },
-      { phase: 'hills', percentage: 0.25 },
-      { phase: 'resistance', percentage: 0.20 },
-      { phase: 'jumps', percentage: 0.15 },
-      { phase: 'cooldown', percentage: 0.10 }
+      { phase: 'warmup', percentage: 0.12, name: 'Warm Up' },
+      { phase: 'sprint', percentage: 0.15, name: 'Sprint Intervals' },
+      { phase: 'hills', percentage: 0.18, name: 'Rolling Hills' },
+      { phase: 'resistance', percentage: 0.16, name: 'Resistance Power' },
+      { phase: 'climb', percentage: 0.14, name: 'Endurance Climb' },
+      { phase: 'jumps', percentage: 0.12, name: 'Sprint Jumps' },
+      { phase: 'hills', percentage: 0.08, name: 'Recovery Hills' },
+      { phase: 'cooldown', percentage: 0.05, name: 'Cool Down' }
     ];
 
     // Calculate total available duration
@@ -261,20 +263,28 @@ class MusicAnalysisEngine {
       group.sort((a, b) => b.confidence - a.confidence);
     });
 
-    // Build workout plan
-    workoutStructure.forEach(({ phase, percentage }) => {
+    // Build workout plan with better track distribution
+    const usedTracks = new Set<string>(); // Track IDs we've already used
+    
+    workoutStructure.forEach(({ phase, percentage, name }) => {
       const phaseDuration = workoutDuration * percentage;
-      const availableTracks = phaseGroups[phase as WorkoutPhase['type']];
+      const availableTracks = phaseGroups[phase as WorkoutPhase['type']]
+        .filter(({ track }) => !usedTracks.has(track.id)); // Don't reuse tracks
       
       let remainingTime = phaseDuration;
       let trackIndex = 0;
 
-      while (remainingTime > 30 && trackIndex < availableTracks.length) { // Minimum 30s per segment
+      // Try to use the best matching track for this phase
+      while (remainingTime > 20 && trackIndex < availableTracks.length) { // Minimum 20s per segment
         const { track, confidence } = availableTracks[trackIndex];
         const trackDuration = track.duration_ms / 1000;
+        
+        // Use the full track if it fits, otherwise use what we can
         const useDuration = Math.min(remainingTime, trackDuration);
 
         const workoutPhase = this.createWorkoutPhase(phase as WorkoutPhase['type'], track);
+        // Override the name with the specific phase name
+        workoutPhase.name = name || workoutPhase.name;
 
         mappings.push({
           track,
@@ -284,9 +294,40 @@ class MusicAnalysisEngine {
           confidence
         });
 
+        // Mark this track as used
+        usedTracks.add(track.id);
+        
         currentTime += useDuration;
         remainingTime -= useDuration;
         trackIndex++;
+      }
+      
+      // If we didn't find enough tracks for this phase, use fallback tracks
+      if (remainingTime > 20 && availableTracks.length === 0) {
+        // Find unused tracks from any phase as fallback
+        const fallbackTracks = tracks
+          .filter(track => !usedTracks.has(track.id))
+          .map(track => ({ track, confidence: 0.3 }));
+          
+        if (fallbackTracks.length > 0) {
+          const { track } = fallbackTracks[0];
+          const trackDuration = track.duration_ms / 1000;
+          const useDuration = Math.min(remainingTime, trackDuration);
+          
+          const workoutPhase = this.createWorkoutPhase(phase as WorkoutPhase['type'], track);
+          workoutPhase.name = name || workoutPhase.name;
+          
+          mappings.push({
+            track,
+            phase: workoutPhase,
+            startTime: currentTime,
+            endTime: currentTime + useDuration,
+            confidence: 0.3
+          });
+          
+          usedTracks.add(track.id);
+          currentTime += useDuration;
+        }
       }
     });
 
