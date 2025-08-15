@@ -1177,27 +1177,97 @@ const MusicSync = () => {
                                 <div><strong>Tatums:</strong> {cachedAnalysis.tatums?.length || 0} smallest rhythmic units</div>
                                 <div className="col-span-2 bg-green-100 p-2 rounded border"><strong className="text-green-800">🎯 Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(2)}s` : 'Not detected'}</div>
                                 
-                                {/* Current Section Info */}
+                                {/* Current Section Info - CHORUS PREDICTION ATTRIBUTES */}
                                 {cachedAnalysis.sections && (() => {
                                   const currentTime = playbackState.progress_ms / 1000;
-                                  const currentSection = cachedAnalysis.sections.find(s => 
+                                  const currentSectionIndex = cachedAnalysis.sections.findIndex(s => 
                                     currentTime >= s.start && currentTime < (s.start + s.duration)
                                   );
+                                  const currentSection = cachedAnalysis.sections[currentSectionIndex];
+                                  const nextSection = cachedAnalysis.sections[currentSectionIndex + 1];
+                                  const prevSection = cachedAnalysis.sections[currentSectionIndex - 1];
+                                  
                                   return currentSection && (
                                     <>
-                                      <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Current Section:</div>
-                                      <div><strong>Start:</strong> {currentSection.start.toFixed(1)}s</div>
-                                      <div><strong>Duration:</strong> {currentSection.duration.toFixed(1)}s</div>
-                                      <div><strong>Confidence:</strong> {(currentSection.confidence * 100).toFixed(0)}%</div>
-                                      <div><strong>Loudness:</strong> {currentSection.loudness.toFixed(1)} dB</div>
-                                      <div><strong>Tempo:</strong> {currentSection.tempo.toFixed(1)} BPM</div>
-                                      <div><strong>Key:</strong> {currentSection.key} ({['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][currentSection.key] || 'Unknown'})</div>
-                                      <div><strong>Mode:</strong> {currentSection.mode === 1 ? 'Major' : 'Minor'}</div>
-                                      <div><strong>Time Sig:</strong> {currentSection.time_signature}/4</div>
+                                      <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎯 Current Section (Chorus Prediction Data):</div>
+                                      <div><strong>Section #:</strong> {currentSectionIndex + 1} of {cachedAnalysis.sections.length}</div>
+                                      <div><strong>Time Range:</strong> {currentSection.start.toFixed(1)}s - {(currentSection.start + currentSection.duration).toFixed(1)}s</div>
+                                      <div><strong>Time Left in Section:</strong> {((currentSection.start + currentSection.duration) - currentTime).toFixed(1)}s</div>
+                                      <div><strong>Confidence:</strong> {(currentSection.confidence * 100).toFixed(1)}%</div>
+                                      
+                                      {/* KEY CHORUS INDICATORS */}
+                                      <div className="col-span-2 bg-yellow-100 p-2 rounded border mt-2">
+                                        <div className="font-bold text-yellow-800">🚨 CHORUS INDICATORS:</div>
+                                        <div><strong>Loudness:</strong> {currentSection.loudness.toFixed(2)} dB</div>
+                                        <div><strong>Tempo:</strong> {currentSection.tempo.toFixed(2)} BPM</div>
+                                        <div><strong>Tempo Confidence:</strong> {(currentSection.tempo_confidence * 100).toFixed(1)}%</div>
+                                        <div><strong>Key:</strong> {currentSection.key} = {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][currentSection.key] || 'Unknown'}</div>
+                                        <div><strong>Key Confidence:</strong> {(currentSection.key_confidence * 100).toFixed(1)}%</div>
+                                        <div><strong>Mode:</strong> {currentSection.mode === 1 ? 'Major' : 'Minor'} (Conf: {(currentSection.mode_confidence * 100).toFixed(1)}%)</div>
+                                        <div><strong>Time Signature:</strong> {currentSection.time_signature}/4 (Conf: {(currentSection.time_signature_confidence * 100).toFixed(1)}%)</div>
+                                      </div>
+
+                                      {/* SECTION COMPARISON - KEY FOR CHORUS PREDICTION */}
+                                      {(prevSection || nextSection) && (
+                                        <div className="col-span-2 bg-blue-100 p-2 rounded border mt-2">
+                                          <div className="font-bold text-blue-800">📊 SECTION CHANGES (Chorus Clues):</div>
+                                          {prevSection && (
+                                            <>
+                                              <div><strong>Loudness Change from Previous:</strong> {(currentSection.loudness - prevSection.loudness).toFixed(2)} dB {currentSection.loudness > prevSection.loudness ? '📈' : '📉'}</div>
+                                              <div><strong>Tempo Change from Previous:</strong> {(currentSection.tempo - prevSection.tempo).toFixed(2)} BPM {Math.abs(currentSection.tempo - prevSection.tempo) > 5 ? '⚠️' : '✓'}</div>
+                                              <div><strong>Key Change from Previous:</strong> {currentSection.key !== prevSection.key ? `Yes (${prevSection.key}→${currentSection.key}) 🎵` : 'No'}</div>
+                                            </>
+                                          )}
+                                          {nextSection && (
+                                            <>
+                                              <div className="mt-1"><strong>⏭️ NEXT SECTION Preview:</strong></div>
+                                              <div><strong>Next Starts In:</strong> {(nextSection.start - currentTime).toFixed(1)}s</div>
+                                              <div><strong>Next Loudness Will Be:</strong> {nextSection.loudness.toFixed(2)} dB ({(nextSection.loudness - currentSection.loudness).toFixed(2)} dB change)</div>
+                                              <div><strong>Next Tempo Will Be:</strong> {nextSection.tempo.toFixed(2)} BPM</div>
+                                              <div><strong>Next Key Will Be:</strong> {nextSection.key} {nextSection.key !== currentSection.key ? '🎵 KEY CHANGE!' : '(same)'}</div>
+                                            </>
+                                          )}
+                                        </div>
+                                      )}
                                     </>
                                   );
                                 })()}
                                 
+                                {/* SEGMENT-LEVEL ANALYSIS - Most Granular Chorus Prediction */}
+                                {cachedAnalysis.segments && (() => {
+                                  const currentTime = playbackState.progress_ms / 1000;
+                                  const currentSegmentIndex = cachedAnalysis.segments.findIndex(s => 
+                                    currentTime >= s.start && currentTime < (s.start + s.duration)
+                                  );
+                                  const currentSegment = cachedAnalysis.segments[currentSegmentIndex];
+                                  const nextSegment = cachedAnalysis.segments[currentSegmentIndex + 1];
+                                  const prevSegment = cachedAnalysis.segments[currentSegmentIndex - 1];
+                                  
+                                  return currentSegment && (
+                                    <div className="col-span-2 bg-purple-100 p-2 rounded border mt-2">
+                                      <div className="font-bold text-purple-800">🔬 MICRO-LEVEL SEGMENT ANALYSIS (Most Precise):</div>
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div><strong>Segment #:</strong> {currentSegmentIndex + 1} of {cachedAnalysis.segments.length}</div>
+                                        <div><strong>Segment Duration:</strong> {currentSegment.duration.toFixed(3)}s</div>
+                                        <div><strong>Loudness Start:</strong> {currentSegment.loudness_start?.toFixed(2)} dB</div>
+                                        <div><strong>Loudness Max:</strong> {currentSegment.loudness_max?.toFixed(2)} dB</div>
+                                        <div><strong>Loudness Max Time:</strong> {currentSegment.loudness_max_time?.toFixed(3)}s</div>
+                                        <div><strong>Loudness End:</strong> {currentSegment.loudness_end?.toFixed(2)} dB</div>
+                                        <div><strong>Loudness Range:</strong> {((currentSegment.loudness_max || 0) - (currentSegment.loudness_start || 0)).toFixed(2)} dB</div>
+                                        <div><strong>Confidence:</strong> {(currentSegment.confidence * 100).toFixed(1)}%</div>
+                                        
+                                        {nextSegment && (
+                                          <>
+                                            <div className="col-span-2 mt-1 font-semibold">⏭️ NEXT SEGMENT (in {(nextSegment.start - currentTime).toFixed(2)}s):</div>
+                                            <div><strong>Next Loudness Start:</strong> {nextSegment.loudness_start?.toFixed(2)} dB</div>
+                                            <div><strong>Loudness Jump:</strong> {((nextSegment.loudness_start || 0) - (currentSegment.loudness_end || 0)).toFixed(2)} dB {Math.abs((nextSegment.loudness_start || 0) - (currentSegment.loudness_end || 0)) > 3 ? '🚨 BIG JUMP!' : ''}</div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+
                                 {/* All Sections Breakdown */}
                                 {cachedAnalysis.sections && (
                                   <div className="col-span-2 mt-2">
