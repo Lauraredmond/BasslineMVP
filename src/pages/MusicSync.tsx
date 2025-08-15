@@ -394,24 +394,26 @@ const MusicSync = () => {
     }
   };
 
-  // Check authentication status and handle OAuth callback
+  // Check authentication status (callback is handled by SpotifyCallback.tsx)
   useEffect(() => {
     const checkAuth = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get('code');
+      const spotifyConnected = urlParams.get('spotify_connected');
+      const error = urlParams.get('error');
       
-      if (code) {
-        // Handle OAuth callback
-        const success = await spotifyService.exchangeCodeForToken(code);
-        if (success) {
-          setIsSpotifyAuthenticated(true);
-          // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-          await loadSpotifyPlaylists();
-        }
-      } else if (spotifyService.isAuthenticated()) {
+      if (error) {
+        console.error('Spotify connection error:', error);
+        // Could show an error message to user here
+      }
+      
+      if (spotifyConnected === 'true' || spotifyService.isAuthenticated()) {
         setIsSpotifyAuthenticated(true);
         await loadSpotifyPlaylists();
+        
+        // Clean up URL parameters
+        if (spotifyConnected || error) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       }
     };
 
