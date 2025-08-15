@@ -1112,6 +1112,36 @@ const MusicSync = () => {
                     {playbackState && playbackState.item && (
                       <div className="bg-gray-100 rounded-lg p-4 border-2 border-gray-800 text-sm">
                         <div className="text-gray-900 font-bold mb-3 text-base">🎧 Spotify Track Debug Info:</div>
+                        
+                        {/* DEBUG: Advanced Analysis Status */}
+                        <div className="col-span-2 bg-orange-100 p-2 rounded border mb-2">
+                          <div className="font-bold text-orange-800">🔍 Advanced Analysis Status:</div>
+                          <div><strong>Track ID:</strong> {playbackState.item.id}</div>
+                          <div><strong>Analysis Cached:</strong> {trackAnalysisCache.has(playbackState.item.id) ? 'YES ✅' : 'NO ❌'}</div>
+                          <div><strong>Analysis Data:</strong> {(() => {
+                            const analysis = trackAnalysisCache.get(playbackState.item.id);
+                            return analysis ? `${analysis.sections?.length || 0} sections, ${analysis.segments?.length || 0} segments` : 'None';
+                          })()}</div>
+                          <button 
+                            onClick={() => {
+                              console.log('🎵 MANUAL: Forcing advanced analysis...');
+                              const trackId = playbackState.item.id;
+                              advancedMusicAnalysis.analyzeTrackStructure(trackId).then(analysis => {
+                                if (analysis) {
+                                  setTrackAnalysisCache(prev => new Map(prev.set(trackId, analysis)));
+                                  console.log(`🎵 📊 MANUAL: Cached advanced analysis for ${playbackState.item.name}`);
+                                } else {
+                                  console.error('🎵 ❌ MANUAL: Failed to get advanced analysis');
+                                }
+                              }).catch(err => {
+                                console.error('🎵 ❌ MANUAL: Advanced analysis error:', err);
+                              });
+                            }}
+                            className="mt-1 px-2 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700"
+                          >
+                            🔍 Force Analyze This Track
+                          </button>
+                        </div>
                         <div className="grid grid-cols-2 gap-3 text-gray-900 font-medium">
                           <div><strong>Track:</strong> {playbackState.item.name}</div>
                           <div><strong>Artist:</strong> {playbackState.item.artists.map(a => a.name).join(', ')}</div>
@@ -1178,7 +1208,8 @@ const MusicSync = () => {
                                 <div className="col-span-2 bg-green-100 p-2 rounded border"><strong className="text-green-800">🎯 Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(2)}s` : 'Not detected'}</div>
                                 
                                 {/* Current Section Info - CHORUS PREDICTION ATTRIBUTES */}
-                                {cachedAnalysis.sections && (() => {
+                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎯 Advanced Chorus Prediction:</div>
+                                {cachedAnalysis && cachedAnalysis.sections ? (() => {
                                   const currentTime = playbackState.progress_ms / 1000;
                                   const currentSectionIndex = cachedAnalysis.sections.findIndex(s => 
                                     currentTime >= s.start && currentTime < (s.start + s.duration)
@@ -1231,7 +1262,12 @@ const MusicSync = () => {
                                       )}
                                     </>
                                   );
-                                })()}
+                                })() : (
+                                  <div className="col-span-2 bg-red-100 p-2 rounded border">
+                                    <div className="font-bold text-red-800">❌ No Advanced Analysis Available</div>
+                                    <div className="text-sm">Click the "Force Analyze This Track" button above to load chorus prediction data.</div>
+                                  </div>
+                                )}
                                 
                                 {/* SEGMENT-LEVEL ANALYSIS - Most Granular Chorus Prediction */}
                                 {cachedAnalysis.segments && (() => {
