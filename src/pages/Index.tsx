@@ -4,6 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import heroEmpoweredWoman from "../assets/hero-empowered-woman.jpg";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { Logo } from "@/components/Logo";
+import { DatabaseTest } from "@/components/DatabaseTest";
+import { WorkoutNarrativeTest } from "@/components/WorkoutNarrativeSystem";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -68,6 +70,12 @@ const Index = () => {
             No plan? Take me to format selection
           </Button>
         </div>
+
+        {/* Database Test Component */}
+        <DatabaseTest />
+
+        {/* Automatic Warmup Narratives */}
+        <WorkoutNarrativeTest />
       </div>
 
       <BottomNavigation />

@@ -2,7 +2,19 @@
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
-const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
+
+// Automatically detect environment and use appropriate redirect URI
+const getRedirectUri = (): string => {
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  if (isLocalhost) {
+    return import.meta.env.VITE_SPOTIFY_REDIRECT_URI_LOCAL || 'http://localhost:5173/callback';
+  } else {
+    return import.meta.env.VITE_SPOTIFY_REDIRECT_URI_PROD || 'https://trybassline.netlify.app/callback';
+  }
+};
+
+const REDIRECT_URI = getRedirectUri();
 
 export interface SpotifyPlaylist {
   id: string;
@@ -40,6 +52,89 @@ export interface SpotifyAudioFeatures {
   valence: number;
   tempo: number;
   time_signature: number;
+}
+
+// Advanced Audio Analysis interfaces
+export interface SpotifySection {
+  start: number;
+  duration: number;
+  confidence: number;
+  loudness: number;
+  tempo: number;
+  tempo_confidence: number;
+  key: number;
+  key_confidence: number;
+  mode: number;
+  mode_confidence: number;
+  time_signature: number;
+  time_signature_confidence: number;
+}
+
+export interface SpotifySegment {
+  start: number;
+  duration: number;
+  confidence: number;
+  loudness_start: number;
+  loudness_max_time: number;
+  loudness_max: number;
+  loudness_end: number;
+  pitches: number[];
+  timbre: number[];
+}
+
+export interface SpotifyBar {
+  start: number;
+  duration: number;
+  confidence: number;
+}
+
+export interface SpotifyBeat {
+  start: number;
+  duration: number;
+  confidence: number;
+}
+
+export interface SpotifyTatum {
+  start: number;
+  duration: number;
+  confidence: number;
+}
+
+export interface SpotifyAudioAnalysis {
+  bars: SpotifyBar[];
+  beats: SpotifyBeat[];
+  sections: SpotifySection[];
+  segments: SpotifySegment[];
+  tatums: SpotifyTatum[];
+  meta: {
+    analyzer_version: string;
+    platform: string;
+    detailed_status: string;
+    status_code: number;
+    timestamp: number;
+    analysis_time: number;
+    input_process: string;
+  };
+  track: {
+    num_samples: number;
+    duration: number;
+    sample_md5: string;
+    offset_seconds: number;
+    window_seconds: number;
+    analysis_sample_rate: number;
+    analysis_channels: number;
+    end_of_fade_in: number;
+    start_of_fade_out: number;
+    loudness: number;
+    tempo: number;
+    tempo_confidence: number;
+    time_signature: number;
+    time_signature_confidence: number;
+    key: number;
+    key_confidence: number;
+    mode: number;
+    mode_confidence: number;
+  };
 }
 
 export interface SpotifyDevice {
@@ -210,6 +305,46 @@ class SpotifyService {
     } catch (error) {
       console.error('Error fetching audio features:', error);
       return [];
+    }
+  }
+
+  // Get detailed audio analysis with sections, segments, bars, beats
+  async getAudioAnalysis(trackId: string): Promise<SpotifyAudioAnalysis | null> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated');
+    }
+
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/audio-analysis/${trackId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      if (response.status === 401) {
+        // Token expired, try to refresh
+        await this.refreshAccessToken();
+        return this.getAudioAnalysis(trackId); // Retry
+      }
+
+      if (!response.ok) {
+        console.error('Audio analysis request failed:', response.status, response.statusText);
+        return null;
+      }
+
+      const analysis = await response.json();
+      console.log('🎵 Received audio analysis:', {
+        bars: analysis.bars?.length || 0,
+        beats: analysis.beats?.length || 0,
+        sections: analysis.sections?.length || 0,
+        segments: analysis.segments?.length || 0,
+        duration: analysis.track?.duration || 0
+      });
+
+      return analysis;
+    } catch (error) {
+      console.error('Error fetching audio analysis:', error);
+      return null;
     }
   }
 

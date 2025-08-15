@@ -11,6 +11,9 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { Header } from "@/components/Header";
 import { spotifyService, SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPlaybackState, formatTrackUri } from "@/lib/spotify";
 import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/musicAnalysis";
+import { narrativeEngine } from "@/lib/narrative-engine";
+import { dbAdmin } from "@/lib/database-admin";
+import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
@@ -38,6 +41,24 @@ const MusicSync = () => {
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [playbackState, setPlaybackState] = useState<SpotifyPlaybackState | null>(null);
   const [showDeviceSelector, setShowDeviceSelector] = useState(false);
+  
+  // Database-driven narratives
+  const [databaseNarratives, setDatabaseNarratives] = useState<any[]>([]);
+  const [currentDatabaseNarrative, setCurrentDatabaseNarrative] = useState<string | null>(null);
+  const [narrativeEngineReady, setNarrativeEngineReady] = useState(false);
+  
+  // Advanced music analysis cache
+  const [trackAnalysisCache, setTrackAnalysisCache] = useState<Map<string, any>>(new Map());
+  
+  // Track timing state
+  const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
+  const [narrativeStates, setNarrativeStates] = useState<{[key: string]: boolean}>({});
+  
+  // Persistent narrative display
+  const [displayedNarrative, setDisplayedNarrative] = useState<{text: string, timestamp: number} | null>(null);
+  
+  // Workout start timestamp for fallback timing
+  const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(null);
 
   const handleBack = () => {
     navigate(-1);
@@ -82,15 +103,14 @@ const MusicSync = () => {
       return currentTrackPhase.phase.narratives;
     }
     
-    // Fallback to static narratives
+    // FOR WARMUP: Use database narratives ONLY
+    if (phaseName === 'Warm Up' && databaseNarratives.length > 0) {
+      console.log('🎵 Using DATABASE narratives for warmup:', databaseNarratives.map(n => n.text));
+      return databaseNarratives.map(n => n.text);
+    }
+    
+    // Fallback to static narratives for NON-WARMUP phases only
     const narratives = {
-      'Warm Up': [
-        "Find your beat, loosen up the shoulders, steady breath.",
-        "Easy pace to start, let your body wake up.",
-        "Feel the rhythm building, settle into your position.",
-        "Breathing is key — in through the nose, out through the mouth.",
-        "Perfect! Let's prepare for what's coming next."
-      ],
       'Sprint': [
         "Push the pace — fast legs now, hold for 20 seconds!",
         "Start to build the legs, point the toes, tuck in, GO!",
@@ -127,6 +147,13 @@ const MusicSync = () => {
         "You are stronger than you were 30 minutes ago!"
       ]
     };
+    
+    // If warmup but no database narratives, show error message
+    if (phaseName === 'Warm Up') {
+      console.error('❌ No database narratives loaded for warmup!');
+      return ["Loading warm-up instructions..."];
+    }
+    
     return narratives[phaseName] || ["Keep going, you're doing great!"];
   };
 
@@ -201,14 +228,92 @@ const MusicSync = () => {
     }
   };
 
+  // Initialize database narratives for warmup
+  const initializeDatabaseNarratives = async () => {
+    try {
+      console.log('🎵 Initializing database narratives for warmup...');
+      
+      // Clear existing narratives and insert ONLY your 2 specific ones
+      const result = await dbAdmin.insertWarmupNarratives();
+      if (!result.success) {
+        console.error('❌ Failed to setup database narratives:', result.error);
+        return false;
+      }
+      
+      // Load narratives from database
+      const narratives = await dbAdmin.getNarrativesForPhase('spinning', 'warmup');
+      console.log('📊 Loaded narratives from database:', narratives.map(n => n.text));
+      
+      // Verify we have exactly 2 narratives
+      if (narratives.length !== 2) {
+        console.error(`❌ Expected 2 narratives, got ${narratives.length}`);
+        return false;
+      }
+      
+      // Verify they are the correct narratives
+      const expectedTexts = [
+        "We're just warming up the legs here",
+        "Chorus in 7 seconds"
+      ];
+      
+      const actualTexts = narratives.map(n => n.text);
+      const hasCorrectNarratives = expectedTexts.every(text => actualTexts.includes(text));
+      
+      if (!hasCorrectNarratives) {
+        console.error('❌ Database narratives do not match expected texts:', {
+          expected: expectedTexts,
+          actual: actualTexts
+        });
+        return false;
+      }
+      
+      setDatabaseNarratives(narratives);
+      console.log('✅ Database narratives ready for warmup');
+      return true;
+      
+    } catch (error) {
+      console.error('❌ Error initializing database narratives:', error);
+      return false;
+    }
+  };
+
   const handleStartWorkout = async () => {
+    console.log('🎵 🚀 STARTING WORKOUT with database narratives...');
+    console.log('🎵 Selected service:', selectedService, 'Selected playlist:', selectedPlaylist);
+    
+    // FIRST: Initialize database narratives for ALL phases (CRITICAL!)
+    console.log('🎵 Setting up database narratives for ALL workout phases...');
+    const allPhasesResult = await dbAdmin.insertNarrativesForAllPhases();
+    if (!allPhasesResult.success) {
+      alert('Error setting up workout narratives. Please try again.');
+      return;
+    }
+    
+    // Load warmup narratives specifically
+    const narrativesReady = await initializeDatabaseNarratives();
+    if (!narrativesReady) {
+      alert('Error loading warmup narratives. Please try again.');
+      return;
+    }
+
     if (!selectedPlaylist || selectedService !== 'spotify') {
-      // Fallback to old behavior for non-Spotify
+      // Fallback to old behavior for non-Spotify, but with database narratives
+      console.log('🎵 FALLBACK WORKOUT: Starting without Spotify, database narratives ready');
       setIsWorkoutActive(true);
       setCurrentPhase(0);
       setCurrentNarrative(0);
       setIsPlaying(true);
       setPhaseProgress(0);
+      setNarrativeEngineReady(true);
+      
+      // Initialize narrative states for fallback timing
+      setWorkoutStartTime(Date.now());
+      setNarrativeStates({
+        first_shown: false,
+        second_shown: false
+      });
+      setDisplayedNarrative(null);
+      
       return;
     }
 
@@ -246,9 +351,19 @@ const MusicSync = () => {
           setCurrentNarrative(0);
           setIsPlaying(true);
           setPhaseProgress(0);
+          setNarrativeEngineReady(true);
+          
+          // Initialize timing for database narratives
+          setWorkoutStartTime(Date.now());
+          setNarrativeStates({
+            first_shown: false,
+            second_shown: false
+          });
           
           // Start monitoring playback state
           startPlaybackMonitoring();
+          
+          console.log('✅ Workout started with database narratives ready!');
         } else {
           alert('Could not start Spotify playback. Please make sure music is playing in Spotify and try again.');
         }
@@ -440,10 +555,31 @@ const MusicSync = () => {
     };
   }, [isWorkoutActive, isPlaying, currentPhase, workoutPhases, workoutPlan, currentTrackPhase, playbackState]);
 
+  // Force database narrative checking every second (fallback mode)
+  useEffect(() => {
+    if (!isWorkoutActive || !isPlaying) return;
+    
+    const narrativeCheckInterval = setInterval(() => {
+      // Trigger getCurrentDatabaseNarrative by calling it
+      const narrative = getCurrentDatabaseNarrative();
+      console.log('🎵 INTERVAL CHECK:', narrative ? `Showing: "${narrative.text}"` : 'No narrative');
+    }, 1000); // Check every second
+    
+    return () => clearInterval(narrativeCheckInterval);
+  }, [isWorkoutActive, isPlaying, databaseNarratives, currentPhase, workoutStartTime, narrativeStates]);
+
   // Reset narrative and progress when phase changes
   useEffect(() => {
     setCurrentNarrative(0);
     setPhaseProgress(0);
+    
+    // CRITICAL: Reset narrative states when phase changes for fallback timing
+    console.log('🎵 PHASE CHANGE: Resetting narrative states for phase', currentPhase);
+    setNarrativeStates({
+      first_shown: false,
+      second_shown: false
+    });
+    setDisplayedNarrative(null);
     
     // Update current track phase when using intelligent workout plan
     if (workoutPlan && workoutPlan.phases[currentPhase]) {
@@ -502,52 +638,180 @@ const MusicSync = () => {
     return narratives[currentNarrative] || narratives[0];
   };
   
-  // Get current beat cue if available (intelligent timing)
-  const getCurrentBeatCue = () => {
-    if (workoutPlan && currentTrackPhase && currentTrackPhase.phase.beatCues.length > 0 && playbackState) {
-      const track = currentTrackPhase.track;
-      const tempo = track.audio_features?.tempo || 120;
-      const beatsPerSecond = tempo / 60;
+  // Get current database-driven narrative (works in ALL phases now)
+  const getCurrentDatabaseNarrative = () => {
+    console.log('🎵 DATABASE CHECK: narratives length:', databaseNarratives.length);
+  console.log('🎵 DATABASE CHECK: isWorkoutActive:', isWorkoutActive, 'currentPhase:', currentPhase);
+    
+    // Show database narratives in ALL phases (not just warmup)
+    if (databaseNarratives.length > 0) {
+      console.log('🎵 DATABASE: Narratives available:', databaseNarratives.map(n => n.text));
       
-      // More intelligent cue timing based on track position and tempo
-      const trackProgressSeconds = (playbackState.progress_ms || 0) / 1000;
-      const beatPosition = Math.floor(trackProgressSeconds * beatsPerSecond);
-      
-      // Different cues appear at different beat intervals
-      const beatCues = currentTrackPhase.phase.beatCues;
-      
-      // Find the most appropriate cue based on beat timing and track structure
-      for (const cue of beatCues) {
-        if (cue.timing === 'bar_start' && cue.interval) {
-          // Show this cue every N bars (assuming 4 beats per bar)
-          if (beatPosition % (cue.interval * 4) < 4) {
-            return cue;
+      // FALLBACK: If no Spotify playback, show narratives based on simple timing
+      if (!playbackState || !playbackState.progress_ms || !playbackState.item) {
+        console.log('🎵 FALLBACK: No Spotify playback, using simple timing');
+        
+        // Simple time-based logic (show first narrative after 10 seconds, second after 30 seconds)
+        if (!workoutStartTime) {
+          console.log('🎵 FALLBACK: No workout start time available');
+          return null;
+        }
+        
+        const phaseStartTime = workoutStartTime + (currentPhase * 60000); // Each phase is 1 min
+        const phaseElapsed = Date.now() - phaseStartTime; // Time within current phase
+        
+        console.log(`🎵 FALLBACK TIMING: Phase ${currentPhase}, elapsed: ${(phaseElapsed/1000).toFixed(1)}s`);
+        
+        if (phaseElapsed >= 10000 && phaseElapsed < 20000 && !narrativeStates.first_shown) {
+          const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
+          if (firstNarrative) {
+            console.log('🎵 FALLBACK: Showing FIRST narrative (10s mark)');
+            setNarrativeStates(prev => ({ ...prev, first_shown: true }));
+            setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
+            return { text: firstNarrative.text };
           }
-        } else if (cue.timing === 'chorus') {
-          // Show chorus cues in the middle third of the track (estimated)
-          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
-          if (trackProgress > 0.3 && trackProgress < 0.7) {
-            return cue;
-          }
-        } else if (cue.timing === 'verse') {
-          // Show verse cues in early part of track
-          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
-          if (trackProgress < 0.4) {
-            return cue;
-          }
-        } else if (cue.timing === 'build_up') {
-          // Show build-up cues in the latter part
-          const trackProgress = trackProgressSeconds / (track.duration_ms / 1000);
-          if (trackProgress > 0.6) {
-            return cue;
+        } else if (phaseElapsed >= 30000 && phaseElapsed < 40000 && !narrativeStates.second_shown) {
+          const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
+          if (secondNarrative) {
+            console.log('🎵 FALLBACK: Showing SECOND narrative (30s mark)');
+            setNarrativeStates(prev => ({ ...prev, second_shown: true }));
+            setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
+            return { text: secondNarrative.text };
           }
         }
+        
+        // Show persisted narrative for 8 seconds (fallback mode)
+        if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) < 8000) {
+          console.log('🎵 FALLBACK: Showing persisted narrative');
+          return { text: displayedNarrative.text };
+        } else if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) >= 8000) {
+          console.log('🎵 FALLBACK: Clearing expired narrative');
+          setDisplayedNarrative(null);
+        }
+        
+        return null;
       }
       
-      // Fallback to cycling through cues
-      const cueIndex = Math.floor(beatPosition / 16) % beatCues.length;
-      return beatCues[cueIndex];
+      // Use intelligent timing based on track structure (Spotify mode)
+      if (playbackState && playbackState.progress_ms && playbackState.item) {
+        console.log('🎵 SPOTIFY: Using intelligent timing with track structure');
+        
+        // Reset narrative states when track changes
+        if (currentTrackId !== playbackState.item.id) {
+          console.log(`🎵 📀 NEW TRACK: ${playbackState.item.name} by ${playbackState.item.artists.map(a => a.name).join(', ')}`);
+          setCurrentTrackId(playbackState.item.id);
+          setNarrativeStates({
+            first_shown: false,
+            second_shown: false
+          });
+        }
+        
+        const trackProgressSeconds = playbackState.progress_ms / 1000;
+        const track = currentTrackPhase?.track || playbackState.item;
+        const tempo = track?.audio_features?.tempo || 120;
+        
+        // Calculate precise bar timing (4 beats per bar)
+        const beatsPerSecond = tempo / 60;
+        const secondsPer4Bars = (4 * 4) / beatsPerSecond; // 16 beats = 4 bars
+        
+        // ADVANCED CHORUS DETECTION: Try multiple methods
+        const trackDuration = (track?.duration_ms || 180000) / 1000;
+        let chorusStartTime;
+        let chorusApproachTime;
+        
+        // Method 1: Use advanced Spotify audio analysis if available (PRECISE!)
+        if (track?.id && isSpotifyAuthenticated) {
+          const cachedAnalysis = trackAnalysisCache.get(track.id);
+          if (cachedAnalysis) {
+            console.log('🎵 Using cached advanced analysis for precise chorus detection');
+            if (cachedAnalysis.chorusStart !== null) {
+              chorusStartTime = cachedAnalysis.chorusStart;
+              chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
+              console.log(`🎵 🎯 PRECISE chorus timing from Spotify analysis: ${chorusStartTime.toFixed(1)}s`);
+            }
+          } else {
+            // Trigger background analysis for future use
+            advancedMusicAnalysis.analyzeTrackStructure(track.id).then(analysis => {
+              if (analysis) {
+                setTrackAnalysisCache(prev => new Map(prev.set(track.id, analysis)));
+                console.log(`🎵 📊 Cached advanced analysis for ${track.name}`);
+              }
+            }).catch(err => console.log('🎵 ⚠️ Advanced analysis not available:', err));
+          }
+        }
+        
+        // Method 2: Improved estimation (only if precise analysis not available)
+        if (!chorusStartTime) {
+          if (trackDuration < 120) { // Short songs (< 2 min)
+            chorusStartTime = trackDuration * 0.35; // Chorus later in short songs
+          } else if (trackDuration < 240) { // Medium songs (2-4 min)
+            chorusStartTime = trackDuration * 0.28; // Typical pop structure
+          } else { // Long songs (> 4 min)
+            chorusStartTime = trackDuration * 0.22; // Earlier chorus in long songs
+          }
+          
+          // Method 3: Use tempo-based adjustments
+          if (tempo > 140) { // High-energy songs
+            chorusStartTime *= 0.9; // Chorus comes earlier
+          } else if (tempo < 80) { // Slow songs
+            chorusStartTime *= 1.1; // Chorus comes later
+          }
+          
+          chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
+          console.log(`🎵 📊 ESTIMATED chorus timing: ${chorusStartTime.toFixed(1)}s`);
+        }
+        
+        console.log(`🎵 [Phase ${currentPhase}] Track: ${trackDuration.toFixed(1)}s, Tempo: ${tempo}BPM`);
+        console.log(`🎵 Progress: ${trackProgressSeconds.toFixed(1)}s, 4-bars: ${secondsPer4Bars.toFixed(1)}s, Chorus: ${chorusStartTime.toFixed(1)}s, Approach: ${chorusApproachTime.toFixed(1)}s`);
+        
+        // DEBUG: Show timing windows
+        const inFirstWindow = trackProgressSeconds >= secondsPer4Bars && trackProgressSeconds < chorusApproachTime;
+        const inSecondWindow = trackProgressSeconds >= chorusApproachTime && trackProgressSeconds < chorusStartTime + 3;
+        console.log(`🎵 DEBUG: First window (4-bars to chorus-7s): ${inFirstWindow}, Second window (chorus-7s to chorus+3s): ${inSecondWindow}`);
+        
+        // Check which narrative should show (with state tracking to prevent repeats)
+        if (inFirstWindow && !narrativeStates.first_shown) {
+          // Show first narrative: "We're just warming up the legs here"
+          const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
+          if (firstNarrative) {
+            console.log('🎵 ✅ Showing FIRST database narrative (after 4 bars)');
+            setNarrativeStates(prev => ({ ...prev, first_shown: true }));
+            setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
+            return { text: firstNarrative.text };
+          } else {
+            console.log('🎵 ❌ First narrative not found in database!', databaseNarratives.map(n => n.text));
+          }
+        } else if (inSecondWindow && !narrativeStates.second_shown) {
+          // Show second narrative: "Chorus in 7 seconds" (with 3-second buffer after chorus starts)
+          const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
+          if (secondNarrative) {
+            console.log('🎵 ✅ Showing SECOND database narrative (chorus approach)');
+            setNarrativeStates(prev => ({ ...prev, second_shown: true }));
+            setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
+            return { text: secondNarrative.text };
+          } else {
+            console.log('🎵 ❌ Second narrative not found in database!', databaseNarratives.map(n => n.text));
+          }
+        }
+        
+        // Show persisted narrative for 8 seconds
+        if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) < 8000) {
+          console.log('🎵 📺 Showing persisted narrative');
+          return { text: displayedNarrative.text };
+        } else if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) >= 8000) {
+          console.log('🎵 ⏰ Clearing expired narrative');
+          setDisplayedNarrative(null);
+        }
+        
+        // Debug output for inactive periods
+        if (trackProgressSeconds < secondsPer4Bars) {
+          console.log(`🎵 ⏳ Waiting for 4-bar mark: ${trackProgressSeconds.toFixed(1)}s < ${secondsPer4Bars.toFixed(1)}s`);
+        } else if (narrativeStates.first_shown && narrativeStates.second_shown) {
+          console.log(`🎵 ✅ Both narratives shown for this track`);
+        }
+      }
     }
+    
     return null;
   };
 
@@ -832,14 +1096,131 @@ const MusicSync = () => {
                       </p>
                     </div>
                     
-                    {/* Beat Cue Display */}
-                    {getCurrentBeatCue() && (
-                      <div className="bg-energy-gradient/20 rounded-lg p-3 border border-energy-primary/30">
-                        <div className="flex items-center gap-2">
-                          <span className="text-energy-primary text-sm font-semibold">🎵 Beat Cue:</span>
-                          <p className="text-primary text-sm font-medium">
-                            {getCurrentBeatCue()?.text}
-                          </p>
+                    {/* Database Narrative Display - ALL phases */}
+                    {(() => {
+                      const narrative = getCurrentDatabaseNarrative();
+                      console.log('🎵 RENDER: Database narrative result:', narrative);
+                      return narrative && (
+                        <div className="bg-energy-gradient/20 rounded-lg p-3 border border-energy-primary/30">
+                          <div className="flex items-center gap-2">
+                            <span className="text-energy-primary text-sm font-semibold">🎵 Database Narrative:</span>
+                            <p className="text-primary text-sm font-medium">
+                              {narrative.text}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Spotify Debug Attributes Display */}
+                    {playbackState && playbackState.item && (
+                      <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-400/30 text-xs">
+                        <div className="text-blue-300 font-semibold mb-2">🎧 Spotify Track Debug Info:</div>
+                        <div className="grid grid-cols-2 gap-2 text-blue-100/90">
+                          <div><strong>Track:</strong> {playbackState.item.name}</div>
+                          <div><strong>Artist:</strong> {playbackState.item.artists.map(a => a.name).join(', ')}</div>
+                          <div><strong>Duration:</strong> {Math.round(playbackState.item.duration_ms/1000)}s</div>
+                          <div><strong>Progress:</strong> {Math.round(playbackState.progress_ms/1000)}s</div>
+                          <div><strong>Popularity:</strong> {playbackState.item.popularity}/100</div>
+                          <div><strong>Explicit:</strong> {playbackState.item.explicit ? 'Yes' : 'No'}</div>
+                          
+                          {/* Audio Features */}
+                          {(() => {
+                            const track = currentTrackPhase?.track || playbackState.item;
+                            const features = track?.audio_features;
+                            return features && (
+                              <>
+                                <div className="col-span-2 text-blue-200 font-semibold mt-2">Audio Features:</div>
+                                <div><strong>Tempo:</strong> {Math.round(features.tempo)} BPM</div>
+                                <div><strong>Energy:</strong> {(features.energy * 100).toFixed(0)}%</div>
+                                <div><strong>Danceability:</strong> {(features.danceability * 100).toFixed(0)}%</div>
+                                <div><strong>Valence:</strong> {(features.valence * 100).toFixed(0)}%</div>
+                                <div><strong>Acousticness:</strong> {(features.acousticness * 100).toFixed(0)}%</div>
+                                <div><strong>Instrumentalness:</strong> {(features.instrumentalness * 100).toFixed(0)}%</div>
+                                <div><strong>Liveness:</strong> {(features.liveness * 100).toFixed(0)}%</div>
+                                <div><strong>Speechiness:</strong> {(features.speechiness * 100).toFixed(0)}%</div>
+                                <div><strong>Key:</strong> {features.key} ({['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][features.key] || 'Unknown'})</div>
+                                <div><strong>Mode:</strong> {features.mode === 1 ? 'Major' : 'Minor'}</div>
+                                <div><strong>Time Signature:</strong> {features.time_signature}/4</div>
+                                <div><strong>Loudness:</strong> {features.loudness.toFixed(1)} dB</div>
+                              </>
+                            );
+                          })()}
+                          
+                          {/* Advanced Analysis Cache */}
+                          {(() => {
+                            const track = currentTrackPhase?.track || playbackState.item;
+                            const cachedAnalysis = track?.id ? trackAnalysisCache.get(track.id) : null;
+                            return cachedAnalysis && (
+                              <>
+                                <div className="col-span-2 text-blue-200 font-semibold mt-2">Advanced Analysis:</div>
+                                <div><strong>Sections:</strong> {cachedAnalysis.sections?.length || 0}</div>
+                                <div><strong>Segments:</strong> {cachedAnalysis.segments?.length || 0}</div>
+                                <div><strong>Bars:</strong> {cachedAnalysis.bars?.length || 0}</div>
+                                <div><strong>Beats:</strong> {cachedAnalysis.beats?.length || 0}</div>
+                                <div><strong>Tatums:</strong> {cachedAnalysis.tatums?.length || 0}</div>
+                                <div><strong>Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(1)}s` : 'Not detected'}</div>
+                                
+                                {/* Current Section Info */}
+                                {cachedAnalysis.sections && (() => {
+                                  const currentTime = playbackState.progress_ms / 1000;
+                                  const currentSection = cachedAnalysis.sections.find(s => 
+                                    currentTime >= s.start && currentTime < (s.start + s.duration)
+                                  );
+                                  return currentSection && (
+                                    <>
+                                      <div className="col-span-2 text-blue-200 font-semibold mt-1">Current Section:</div>
+                                      <div><strong>Start:</strong> {currentSection.start.toFixed(1)}s</div>
+                                      <div><strong>Duration:</strong> {currentSection.duration.toFixed(1)}s</div>
+                                      <div><strong>Confidence:</strong> {(currentSection.confidence * 100).toFixed(0)}%</div>
+                                      <div><strong>Loudness:</strong> {currentSection.loudness.toFixed(1)} dB</div>
+                                      <div><strong>Tempo:</strong> {currentSection.tempo.toFixed(1)} BPM</div>
+                                      <div><strong>Key:</strong> {currentSection.key} ({['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][currentSection.key] || 'Unknown'})</div>
+                                      <div><strong>Mode:</strong> {currentSection.mode === 1 ? 'Major' : 'Minor'}</div>
+                                      <div><strong>Time Sig:</strong> {currentSection.time_signature}/4</div>
+                                    </>
+                                  );
+                                })()}
+                                
+                                {/* All Sections Breakdown */}
+                                {cachedAnalysis.sections && (
+                                  <div className="col-span-2 mt-2">
+                                    <div className="text-blue-200 font-semibold mb-1">All Sections (for Chorus Analysis):</div>
+                                    <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
+                                      {cachedAnalysis.sections.map((section, i) => {
+                                        const isCurrentSection = playbackState.progress_ms / 1000 >= section.start && 
+                                                               playbackState.progress_ms / 1000 < (section.start + section.duration);
+                                        const isLoud = section.loudness > -10;
+                                        const hasEnergyJump = i > 0 && (section.loudness - cachedAnalysis.sections[i-1].loudness) > 3;
+                                        const tempoChange = i > 0 ? Math.abs(section.tempo - cachedAnalysis.sections[i-1].tempo) : 0;
+                                        const keyChange = i > 0 && section.key !== cachedAnalysis.sections[i-1].key;
+                                        
+                                        return (
+                                          <div key={i} className={`p-1 rounded ${isCurrentSection ? 'bg-yellow-400/20 border border-yellow-400/40' : 'bg-blue-800/20'}`}>
+                                            <div className="flex justify-between items-center">
+                                              <span className="font-medium">#{i+1}: {section.start.toFixed(1)}s - {(section.start + section.duration).toFixed(1)}s</span>
+                                              <div className="flex gap-1">
+                                                {isLoud && <span className="px-1 bg-red-500/30 rounded text-xs">LOUD</span>}
+                                                {hasEnergyJump && <span className="px-1 bg-orange-500/30 rounded text-xs">ENERGY↑</span>}
+                                                {tempoChange > 5 && <span className="px-1 bg-purple-500/30 rounded text-xs">TEMPO Δ</span>}
+                                                {keyChange && <span className="px-1 bg-green-500/30 rounded text-xs">KEY CHANGE</span>}
+                                                {section.confidence > 0.8 && <span className="px-1 bg-blue-500/30 rounded text-xs">HIGH CONF</span>}
+                                              </div>
+                                            </div>
+                                            <div className="text-xs text-blue-300/80">
+                                              {section.loudness.toFixed(1)}dB • {section.tempo.toFixed(1)}BPM • 
+                                              {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][section.key] || section.key} {section.mode === 1 ? 'Maj' : 'Min'} • 
+                                              {(section.confidence * 100).toFixed(0)}%
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                     )}
