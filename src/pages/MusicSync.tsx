@@ -682,13 +682,10 @@ const MusicSync = () => {
           }
         }
         
-        // Show persisted narrative for 8 seconds (fallback mode)
-        if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) < 8000) {
-          console.log('🎵 FALLBACK: Showing persisted narrative');
+        // Show persisted narrative for entire track/phase (for easier testing)
+        if (displayedNarrative) {
+          console.log('🎵 FALLBACK: Showing persisted narrative (lingers until track/phase change)');
           return { text: displayedNarrative.text };
-        } else if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) >= 8000) {
-          console.log('🎵 FALLBACK: Clearing expired narrative');
-          setDisplayedNarrative(null);
         }
         
         return null;
@@ -796,13 +793,10 @@ const MusicSync = () => {
           }
         }
         
-        // Show persisted narrative for 8 seconds
-        if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) < 8000) {
-          console.log('🎵 📺 Showing persisted narrative');
+        // Show persisted narrative for entire track/phase (for easier testing)
+        if (displayedNarrative) {
+          console.log('🎵 SPOTIFY: Showing persisted narrative (lingers until track/phase change)');
           return { text: displayedNarrative.text };
-        } else if (displayedNarrative && (Date.now() - displayedNarrative.timestamp) >= 8000) {
-          console.log('🎵 ⏰ Clearing expired narrative');
-          setDisplayedNarrative(null);
         }
         
         // Debug output for inactive periods
@@ -1121,10 +1115,20 @@ const MusicSync = () => {
                         <div className="grid grid-cols-2 gap-3 text-gray-900 font-medium">
                           <div><strong>Track:</strong> {playbackState.item.name}</div>
                           <div><strong>Artist:</strong> {playbackState.item.artists.map(a => a.name).join(', ')}</div>
-                          <div><strong>Duration:</strong> {Math.round(playbackState.item.duration_ms/1000)}s</div>
-                          <div><strong>Progress:</strong> {Math.round(playbackState.progress_ms/1000)}s</div>
+                          <div><strong>Album:</strong> {playbackState.item.album.name}</div>
+                          <div><strong>Release Date:</strong> {playbackState.item.album.release_date}</div>
+                          <div><strong>Duration:</strong> {Math.round(playbackState.item.duration_ms/1000)}s ({Math.floor(playbackState.item.duration_ms/60000)}:{String(Math.floor((playbackState.item.duration_ms%60000)/1000)).padStart(2,'0')})</div>
+                          <div><strong>Progress:</strong> {Math.round(playbackState.progress_ms/1000)}s ({Math.floor(playbackState.progress_ms/60000)}:{String(Math.floor((playbackState.progress_ms%60000)/1000)).padStart(2,'0')})</div>
+                          <div><strong>Track Number:</strong> {playbackState.item.track_number} of {playbackState.item.album.total_tracks}</div>
+                          <div><strong>Disc Number:</strong> {playbackState.item.disc_number}</div>
                           <div><strong>Popularity:</strong> {playbackState.item.popularity}/100</div>
+                          <div><strong>Markets:</strong> {playbackState.item.available_markets ? playbackState.item.available_markets.length + ' countries' : 'N/A'}</div>
                           <div><strong>Explicit:</strong> {playbackState.item.explicit ? 'Yes' : 'No'}</div>
+                          <div><strong>Preview URL:</strong> {playbackState.item.preview_url ? 'Available' : 'None'}</div>
+                          <div><strong>Is Local:</strong> {playbackState.item.is_local ? 'Yes' : 'No'}</div>
+                          <div><strong>Is Playable:</strong> {playbackState.item.is_playable !== false ? 'Yes' : 'No'}</div>
+                          <div><strong>External IDs:</strong> {JSON.stringify(playbackState.item.external_ids || {})}</div>
+                          <div><strong>External URLs:</strong> {JSON.stringify(playbackState.item.external_urls || {})}</div>
                           
                           {/* Audio Features */}
                           {(() => {
@@ -1132,19 +1136,23 @@ const MusicSync = () => {
                             const features = track?.audio_features;
                             return features && (
                               <>
-                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Audio Features:</div>
-                                <div><strong>Tempo:</strong> {Math.round(features.tempo)} BPM</div>
-                                <div><strong>Energy:</strong> {(features.energy * 100).toFixed(0)}%</div>
-                                <div><strong>Danceability:</strong> {(features.danceability * 100).toFixed(0)}%</div>
-                                <div><strong>Valence:</strong> {(features.valence * 100).toFixed(0)}%</div>
-                                <div><strong>Acousticness:</strong> {(features.acousticness * 100).toFixed(0)}%</div>
-                                <div><strong>Instrumentalness:</strong> {(features.instrumentalness * 100).toFixed(0)}%</div>
-                                <div><strong>Liveness:</strong> {(features.liveness * 100).toFixed(0)}%</div>
-                                <div><strong>Speechiness:</strong> {(features.speechiness * 100).toFixed(0)}%</div>
-                                <div><strong>Key:</strong> {features.key} ({['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][features.key] || 'Unknown'})</div>
-                                <div><strong>Mode:</strong> {features.mode === 1 ? 'Major' : 'Minor'}</div>
-                                <div><strong>Time Signature:</strong> {features.time_signature}/4</div>
-                                <div><strong>Loudness:</strong> {features.loudness.toFixed(1)} dB</div>
+                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎵 Audio Features (All Attributes):</div>
+                                <div className="col-span-2 bg-red-100 p-2 rounded border"><strong className="text-red-800">🎯 BPM/Tempo:</strong> {Math.round(features.tempo)} BPM (Exact: {features.tempo.toFixed(3)})</div>
+                                <div><strong>Energy:</strong> {(features.energy * 100).toFixed(1)}% (Raw: {features.energy.toFixed(4)})</div>
+                                <div><strong>Danceability:</strong> {(features.danceability * 100).toFixed(1)}% (Raw: {features.danceability.toFixed(4)})</div>
+                                <div><strong>Valence (Mood):</strong> {(features.valence * 100).toFixed(1)}% (Raw: {features.valence.toFixed(4)})</div>
+                                <div><strong>Acousticness:</strong> {(features.acousticness * 100).toFixed(1)}% (Raw: {features.acousticness.toFixed(4)})</div>
+                                <div><strong>Instrumentalness:</strong> {(features.instrumentalness * 100).toFixed(1)}% (Raw: {features.instrumentalness.toFixed(4)})</div>
+                                <div><strong>Liveness:</strong> {(features.liveness * 100).toFixed(1)}% (Raw: {features.liveness.toFixed(4)})</div>
+                                <div><strong>Speechiness:</strong> {(features.speechiness * 100).toFixed(1)}% (Raw: {features.speechiness.toFixed(4)})</div>
+                                <div><strong>Loudness:</strong> {features.loudness.toFixed(2)} dB</div>
+                                <div><strong>Key:</strong> {features.key} = {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][features.key] || 'Unknown'}</div>
+                                <div><strong>Mode:</strong> {features.mode === 1 ? 'Major (1)' : 'Minor (0)'}</div>
+                                <div><strong>Time Signature:</strong> {features.time_signature}/4 time</div>
+                                <div><strong>Duration (ms):</strong> {features.duration_ms?.toLocaleString() || 'N/A'}</div>
+                                <div><strong>Audio Features URI:</strong> {features.uri || 'N/A'}</div>
+                                <div><strong>Track HREF:</strong> {features.track_href || 'N/A'}</div>
+                                <div><strong>Analysis URL:</strong> {features.analysis_url || 'N/A'}</div>
                               </>
                             );
                           })()}
@@ -1155,13 +1163,19 @@ const MusicSync = () => {
                             const cachedAnalysis = track?.id ? trackAnalysisCache.get(track.id) : null;
                             return cachedAnalysis && (
                               <>
-                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Advanced Analysis:</div>
-                                <div><strong>Sections:</strong> {cachedAnalysis.sections?.length || 0}</div>
-                                <div><strong>Segments:</strong> {cachedAnalysis.segments?.length || 0}</div>
-                                <div><strong>Bars:</strong> {cachedAnalysis.bars?.length || 0}</div>
-                                <div><strong>Beats:</strong> {cachedAnalysis.beats?.length || 0}</div>
-                                <div><strong>Tatums:</strong> {cachedAnalysis.tatums?.length || 0}</div>
-                                <div><strong>Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(1)}s` : 'Not detected'}</div>
+                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🔍 Advanced Analysis (All Structures):</div>
+                                <div><strong>Track Duration:</strong> {cachedAnalysis.track?.duration?.toFixed(2)}s</div>
+                                <div><strong>Track Sample Rate:</strong> {cachedAnalysis.track?.sample_rate || 'N/A'}</div>
+                                <div><strong>Track Analysis Sample Rate:</strong> {cachedAnalysis.track?.analysis_sample_rate || 'N/A'}</div>
+                                <div><strong>Track Analysis Channels:</strong> {cachedAnalysis.track?.analysis_channels || 'N/A'}</div>
+                                <div><strong>Track End of Fade In:</strong> {cachedAnalysis.track?.end_of_fade_in?.toFixed(2)}s</div>
+                                <div><strong>Track Start of Fade Out:</strong> {cachedAnalysis.track?.start_of_fade_out?.toFixed(2)}s</div>
+                                <div><strong>Sections:</strong> {cachedAnalysis.sections?.length || 0} musical sections</div>
+                                <div><strong>Segments:</strong> {cachedAnalysis.segments?.length || 0} audio segments</div>
+                                <div><strong>Bars:</strong> {cachedAnalysis.bars?.length || 0} musical bars</div>
+                                <div><strong>Beats:</strong> {cachedAnalysis.beats?.length || 0} beats detected</div>
+                                <div><strong>Tatums:</strong> {cachedAnalysis.tatums?.length || 0} smallest rhythmic units</div>
+                                <div className="col-span-2 bg-green-100 p-2 rounded border"><strong className="text-green-800">🎯 Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(2)}s` : 'Not detected'}</div>
                                 
                                 {/* Current Section Info */}
                                 {cachedAnalysis.sections && (() => {
