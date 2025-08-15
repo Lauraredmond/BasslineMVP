@@ -1116,9 +1116,9 @@ const MusicSync = () => {
                     
                     {/* Spotify Debug Attributes Display */}
                     {playbackState && playbackState.item && (
-                      <div className="bg-white rounded-lg p-3 border border-gray-300 text-xs">
-                        <div className="text-black font-semibold mb-2">🎧 Spotify Track Debug Info:</div>
-                        <div className="grid grid-cols-2 gap-2 text-black">
+                      <div className="bg-gray-100 rounded-lg p-4 border-2 border-gray-800 text-sm">
+                        <div className="text-gray-900 font-bold mb-3 text-base">🎧 Spotify Track Debug Info:</div>
+                        <div className="grid grid-cols-2 gap-3 text-gray-900 font-medium">
                           <div><strong>Track:</strong> {playbackState.item.name}</div>
                           <div><strong>Artist:</strong> {playbackState.item.artists.map(a => a.name).join(', ')}</div>
                           <div><strong>Duration:</strong> {Math.round(playbackState.item.duration_ms/1000)}s</div>
@@ -1132,7 +1132,7 @@ const MusicSync = () => {
                             const features = track?.audio_features;
                             return features && (
                               <>
-                                <div className="col-span-2 text-black font-semibold mt-2">Audio Features:</div>
+                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Audio Features:</div>
                                 <div><strong>Tempo:</strong> {Math.round(features.tempo)} BPM</div>
                                 <div><strong>Energy:</strong> {(features.energy * 100).toFixed(0)}%</div>
                                 <div><strong>Danceability:</strong> {(features.danceability * 100).toFixed(0)}%</div>
@@ -1155,7 +1155,7 @@ const MusicSync = () => {
                             const cachedAnalysis = track?.id ? trackAnalysisCache.get(track.id) : null;
                             return cachedAnalysis && (
                               <>
-                                <div className="col-span-2 text-black font-semibold mt-2">Advanced Analysis:</div>
+                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Advanced Analysis:</div>
                                 <div><strong>Sections:</strong> {cachedAnalysis.sections?.length || 0}</div>
                                 <div><strong>Segments:</strong> {cachedAnalysis.segments?.length || 0}</div>
                                 <div><strong>Bars:</strong> {cachedAnalysis.bars?.length || 0}</div>
@@ -1171,7 +1171,7 @@ const MusicSync = () => {
                                   );
                                   return currentSection && (
                                     <>
-                                      <div className="col-span-2 text-black font-semibold mt-1">Current Section:</div>
+                                      <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">Current Section:</div>
                                       <div><strong>Start:</strong> {currentSection.start.toFixed(1)}s</div>
                                       <div><strong>Duration:</strong> {currentSection.duration.toFixed(1)}s</div>
                                       <div><strong>Confidence:</strong> {(currentSection.confidence * 100).toFixed(0)}%</div>
@@ -1187,7 +1187,7 @@ const MusicSync = () => {
                                 {/* All Sections Breakdown */}
                                 {cachedAnalysis.sections && (
                                   <div className="col-span-2 mt-2">
-                                    <div className="text-black font-semibold mb-1">All Sections (for Chorus Analysis):</div>
+                                    <div className="text-gray-900 font-bold mb-2 text-base">All Sections (for Chorus Analysis):</div>
                                     <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
                                       {cachedAnalysis.sections.map((section, i) => {
                                         const isCurrentSection = playbackState.progress_ms / 1000 >= section.start && 
@@ -1198,9 +1198,9 @@ const MusicSync = () => {
                                         const keyChange = i > 0 && section.key !== cachedAnalysis.sections[i-1].key;
                                         
                                         return (
-                                          <div key={i} className={`p-1 rounded ${isCurrentSection ? 'bg-yellow-400/20 border border-yellow-400/40' : 'bg-blue-800/20'}`}>
+                                          <div key={i} className={`p-2 rounded border ${isCurrentSection ? 'bg-yellow-200 border-yellow-600' : 'bg-white border-gray-400'}`}>
                                             <div className="flex justify-between items-center">
-                                              <span className="font-medium">#{i+1}: {section.start.toFixed(1)}s - {(section.start + section.duration).toFixed(1)}s</span>
+                                              <span className="font-bold text-gray-900">#{i+1}: {section.start.toFixed(1)}s - {(section.start + section.duration).toFixed(1)}s</span>
                                               <div className="flex gap-1">
                                                 {isLoud && <span className="px-1 bg-red-500/30 rounded text-xs">LOUD</span>}
                                                 {hasEnergyJump && <span className="px-1 bg-orange-500/30 rounded text-xs">ENERGY↑</span>}
@@ -1209,7 +1209,7 @@ const MusicSync = () => {
                                                 {section.confidence > 0.8 && <span className="px-1 bg-blue-500/30 rounded text-xs">HIGH CONF</span>}
                                               </div>
                                             </div>
-                                            <div className="text-xs text-gray-600">
+                                            <div className="text-sm text-gray-800 font-medium">
                                               {section.loudness.toFixed(1)}dB • {section.tempo.toFixed(1)}BPM • 
                                               {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][section.key] || section.key} {section.mode === 1 ? 'Maj' : 'Min'} • 
                                               {(section.confidence * 100).toFixed(0)}%
