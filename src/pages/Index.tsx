@@ -45,7 +45,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-hero-gradient opacity-20"></div>
         </div>
 
-        {/* Main Action Buttons */}
+        {/* Main Action Buttons - Updated hover states for better readability */}
         <div className="space-y-4 mb-20">
           <Button 
             onClick={() => navigate('/music-sync')}
