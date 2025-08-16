@@ -49,23 +49,21 @@ const Index = () => {
         <div className="space-y-4 mb-20">
           <Button 
             onClick={() => navigate('/music-sync')}
-            className="w-full h-14 text-lg bg-energy-gradient hover:opacity-90 shadow-button transition-smooth text-cream font-semibold"
+            className="w-full h-14 text-lg bg-energy-gradient shadow-button transition-smooth text-cream font-semibold hover:!bg-cream hover:!text-maroon"
           >
             Take me to my existing plan
           </Button>
           
           <Button 
             onClick={() => navigate('/plan-creator')}
-            variant="outline"
-            className="w-full h-14 text-lg font-semibold border-2 border-cream bg-transparent text-cream hover:!bg-cream hover:!text-maroon hover:!border-cream"
+            className="w-full h-14 text-lg bg-energy-gradient shadow-button transition-smooth text-cream font-semibold hover:!bg-cream hover:!text-maroon"
           >
             Create a new plan
           </Button>
           
           <Button 
             onClick={() => navigate('/format-selection')}
-            variant="outline"
-            className="w-full h-14 text-lg border-2 border-cream/70 bg-transparent text-cream/80 font-medium hover:!bg-cream hover:!text-maroon hover:!border-cream"
+            className="w-full h-14 text-lg bg-energy-gradient shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-maroon"
           >
             No plan? Take me to format selection
           </Button>
