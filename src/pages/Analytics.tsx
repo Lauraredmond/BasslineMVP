@@ -130,8 +130,8 @@ const Analytics = () => {
                           <div className="flex items-center gap-3">
                             <Badge variant="secondary" className="bg-burgundy text-cream">#{index + 1}</Badge>
                             <div>
-                              <p className="font-medium text-burgundy">{playlist.name}</p>
-                              <p className="text-sm text-muted-foreground">{playlist.uses} sessions • {playlist.avgBPM} BPM avg</p>
+                              <p className="font-medium text-maroon">{playlist.name}</p>
+                              <p className="text-sm text-maroon/70">{playlist.uses} sessions • {playlist.avgBPM} BPM avg</p>
                             </div>
                           </div>
                         </div>
@@ -144,20 +144,20 @@ const Analytics = () => {
                     <h3 className="text-lg font-semibold text-burgundy mb-4">Average BPM by Workout Phase</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center p-4 bg-cream/10 rounded-lg">
-                        <p className="text-2xl font-bold text-burgundy">95</p>
-                        <p className="text-sm text-muted-foreground">Warm Up</p>
+                        <p className="text-2xl font-bold text-maroon">95</p>
+                        <p className="text-sm text-maroon/70">Warm Up</p>
                       </div>
                       <div className="text-center p-4 bg-cream/10 rounded-lg">
-                        <p className="text-2xl font-bold text-burgundy">145</p>
-                        <p className="text-sm text-muted-foreground">Sprint</p>
+                        <p className="text-2xl font-bold text-maroon">145</p>
+                        <p className="text-sm text-maroon/70">Sprint</p>
                       </div>
                       <div className="text-center p-4 bg-cream/10 rounded-lg">
-                        <p className="text-2xl font-bold text-burgundy">128</p>
-                        <p className="text-sm text-muted-foreground">Rolling Hills</p>
+                        <p className="text-2xl font-bold text-maroon">128</p>
+                        <p className="text-sm text-maroon/70">Rolling Hills</p>
                       </div>
                       <div className="text-center p-4 bg-cream/10 rounded-lg">
-                        <p className="text-2xl font-bold text-burgundy">85</p>
-                        <p className="text-sm text-muted-foreground">Cool Down</p>
+                        <p className="text-2xl font-bold text-maroon">85</p>
+                        <p className="text-sm text-maroon/70">Cool Down</p>
                       </div>
                     </div>
                   </div>
@@ -187,16 +187,16 @@ const Analytics = () => {
                 <CardContent>
                   <div className="grid md:grid-cols-3 gap-6">
                     <div className="text-center p-6 bg-cream/10 rounded-lg">
-                      <p className="text-3xl font-bold text-burgundy mb-2">2,847</p>
-                      <p className="text-sm text-muted-foreground">Data Points Stored</p>
+                      <p className="text-3xl font-bold text-maroon mb-2">2,847</p>
+                      <p className="text-sm text-maroon/70">Data Points Stored</p>
                     </div>
                     <div className="text-center p-6 bg-cream/10 rounded-lg">
-                      <p className="text-3xl font-bold text-burgundy mb-2">2,847</p>
-                      <p className="text-sm text-muted-foreground">Data Points Anonymised</p>
+                      <p className="text-3xl font-bold text-maroon mb-2">2,847</p>
+                      <p className="text-sm text-maroon/70">Data Points Anonymised</p>
                     </div>
                     <div className="text-center p-6 bg-cream/10 rounded-lg">
-                      <p className="text-lg font-semibold text-burgundy mb-2">Dec 15, 2024</p>
-                      <p className="text-sm text-muted-foreground">Last DSAR/ROPA Report</p>
+                      <p className="text-lg font-semibold text-maroon mb-2">Dec 15, 2024</p>
+                      <p className="text-sm text-maroon/70">Last DSAR/ROPA Report</p>
                     </div>
                   </div>
                   <div className="mt-6 p-4 bg-green-100 border border-green-200 rounded-lg">
@@ -229,12 +229,12 @@ const Analytics = () => {
                 <CardContent className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="text-center p-6 bg-cream/10 rounded-lg">
-                      <p className="text-3xl font-bold text-burgundy mb-2">8/10</p>
-                      <p className="text-sm text-muted-foreground">Goals Hit This Month</p>
+                      <p className="text-3xl font-bold text-maroon mb-2">8/10</p>
+                      <p className="text-sm text-maroon/70">Goals Hit This Month</p>
                     </div>
                     <div className="text-center p-6 bg-cream/10 rounded-lg">
-                      <p className="text-3xl font-bold text-burgundy mb-2">7.9</p>
-                      <p className="text-sm text-muted-foreground">Average Intensity Score</p>
+                      <p className="text-3xl font-bold text-maroon mb-2">7.9</p>
+                      <p className="text-sm text-maroon/70">Average Intensity Score</p>
                     </div>
                   </div>
                   
@@ -295,16 +295,16 @@ const Analytics = () => {
                     <h3 className="text-lg font-semibold text-burgundy mb-4">Key Insights</h3>
                     <div className="space-y-3">
                       <div className="p-4 bg-cream/10 rounded-lg">
-                        <p className="font-medium text-burgundy">🎵 Optimal BPM Range</p>
-                        <p className="text-sm text-muted-foreground">Your best performances occur at 135-145 BPM during afternoon sessions</p>
+                        <p className="font-medium text-maroon">🎵 Optimal BPM Range</p>
+                        <p className="text-sm text-maroon/70">Your best performances occur at 135-145 BPM during afternoon sessions</p>
                       </div>
                       <div className="p-4 bg-cream/10 rounded-lg">
-                        <p className="font-medium text-burgundy">⏰ Peak Performance Time</p>
-                        <p className="text-sm text-muted-foreground">Afternoon workouts show 23% higher intensity scores than evening sessions</p>
+                        <p className="font-medium text-maroon">⏰ Peak Performance Time</p>
+                        <p className="text-sm text-maroon/70">Afternoon workouts show 23% higher intensity scores than evening sessions</p>
                       </div>
                       <div className="p-4 bg-cream/10 rounded-lg">
-                        <p className="font-medium text-burgundy">🎼 Genre Impact</p>
-                        <p className="text-sm text-muted-foreground">Electronic and Rock genres correlate with your longest sprint durations</p>
+                        <p className="font-medium text-maroon">🎼 Genre Impact</p>
+                        <p className="text-sm text-maroon/70">Electronic and Rock genres correlate with your longest sprint durations</p>
                       </div>
                     </div>
                   </div>

@@ -14,6 +14,7 @@ import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/music
 import { narrativeEngine } from "@/lib/narrative-engine";
 import { dbAdmin } from "@/lib/database-admin";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
+import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
@@ -299,6 +300,10 @@ const MusicSync = () => {
     if (!selectedPlaylist || selectedService !== 'spotify') {
       // Fallback to old behavior for non-Spotify, but with database narratives
       console.log('🎵 FALLBACK WORKOUT: Starting without Spotify, database narratives ready');
+      
+      // Auto-start analysis logging session
+      await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
+      
       setIsWorkoutActive(true);
       setCurrentPhase(0);
       setCurrentNarrative(0);
@@ -345,6 +350,9 @@ const MusicSync = () => {
         const playbackStarted = await spotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
         
         if (playbackStarted) {
+          // Auto-start analysis logging session
+          await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'spotify');
+          
           setCurrentTrackPhase(plan.phases[0]);
           setIsWorkoutActive(true);
           setCurrentPhase(0);
@@ -606,7 +614,7 @@ const MusicSync = () => {
     return playlist?.name || "Unknown Playlist";
   };
 
-  const handleShareWorkout = () => {
+  const handleShareWorkout = async () => {
     // Prepare complete workout data for sharing
     const completeWorkoutData = {
       soundtrack: getSelectedPlaylistName(),
@@ -619,12 +627,19 @@ const MusicSync = () => {
     };
     
     console.log("Sharing workout:", completeWorkoutData);
+    
+    // Auto-end analysis logging session
+    await spotifyAnalysisLogger.endWorkoutSession();
+    
     setShowWorkoutCompleteModal(false);
     setIsWorkoutActive(false);
     navigate('/community');
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = async () => {
+    // Auto-end analysis logging session
+    await spotifyAnalysisLogger.endWorkoutSession();
+    
     setShowWorkoutCompleteModal(false);
     setIsWorkoutActive(false);
     stopPlaybackMonitoring();
@@ -1444,6 +1459,10 @@ const MusicSync = () => {
                         const newPhase = Math.max(0, currentPhase - 1);
                         setCurrentPhase(newPhase);
                         
+                        // Update fitness phase for logging
+                        const phaseName = workoutPhases[newPhase]?.name || `phase_${newPhase}`;
+                        spotifyAnalysisLogger.setCurrentFitnessPhase(phaseName);
+                        
                         // If using Spotify with workout plan, skip to the previous track
                         if (selectedService === 'spotify' && workoutPlan && selectedDevice) {
                           const previousPhaseTrack = workoutPlan.phases[newPhase];
@@ -1471,6 +1490,10 @@ const MusicSync = () => {
                       onClick={async () => {
                         const newPhase = Math.min(workoutPhases.length - 1, currentPhase + 1);
                         setCurrentPhase(newPhase);
+                        
+                        // Update fitness phase for logging
+                        const phaseName = workoutPhases[newPhase]?.name || `phase_${newPhase}`;
+                        spotifyAnalysisLogger.setCurrentFitnessPhase(phaseName);
                         
                         // If using Spotify with workout plan, skip to the next track
                         if (selectedService === 'spotify' && workoutPlan && selectedDevice) {

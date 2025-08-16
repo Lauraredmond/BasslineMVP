@@ -99,6 +99,9 @@ class SpotifyAnalysisLogger {
   private isLogging = false;
   private logInterval: number | null = null;
   private readonly LOG_INTERVAL_MS = 1000; // Log every second
+  private currentWorkoutType: string | null = null;
+  private currentFitnessPhase: string | null = null;
+  private autoSessionStarted = false;
 
   // Start a new logging session
   async startLoggingSession(sessionName?: string, workoutType?: string): Promise<string> {
@@ -327,6 +330,74 @@ class SpotifyAnalysisLogger {
   // Check if currently logging
   isCurrentlyLogging(): boolean {
     return this.isLogging;
+  }
+
+  // Auto-start session when workout begins
+  async startWorkoutSession(workoutType: string, workoutPlan?: any): Promise<void> {
+    if (this.autoSessionStarted) return; // Already have an active session
+
+    try {
+      const sessionName = `${workoutType} Workout - ${new Date().toLocaleString()}`;
+      await this.startLoggingSession(sessionName, workoutType);
+      this.currentWorkoutType = workoutType;
+      this.autoSessionStarted = true;
+      console.log('Auto-started workout logging session:', sessionName);
+    } catch (error) {
+      console.error('Error auto-starting workout session:', error);
+    }
+  }
+
+  // Auto-end session when workout completes
+  async endWorkoutSession(): Promise<void> {
+    if (!this.autoSessionStarted) return;
+
+    this.stopLogging();
+    await this.endSession();
+    this.autoSessionStarted = false;
+    this.currentWorkoutType = null;
+    this.currentFitnessPhase = null;
+    console.log('Auto-ended workout logging session');
+  }
+
+  // Update fitness phase during workout
+  setCurrentFitnessPhase(phase: string): void {
+    this.currentFitnessPhase = phase;
+    console.log('Updated fitness phase:', phase);
+  }
+
+  // Auto-start logging when a track plays during workout
+  async autoStartTrackLogging(trackId: string, trackName: string, artistName: string): Promise<void> {
+    if (!this.autoSessionStarted || !trackId) return;
+
+    try {
+      // Get analysis data from Spotify API (this would normally be fetched from Spotify)
+      // For now, we'll just start logging with the track info
+      if (!this.analysisData) {
+        console.log('No analysis data available for track:', trackName);
+        // In a real implementation, you'd fetch this from Spotify's audio analysis API
+        return;
+      }
+
+      const context: PlaybackContext = {
+        trackId,
+        trackName,
+        artistName,
+        positionMs: 0, // This would be updated by the playback progress
+        fitnessPhase: this.currentFitnessPhase || 'unknown',
+        workoutIntensity: 7 // Default intensity, could be dynamic
+      };
+
+      this.startTrackLogging(context);
+      console.log('Auto-started logging for track:', trackName);
+    } catch (error) {
+      console.error('Error auto-starting track logging:', error);
+    }
+  }
+
+  // Update playback position (called by music player)
+  updatePlaybackPosition(positionMs: number): void {
+    // This would update the position for the next log entry
+    // The actual logging happens in the interval in logCurrentState
   }
 }
 
