@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Configure secrets scanning to allow safe frontend environment variables
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SPOTIFY_CLIENT_ID,VITE_SPOTIFY_CLIENT_SECRET,VITE_SPOTIFY_REDIRECT_URI_LOCAL,VITE_SPOTIFY_REDIRECT_URI_PROD,VITE_SUPABASE_ANON_KEY"
+
+# Redirect all routes to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
