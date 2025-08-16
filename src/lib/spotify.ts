@@ -1,7 +1,7 @@
 // Spotify Web API integration for Bassline Fitness
+// Using Authorization Code with PKCE flow for secure frontend authentication
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
 // Automatically detect environment and use appropriate redirect URI
 const getRedirectUri = (): string => {
@@ -15,6 +15,25 @@ const getRedirectUri = (): string => {
 };
 
 const REDIRECT_URI = getRedirectUri();
+
+// PKCE helper functions for secure authentication
+const generateCodeVerifier = (): string => {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return btoa(String.fromCharCode.apply(null, Array.from(array)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
+
+const generateCodeChallenge = async (codeVerifier: string): Promise<string> => {
+  const data = new TextEncoder().encode(codeVerifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(digest))))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
 
 export interface SpotifyPlaylist {
   id: string;
@@ -169,8 +188,8 @@ class SpotifyService {
     this.refreshToken = localStorage.getItem('spotify_refresh_token');
   }
 
-  // Generate OAuth URL for user login
-  getAuthUrl(): string {
+  // Generate OAuth URL for user login using PKCE
+  async getAuthUrl(): Promise<string> {
     const scopes = [
       'playlist-read-private',
       'playlist-read-collaborative', 
@@ -181,30 +200,45 @@ class SpotifyService {
       'streaming'
     ].join(' ');
 
+    // Generate PKCE parameters
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier);
+    
+    // Store code verifier for later use
+    localStorage.setItem('spotify_code_verifier', codeVerifier);
+
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       response_type: 'code',
       redirect_uri: REDIRECT_URI,
       scope: scopes,
+      code_challenge_method: 'S256',
+      code_challenge: codeChallenge,
       show_dialog: 'true'
     });
 
     return `https://accounts.spotify.com/authorize?${params}`;
   }
 
-  // Exchange authorization code for access token
+  // Exchange authorization code for access token using PKCE
   async exchangeCodeForToken(code: string): Promise<boolean> {
     try {
+      const codeVerifier = localStorage.getItem('spotify_code_verifier');
+      if (!codeVerifier) {
+        throw new Error('No code verifier found');
+      }
+
       const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + btoa(CLIENT_ID + ':' + CLIENT_SECRET)
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
+          client_id: CLIENT_ID,
           grant_type: 'authorization_code',
           code: code,
-          redirect_uri: REDIRECT_URI
+          redirect_uri: REDIRECT_URI,
+          code_verifier: codeVerifier
         })
       });
 
@@ -362,7 +396,7 @@ class SpotifyService {
     }));
   }
 
-  // Refresh access token
+  // Refresh access token using PKCE
   private async refreshAccessToken(): Promise<void> {
     if (!this.refreshToken) {
       throw new Error('No refresh token available');
@@ -372,10 +406,10 @@ class SpotifyService {
       const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': 'Basic ' + btoa(CLIENT_ID + ':' + CLIENT_SECRET)
+          'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: new URLSearchParams({
+          client_id: CLIENT_ID,
           grant_type: 'refresh_token',
           refresh_token: this.refreshToken
         })

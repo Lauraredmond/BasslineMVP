@@ -376,8 +376,9 @@ const MusicSync = () => {
     }
   };
 
-  const handleSpotifyLogin = () => {
-    window.location.href = spotifyService.getAuthUrl();
+  const handleSpotifyLogin = async () => {
+    const authUrl = await spotifyService.getAuthUrl();
+    window.location.href = authUrl;
   };
 
   const loadSpotifyPlaylists = async () => {
