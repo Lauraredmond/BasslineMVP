@@ -68,6 +68,7 @@ export default {
                     dark: 'hsl(var(--burgundy-dark))',
                     accent: 'hsl(var(--burgundy-accent))'
                 },
+                maroon: 'hsl(var(--maroon))',
                 cream: {
                     DEFAULT: 'hsl(var(--cream))',
                     dark: 'hsl(var(--cream-dark))'

@@ -41,6 +41,7 @@ All colors MUST be HSL.
     --burgundy-light: 0 40% 92%;
     --burgundy-dark: 0 100% 8%;
     --burgundy-accent: 0 80% 20%;
+    --maroon: 0 68% 14%;
     --cream: 45 30% 95%;
     --cream-dark: 45 20% 85%;
     --energy-gradient: linear-gradient(135deg, hsl(352, 100%, 12%), hsl(352, 80%, 20%), hsl(45, 60%, 70%));
