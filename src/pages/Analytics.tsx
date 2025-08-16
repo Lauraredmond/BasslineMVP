@@ -4,10 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, ScatterChart, Scatter } from "recharts";
-import { ChevronDown, ChevronUp, Music, Activity, Shield, TrendingUp, Target } from "lucide-react";
+import { ChevronDown, ChevronUp, Music, Activity, Shield, TrendingUp, Target, FlaskConical } from "lucide-react";
 
 const Analytics = () => {
+  const [showResearchLab, setShowResearchLab] = useState(false);
   const [openSections, setOpenSections] = useState({
     sync: true,
     privacy: false,
@@ -66,12 +69,27 @@ const Analytics = () => {
     <div className="min-h-screen bg-premium-texture pb-20">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-cream mb-2">Analytics Dashboard</h1>
-          <p className="text-cream/80">Your music-powered fitness insights</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-cream mb-2">Analytics Dashboard</h1>
+              <p className="text-cream/80">Your music-powered fitness insights</p>
+            </div>
+            <Button
+              onClick={() => setShowResearchLab(!showResearchLab)}
+              variant="outline"
+              className="text-cream border-cream hover:bg-cream hover:text-maroon"
+            >
+              <FlaskConical className="w-4 h-4 mr-2" />
+              {showResearchLab ? 'Hide Research Lab' : 'Spotify Research Lab'}
+            </Button>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {/* Workout & Music Sync Insights */}
+        {showResearchLab ? (
+          <SpotifyAnalysisViewer />
+        ) : (
+          <div className="space-y-6">
+            {/* Workout & Music Sync Insights */}
           <Card className="bg-card-texture border-cream/20">
             <Collapsible open={openSections.sync} onOpenChange={() => toggleSection('sync')}>
               <CollapsibleTrigger asChild>
@@ -294,7 +312,8 @@ const Analytics = () => {
               </CollapsibleContent>
             </Collapsible>
           </Card>
-        </div>
+          </div>
+        )}
       </div>
 
       <BottomNavigation />

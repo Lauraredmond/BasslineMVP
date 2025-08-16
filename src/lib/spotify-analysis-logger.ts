@@ -1,0 +1,334 @@
+// Spotify Audio Analysis Logger
+// Logs all Spotify audio analysis attributes during playback for fitness narrative mapping research
+
+import { supabase } from './supabase';
+
+export interface SpotifyAnalysisData {
+  meta: {
+    analyzer_version?: string;
+    platform?: string;
+    detailed_status?: string;
+    status_code?: number;
+    timestamp?: number;
+    analysis_time?: number;
+    input_process?: string;
+  };
+  track: {
+    num_samples?: number;
+    duration?: number;
+    sample_md5?: string;
+    offset_seconds?: number;
+    window_seconds?: number;
+    analysis_sample_rate?: number;
+    analysis_channels?: number;
+    end_of_fade_in?: number;
+    start_of_fade_out?: number;
+    loudness?: number;
+    tempo?: number;
+    tempo_confidence?: number;
+    time_signature?: number;
+    time_signature_confidence?: number;
+    key?: number;
+    key_confidence?: number;
+    mode?: number;
+    mode_confidence?: number;
+    codestring?: string;
+    code_version?: number;
+    echoprintstring?: string;
+    echoprint_version?: number;
+    synchstring?: string;
+    synch_version?: number;
+    rhythmstring?: string;
+    rhythm_version?: number;
+  };
+  bars: Array<{
+    start: number;
+    duration: number;
+    confidence: number;
+  }>;
+  beats: Array<{
+    start: number;
+    duration: number;
+    confidence: number;
+  }>;
+  tatums: Array<{
+    start: number;
+    duration: number;
+    confidence: number;
+  }>;
+  sections: Array<{
+    start: number;
+    duration: number;
+    confidence: number;
+    loudness: number;
+    tempo: number;
+    tempo_confidence: number;
+    key: number;
+    key_confidence: number;
+    mode: number;
+    mode_confidence: number;
+    time_signature: number;
+    time_signature_confidence: number;
+  }>;
+  segments: Array<{
+    start: number;
+    duration: number;
+    confidence: number;
+    loudness_start: number;
+    loudness_max: number;
+    loudness_max_time: number;
+    loudness_end: number;
+    pitches: number[];
+    timbre: number[];
+  }>;
+}
+
+export interface PlaybackContext {
+  trackId: string;
+  trackName?: string;
+  artistName?: string;
+  positionMs: number;
+  fitnessPhase?: string;
+  workoutIntensity?: number;
+  userNotes?: string;
+}
+
+class SpotifyAnalysisLogger {
+  private sessionId: string | null = null;
+  private analysisData: SpotifyAnalysisData | null = null;
+  private isLogging = false;
+  private logInterval: number | null = null;
+  private readonly LOG_INTERVAL_MS = 1000; // Log every second
+
+  // Start a new logging session
+  async startLoggingSession(sessionName?: string, workoutType?: string): Promise<string> {
+    try {
+      const { data, error } = await supabase
+        .from('spotify_playback_sessions')
+        .insert({
+          session_name: sessionName || `Session ${new Date().toISOString()}`,
+          workout_type: workoutType || 'general',
+          start_time: new Date().toISOString()
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      this.sessionId = data.id;
+      console.log('Started logging session:', this.sessionId);
+      return this.sessionId;
+    } catch (error) {
+      console.error('Error starting logging session:', error);
+      throw error;
+    }
+  }
+
+  // Store complete analysis data for a track
+  async storeTrackAnalysis(trackId: string, trackName: string, artistName: string, analysisData: SpotifyAnalysisData): Promise<void> {
+    try {
+      await supabase
+        .from('spotify_track_analysis')
+        .upsert({
+          track_id: trackId,
+          track_name: trackName,
+          artist_name: artistName,
+          analysis_data: analysisData,
+          updated_at: new Date().toISOString()
+        });
+
+      this.analysisData = analysisData;
+      console.log('Stored track analysis for:', trackName);
+    } catch (error) {
+      console.error('Error storing track analysis:', error);
+      throw error;
+    }
+  }
+
+  // Start logging for a specific track
+  startTrackLogging(context: PlaybackContext): void {
+    if (!this.sessionId || !this.analysisData) {
+      console.error('Cannot start logging: no session or analysis data');
+      return;
+    }
+
+    this.isLogging = true;
+    
+    // Log immediately
+    this.logCurrentState(context);
+
+    // Set up interval logging
+    this.logInterval = window.setInterval(() => {
+      if (this.isLogging) {
+        this.logCurrentState(context);
+      }
+    }, this.LOG_INTERVAL_MS);
+
+    console.log('Started track logging for:', context.trackName);
+  }
+
+  // Stop logging
+  stopLogging(): void {
+    this.isLogging = false;
+    if (this.logInterval) {
+      clearInterval(this.logInterval);
+      this.logInterval = null;
+    }
+    console.log('Stopped logging');
+  }
+
+  // End the current session
+  async endSession(): Promise<void> {
+    this.stopLogging();
+    
+    if (this.sessionId) {
+      try {
+        await supabase
+          .from('spotify_playback_sessions')
+          .update({
+            end_time: new Date().toISOString()
+          })
+          .eq('id', this.sessionId);
+
+        console.log('Ended logging session:', this.sessionId);
+        this.sessionId = null;
+      } catch (error) {
+        console.error('Error ending session:', error);
+      }
+    }
+  }
+
+  // Log the current state based on playback position
+  private async logCurrentState(context: PlaybackContext): Promise<void> {
+    if (!this.sessionId || !this.analysisData) return;
+
+    try {
+      const positionSeconds = context.positionMs / 1000;
+      
+      // Find current section, segment, beat, bar, tatum
+      const currentSection = this.findCurrentTimeRange(this.analysisData.sections, positionSeconds);
+      const currentSegment = this.findCurrentTimeRange(this.analysisData.segments, positionSeconds);
+      const currentBeat = this.findCurrentTimeRange(this.analysisData.beats, positionSeconds);
+      const currentBar = this.findCurrentTimeRange(this.analysisData.bars, positionSeconds);
+      const currentTatum = this.findCurrentTimeRange(this.analysisData.tatums, positionSeconds);
+
+      const logEntry = {
+        session_id: this.sessionId,
+        track_id: context.trackId,
+        track_name: context.trackName,
+        artist_name: context.artistName,
+        playback_position_ms: context.positionMs,
+        
+        // Meta
+        analyzer_version: this.analysisData.meta.analyzer_version,
+        platform: this.analysisData.meta.platform,
+        detailed_status: this.analysisData.meta.detailed_status,
+        status_code: this.analysisData.meta.status_code,
+        analysis_timestamp: this.analysisData.meta.timestamp ? new Date(this.analysisData.meta.timestamp * 1000).toISOString() : null,
+        analysis_time: this.analysisData.meta.analysis_time,
+        input_process: this.analysisData.meta.input_process,
+        
+        // Track
+        num_samples: this.analysisData.track.num_samples,
+        duration: this.analysisData.track.duration,
+        sample_md5: this.analysisData.track.sample_md5,
+        offset_seconds: this.analysisData.track.offset_seconds,
+        window_seconds: this.analysisData.track.window_seconds,
+        analysis_sample_rate: this.analysisData.track.analysis_sample_rate,
+        analysis_channels: this.analysisData.track.analysis_channels,
+        end_of_fade_in: this.analysisData.track.end_of_fade_in,
+        start_of_fade_out: this.analysisData.track.start_of_fade_out,
+        track_loudness: this.analysisData.track.loudness,
+        track_tempo: this.analysisData.track.tempo,
+        tempo_confidence: this.analysisData.track.tempo_confidence,
+        time_signature: this.analysisData.track.time_signature,
+        time_signature_confidence: this.analysisData.track.time_signature_confidence,
+        track_key: this.analysisData.track.key,
+        key_confidence: this.analysisData.track.key_confidence,
+        track_mode: this.analysisData.track.mode,
+        mode_confidence: this.analysisData.track.mode_confidence,
+        
+        // Current section
+        current_section_start: currentSection?.start,
+        current_section_duration: currentSection?.duration,
+        current_section_confidence: currentSection?.confidence,
+        current_section_loudness: currentSection?.loudness,
+        current_section_tempo: currentSection?.tempo,
+        current_section_tempo_confidence: currentSection?.tempo_confidence,
+        current_section_key: currentSection?.key,
+        current_section_key_confidence: currentSection?.key_confidence,
+        current_section_mode: currentSection?.mode,
+        current_section_mode_confidence: currentSection?.mode_confidence,
+        current_section_time_signature: currentSection?.time_signature,
+        current_section_time_signature_confidence: currentSection?.time_signature_confidence,
+        
+        // Current segment
+        current_segment_start: currentSegment?.start,
+        current_segment_duration: currentSegment?.duration,
+        current_segment_confidence: currentSegment?.confidence,
+        current_segment_loudness_start: currentSegment?.loudness_start,
+        current_segment_loudness_max: currentSegment?.loudness_max,
+        current_segment_loudness_max_time: currentSegment?.loudness_max_time,
+        current_segment_loudness_end: currentSegment?.loudness_end,
+        current_segment_pitches: currentSegment?.pitches,
+        current_segment_timbre: currentSegment?.timbre,
+        
+        // Current beat/bar/tatum
+        current_beat_start: currentBeat?.start,
+        current_beat_duration: currentBeat?.duration,
+        current_beat_confidence: currentBeat?.confidence,
+        current_bar_start: currentBar?.start,
+        current_bar_duration: currentBar?.duration,
+        current_bar_confidence: currentBar?.confidence,
+        current_tatum_start: currentTatum?.start,
+        current_tatum_duration: currentTatum?.duration,
+        current_tatum_confidence: currentTatum?.confidence,
+        
+        // Fitness context
+        fitness_phase: context.fitnessPhase,
+        workout_intensity: context.workoutIntensity,
+        user_notes: context.userNotes
+      };
+
+      const { error } = await supabase
+        .from('spotify_analysis_logs')
+        .insert(logEntry);
+
+      if (error) {
+        console.error('Error logging analysis data:', error);
+      }
+    } catch (error) {
+      console.error('Error in logCurrentState:', error);
+    }
+  }
+
+  // Find the current time range item (section, segment, etc.) for a given position
+  private findCurrentTimeRange<T extends { start: number; duration: number }>(
+    items: T[], 
+    positionSeconds: number
+  ): T | undefined {
+    return items.find(item => 
+      positionSeconds >= item.start && 
+      positionSeconds < (item.start + item.duration)
+    );
+  }
+
+  // Update fitness context during playback
+  updateContext(context: Partial<PlaybackContext>): void {
+    // This could be used to update fitness phase, intensity, etc. during playback
+    console.log('Updated context:', context);
+  }
+
+  // Get current session ID
+  getCurrentSessionId(): string | null {
+    return this.sessionId;
+  }
+
+  // Check if currently logging
+  isCurrentlyLogging(): boolean {
+    return this.isLogging;
+  }
+}
+
+// Export singleton instance
+export const spotifyAnalysisLogger = new SpotifyAnalysisLogger();
