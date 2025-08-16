@@ -719,6 +719,44 @@ const MusicSync = () => {
             first_shown: false,
             second_shown: false
           });
+          
+          // Start Spotify analysis logging for the new track
+          if (isWorkoutActive && isSpotifyAuthenticated) {
+            const startTrackLogging = async () => {
+              try {
+                // Get audio analysis data from Spotify
+                const analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
+                if (analysisData) {
+                  // Store the analysis data
+                  await spotifyAnalysisLogger.storeTrackAnalysis(
+                    playbackState.item.id,
+                    playbackState.item.name,
+                    playbackState.item.artists.map(a => a.name).join(', '),
+                    analysisData
+                  );
+                  
+                  // Start logging with current playback context
+                  const context = {
+                    trackId: playbackState.item.id,
+                    trackName: playbackState.item.name,
+                    artistName: playbackState.item.artists.map(a => a.name).join(', '),
+                    positionMs: playbackState.progress_ms || 0,
+                    fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
+                    workoutIntensity: 7
+                  };
+                  
+                  spotifyAnalysisLogger.startTrackLogging(context);
+                  console.log('🎵 📊 Started analysis logging for:', playbackState.item.name);
+                } else {
+                  console.log('🎵 📊 No analysis data available for track');
+                }
+              } catch (error) {
+                console.error('🎵 📊 Error starting track logging:', error);
+              }
+            };
+            
+            startTrackLogging();
+          }
         }
         
         const trackProgressSeconds = playbackState.progress_ms / 1000;
@@ -1108,265 +1146,8 @@ const MusicSync = () => {
                       </p>
                     </div>
                     
-                    {/* Database Narrative Display - ALL phases */}
-                    {(() => {
-                      const narrative = getCurrentDatabaseNarrative();
-                      console.log('🎵 RENDER: Database narrative result:', narrative);
-                      return narrative && (
-                        <div className="bg-energy-gradient/20 rounded-lg p-3 border border-energy-primary/30">
-                          <div className="flex items-center gap-2">
-                            <span className="text-energy-primary text-sm font-semibold">🎵 Database Narrative:</span>
-                            <p className="text-primary text-sm font-medium">
-                              {narrative.text}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-                    
-                    {/* Spotify Debug Attributes Display */}
-                    {playbackState && playbackState.item && (
-                      <div className="bg-gray-100 rounded-lg p-4 border-2 border-gray-800 text-sm">
-                        <div className="text-gray-900 font-bold mb-3 text-base">🎧 Spotify Track Debug Info:</div>
-                        
-                        {/* DEBUG: Advanced Analysis Status */}
-                        <div className="col-span-2 bg-orange-100 p-2 rounded border mb-2">
-                          <div className="font-bold text-orange-800">🔍 Advanced Analysis Status:</div>
-                          <div><strong>Track ID:</strong> {playbackState.item.id}</div>
-                          <div><strong>Analysis Cached:</strong> {trackAnalysisCache.has(playbackState.item.id) ? 'YES ✅' : 'NO ❌'}</div>
-                          <div><strong>Analysis Data:</strong> {(() => {
-                            const analysis = trackAnalysisCache.get(playbackState.item.id);
-                            return analysis ? `${analysis.sections?.length || 0} sections, ${analysis.segments?.length || 0} segments` : 'None';
-                          })()}</div>
-                          <button 
-                            onClick={() => {
-                              console.log('🎵 MANUAL: Forcing advanced analysis...');
-                              const trackId = playbackState.item.id;
-                              advancedMusicAnalysis.analyzeTrackStructure(trackId).then(analysis => {
-                                if (analysis) {
-                                  setTrackAnalysisCache(prev => new Map(prev.set(trackId, analysis)));
-                                  console.log(`🎵 📊 MANUAL: Cached advanced analysis for ${playbackState.item.name}`);
-                                } else {
-                                  console.error('🎵 ❌ MANUAL: Failed to get advanced analysis');
-                                }
-                              }).catch(err => {
-                                console.error('🎵 ❌ MANUAL: Advanced analysis error:', err);
-                              });
-                            }}
-                            className="mt-1 px-2 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700"
-                          >
-                            🔍 Force Analyze This Track
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 text-gray-900 font-medium">
-                          <div><strong>Track:</strong> {playbackState.item.name}</div>
-                          <div><strong>Artist:</strong> {playbackState.item.artists.map(a => a.name).join(', ')}</div>
-                          <div><strong>Album:</strong> {playbackState.item.album.name}</div>
-                          <div><strong>Release Date:</strong> {playbackState.item.album.release_date}</div>
-                          <div><strong>Duration:</strong> {Math.round(playbackState.item.duration_ms/1000)}s ({Math.floor(playbackState.item.duration_ms/60000)}:{String(Math.floor((playbackState.item.duration_ms%60000)/1000)).padStart(2,'0')})</div>
-                          <div><strong>Progress:</strong> {Math.round(playbackState.progress_ms/1000)}s ({Math.floor(playbackState.progress_ms/60000)}:{String(Math.floor((playbackState.progress_ms%60000)/1000)).padStart(2,'0')})</div>
-                          <div><strong>Track Number:</strong> {playbackState.item.track_number} of {playbackState.item.album.total_tracks}</div>
-                          <div><strong>Disc Number:</strong> {playbackState.item.disc_number}</div>
-                          <div><strong>Popularity:</strong> {playbackState.item.popularity}/100</div>
-                          <div><strong>Markets:</strong> {playbackState.item.available_markets ? playbackState.item.available_markets.length + ' countries' : 'N/A'}</div>
-                          <div><strong>Explicit:</strong> {playbackState.item.explicit ? 'Yes' : 'No'}</div>
-                          <div><strong>Preview URL:</strong> {playbackState.item.preview_url ? 'Available' : 'None'}</div>
-                          <div><strong>Is Local:</strong> {playbackState.item.is_local ? 'Yes' : 'No'}</div>
-                          <div><strong>Is Playable:</strong> {playbackState.item.is_playable !== false ? 'Yes' : 'No'}</div>
-                          <div><strong>External IDs:</strong> {JSON.stringify(playbackState.item.external_ids || {})}</div>
-                          <div><strong>External URLs:</strong> {JSON.stringify(playbackState.item.external_urls || {})}</div>
-                          
-                          {/* Audio Features */}
-                          {(() => {
-                            const track = currentTrackPhase?.track || playbackState.item;
-                            const features = track?.audio_features;
-                            return features && (
-                              <>
-                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎵 Audio Features (All Attributes):</div>
-                                <div className="col-span-2 bg-red-100 p-2 rounded border"><strong className="text-red-800">🎯 BPM/Tempo:</strong> {Math.round(features.tempo)} BPM (Exact: {features.tempo.toFixed(3)})</div>
-                                <div><strong>Energy:</strong> {(features.energy * 100).toFixed(1)}% (Raw: {features.energy.toFixed(4)})</div>
-                                <div><strong>Danceability:</strong> {(features.danceability * 100).toFixed(1)}% (Raw: {features.danceability.toFixed(4)})</div>
-                                <div><strong>Valence (Mood):</strong> {(features.valence * 100).toFixed(1)}% (Raw: {features.valence.toFixed(4)})</div>
-                                <div><strong>Acousticness:</strong> {(features.acousticness * 100).toFixed(1)}% (Raw: {features.acousticness.toFixed(4)})</div>
-                                <div><strong>Instrumentalness:</strong> {(features.instrumentalness * 100).toFixed(1)}% (Raw: {features.instrumentalness.toFixed(4)})</div>
-                                <div><strong>Liveness:</strong> {(features.liveness * 100).toFixed(1)}% (Raw: {features.liveness.toFixed(4)})</div>
-                                <div><strong>Speechiness:</strong> {(features.speechiness * 100).toFixed(1)}% (Raw: {features.speechiness.toFixed(4)})</div>
-                                <div><strong>Loudness:</strong> {features.loudness.toFixed(2)} dB</div>
-                                <div><strong>Key:</strong> {features.key} = {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][features.key] || 'Unknown'}</div>
-                                <div><strong>Mode:</strong> {features.mode === 1 ? 'Major (1)' : 'Minor (0)'}</div>
-                                <div><strong>Time Signature:</strong> {features.time_signature}/4 time</div>
-                                <div><strong>Duration (ms):</strong> {features.duration_ms?.toLocaleString() || 'N/A'}</div>
-                                <div><strong>Audio Features URI:</strong> {features.uri || 'N/A'}</div>
-                                <div><strong>Track HREF:</strong> {features.track_href || 'N/A'}</div>
-                                <div><strong>Analysis URL:</strong> {features.analysis_url || 'N/A'}</div>
-                              </>
-                            );
-                          })()}
-                          
-                          {/* Advanced Analysis Cache */}
-                          {(() => {
-                            const track = currentTrackPhase?.track || playbackState.item;
-                            const cachedAnalysis = track?.id ? trackAnalysisCache.get(track.id) : null;
-                            return cachedAnalysis && (
-                              <>
-                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🔍 Advanced Analysis (All Structures):</div>
-                                <div><strong>Track Duration:</strong> {cachedAnalysis.track?.duration?.toFixed(2)}s</div>
-                                <div><strong>Track Sample Rate:</strong> {cachedAnalysis.track?.sample_rate || 'N/A'}</div>
-                                <div><strong>Track Analysis Sample Rate:</strong> {cachedAnalysis.track?.analysis_sample_rate || 'N/A'}</div>
-                                <div><strong>Track Analysis Channels:</strong> {cachedAnalysis.track?.analysis_channels || 'N/A'}</div>
-                                <div><strong>Track End of Fade In:</strong> {cachedAnalysis.track?.end_of_fade_in?.toFixed(2)}s</div>
-                                <div><strong>Track Start of Fade Out:</strong> {cachedAnalysis.track?.start_of_fade_out?.toFixed(2)}s</div>
-                                <div><strong>Sections:</strong> {cachedAnalysis.sections?.length || 0} musical sections</div>
-                                <div><strong>Segments:</strong> {cachedAnalysis.segments?.length || 0} audio segments</div>
-                                <div><strong>Bars:</strong> {cachedAnalysis.bars?.length || 0} musical bars</div>
-                                <div><strong>Beats:</strong> {cachedAnalysis.beats?.length || 0} beats detected</div>
-                                <div><strong>Tatums:</strong> {cachedAnalysis.tatums?.length || 0} smallest rhythmic units</div>
-                                <div className="col-span-2 bg-green-100 p-2 rounded border"><strong className="text-green-800">🎯 Chorus Start:</strong> {cachedAnalysis.chorusStart ? `${cachedAnalysis.chorusStart.toFixed(2)}s` : 'Not detected'}</div>
-                                
-                                {/* Current Section Info - CHORUS PREDICTION ATTRIBUTES */}
-                                <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎯 Advanced Chorus Prediction:</div>
-                                {cachedAnalysis && cachedAnalysis.sections ? (() => {
-                                  const currentTime = playbackState.progress_ms / 1000;
-                                  const currentSectionIndex = cachedAnalysis.sections.findIndex(s => 
-                                    currentTime >= s.start && currentTime < (s.start + s.duration)
-                                  );
-                                  const currentSection = cachedAnalysis.sections[currentSectionIndex];
-                                  const nextSection = cachedAnalysis.sections[currentSectionIndex + 1];
-                                  const prevSection = cachedAnalysis.sections[currentSectionIndex - 1];
-                                  
-                                  return currentSection && (
-                                    <>
-                                      <div className="col-span-2 text-gray-900 font-bold mt-3 text-base">🎯 Current Section (Chorus Prediction Data):</div>
-                                      <div><strong>Section #:</strong> {currentSectionIndex + 1} of {cachedAnalysis.sections.length}</div>
-                                      <div><strong>Time Range:</strong> {currentSection.start.toFixed(1)}s - {(currentSection.start + currentSection.duration).toFixed(1)}s</div>
-                                      <div><strong>Time Left in Section:</strong> {((currentSection.start + currentSection.duration) - currentTime).toFixed(1)}s</div>
-                                      <div><strong>Confidence:</strong> {(currentSection.confidence * 100).toFixed(1)}%</div>
-                                      
-                                      {/* KEY CHORUS INDICATORS */}
-                                      <div className="col-span-2 bg-yellow-100 p-2 rounded border mt-2">
-                                        <div className="font-bold text-yellow-800">🚨 CHORUS INDICATORS:</div>
-                                        <div><strong>Loudness:</strong> {currentSection.loudness.toFixed(2)} dB</div>
-                                        <div><strong>Tempo:</strong> {currentSection.tempo.toFixed(2)} BPM</div>
-                                        <div><strong>Tempo Confidence:</strong> {(currentSection.tempo_confidence * 100).toFixed(1)}%</div>
-                                        <div><strong>Key:</strong> {currentSection.key} = {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][currentSection.key] || 'Unknown'}</div>
-                                        <div><strong>Key Confidence:</strong> {(currentSection.key_confidence * 100).toFixed(1)}%</div>
-                                        <div><strong>Mode:</strong> {currentSection.mode === 1 ? 'Major' : 'Minor'} (Conf: {(currentSection.mode_confidence * 100).toFixed(1)}%)</div>
-                                        <div><strong>Time Signature:</strong> {currentSection.time_signature}/4 (Conf: {(currentSection.time_signature_confidence * 100).toFixed(1)}%)</div>
-                                      </div>
-
-                                      {/* SECTION COMPARISON - KEY FOR CHORUS PREDICTION */}
-                                      {(prevSection || nextSection) && (
-                                        <div className="col-span-2 bg-blue-100 p-2 rounded border mt-2">
-                                          <div className="font-bold text-blue-800">📊 SECTION CHANGES (Chorus Clues):</div>
-                                          {prevSection && (
-                                            <>
-                                              <div><strong>Loudness Change from Previous:</strong> {(currentSection.loudness - prevSection.loudness).toFixed(2)} dB {currentSection.loudness > prevSection.loudness ? '📈' : '📉'}</div>
-                                              <div><strong>Tempo Change from Previous:</strong> {(currentSection.tempo - prevSection.tempo).toFixed(2)} BPM {Math.abs(currentSection.tempo - prevSection.tempo) > 5 ? '⚠️' : '✓'}</div>
-                                              <div><strong>Key Change from Previous:</strong> {currentSection.key !== prevSection.key ? `Yes (${prevSection.key}→${currentSection.key}) 🎵` : 'No'}</div>
-                                            </>
-                                          )}
-                                          {nextSection && (
-                                            <>
-                                              <div className="mt-1"><strong>⏭️ NEXT SECTION Preview:</strong></div>
-                                              <div><strong>Next Starts In:</strong> {(nextSection.start - currentTime).toFixed(1)}s</div>
-                                              <div><strong>Next Loudness Will Be:</strong> {nextSection.loudness.toFixed(2)} dB ({(nextSection.loudness - currentSection.loudness).toFixed(2)} dB change)</div>
-                                              <div><strong>Next Tempo Will Be:</strong> {nextSection.tempo.toFixed(2)} BPM</div>
-                                              <div><strong>Next Key Will Be:</strong> {nextSection.key} {nextSection.key !== currentSection.key ? '🎵 KEY CHANGE!' : '(same)'}</div>
-                                            </>
-                                          )}
-                                        </div>
-                                      )}
-                                    </>
-                                  );
-                                })() : (
-                                  <div className="col-span-2 bg-red-100 p-2 rounded border">
-                                    <div className="font-bold text-red-800">❌ No Advanced Analysis Available</div>
-                                    <div className="text-sm">Click the "Force Analyze This Track" button above to load chorus prediction data.</div>
-                                  </div>
-                                )}
-                                
-                                {/* SEGMENT-LEVEL ANALYSIS - Most Granular Chorus Prediction */}
-                                {cachedAnalysis.segments && (() => {
-                                  const currentTime = playbackState.progress_ms / 1000;
-                                  const currentSegmentIndex = cachedAnalysis.segments.findIndex(s => 
-                                    currentTime >= s.start && currentTime < (s.start + s.duration)
-                                  );
-                                  const currentSegment = cachedAnalysis.segments[currentSegmentIndex];
-                                  const nextSegment = cachedAnalysis.segments[currentSegmentIndex + 1];
-                                  const prevSegment = cachedAnalysis.segments[currentSegmentIndex - 1];
-                                  
-                                  return currentSegment && (
-                                    <div className="col-span-2 bg-purple-100 p-2 rounded border mt-2">
-                                      <div className="font-bold text-purple-800">🔬 MICRO-LEVEL SEGMENT ANALYSIS (Most Precise):</div>
-                                      <div className="grid grid-cols-2 gap-2 text-xs">
-                                        <div><strong>Segment #:</strong> {currentSegmentIndex + 1} of {cachedAnalysis.segments.length}</div>
-                                        <div><strong>Segment Duration:</strong> {currentSegment.duration.toFixed(3)}s</div>
-                                        <div><strong>Loudness Start:</strong> {currentSegment.loudness_start?.toFixed(2)} dB</div>
-                                        <div><strong>Loudness Max:</strong> {currentSegment.loudness_max?.toFixed(2)} dB</div>
-                                        <div><strong>Loudness Max Time:</strong> {currentSegment.loudness_max_time?.toFixed(3)}s</div>
-                                        <div><strong>Loudness End:</strong> {currentSegment.loudness_end?.toFixed(2)} dB</div>
-                                        <div><strong>Loudness Range:</strong> {((currentSegment.loudness_max || 0) - (currentSegment.loudness_start || 0)).toFixed(2)} dB</div>
-                                        <div><strong>Confidence:</strong> {(currentSegment.confidence * 100).toFixed(1)}%</div>
-                                        
-                                        {nextSegment && (
-                                          <>
-                                            <div className="col-span-2 mt-1 font-semibold">⏭️ NEXT SEGMENT (in {(nextSegment.start - currentTime).toFixed(2)}s):</div>
-                                            <div><strong>Next Loudness Start:</strong> {nextSegment.loudness_start?.toFixed(2)} dB</div>
-                                            <div><strong>Loudness Jump:</strong> {((nextSegment.loudness_start || 0) - (currentSegment.loudness_end || 0)).toFixed(2)} dB {Math.abs((nextSegment.loudness_start || 0) - (currentSegment.loudness_end || 0)) > 3 ? '🚨 BIG JUMP!' : ''}</div>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })()}
-
-                                {/* All Sections Breakdown */}
-                                {cachedAnalysis.sections && (
-                                  <div className="col-span-2 mt-2">
-                                    <div className="text-gray-900 font-bold mb-2 text-base">All Sections (for Chorus Analysis):</div>
-                                    <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
-                                      {cachedAnalysis.sections.map((section, i) => {
-                                        const isCurrentSection = playbackState.progress_ms / 1000 >= section.start && 
-                                                               playbackState.progress_ms / 1000 < (section.start + section.duration);
-                                        const isLoud = section.loudness > -10;
-                                        const hasEnergyJump = i > 0 && (section.loudness - cachedAnalysis.sections[i-1].loudness) > 3;
-                                        const tempoChange = i > 0 ? Math.abs(section.tempo - cachedAnalysis.sections[i-1].tempo) : 0;
-                                        const keyChange = i > 0 && section.key !== cachedAnalysis.sections[i-1].key;
-                                        
-                                        return (
-                                          <div key={i} className={`p-2 rounded border ${isCurrentSection ? 'bg-yellow-200 border-yellow-600' : 'bg-white border-gray-400'}`}>
-                                            <div className="flex justify-between items-center">
-                                              <span className="font-bold text-gray-900">#{i+1}: {section.start.toFixed(1)}s - {(section.start + section.duration).toFixed(1)}s</span>
-                                              <div className="flex gap-1">
-                                                {isLoud && <span className="px-1 bg-red-500/30 rounded text-xs">LOUD</span>}
-                                                {hasEnergyJump && <span className="px-1 bg-orange-500/30 rounded text-xs">ENERGY↑</span>}
-                                                {tempoChange > 5 && <span className="px-1 bg-purple-500/30 rounded text-xs">TEMPO Δ</span>}
-                                                {keyChange && <span className="px-1 bg-green-500/30 rounded text-xs">KEY CHANGE</span>}
-                                                {section.confidence > 0.8 && <span className="px-1 bg-blue-500/30 rounded text-xs">HIGH CONF</span>}
-                                              </div>
-                                            </div>
-                                            <div className="text-sm text-gray-800 font-medium">
-                                              {section.loudness.toFixed(1)}dB • {section.tempo.toFixed(1)}BPM • 
-                                              {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][section.key] || section.key} {section.mode === 1 ? 'Maj' : 'Min'} • 
-                                              {(section.confidence * 100).toFixed(0)}%
-                                            </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Enhanced Music Player */}
-                <div className="bg-burgundy-dark/30 rounded-lg p-5 border border-cream/30">
+                    {/* Enhanced Music Player */}
+                    <div className="bg-burgundy-dark/30 rounded-lg p-5 border border-cream/30">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 bg-energy-gradient rounded-full flex items-center justify-center animate-pulse ${isPlaying ? 'shadow-glow' : ''}`}>
@@ -1449,6 +1230,8 @@ const MusicSync = () => {
                       ></div>
                     ))}
                   </div>
+                </div>
+                </div>
                 </div>
 
                 {/* Phase Navigation */}
