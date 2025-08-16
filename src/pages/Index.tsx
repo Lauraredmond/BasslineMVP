@@ -57,7 +57,7 @@ const Index = () => {
           <Button 
             onClick={() => navigate('/plan-creator')}
             variant="outline"
-            className="w-full h-14 text-lg font-semibold"
+            className="w-full h-14 text-lg font-semibold border-2 border-cream bg-transparent text-cream hover:!bg-cream hover:!text-maroon hover:!border-cream"
           >
             Create a new plan
           </Button>
@@ -65,7 +65,7 @@ const Index = () => {
           <Button 
             onClick={() => navigate('/format-selection')}
             variant="outline"
-            className="w-full h-14 text-lg border-cream/70 text-cream/80 font-medium"
+            className="w-full h-14 text-lg border-2 border-cream/70 bg-transparent text-cream/80 font-medium hover:!bg-cream hover:!text-maroon hover:!border-cream"
           >
             No plan? Take me to format selection
           </Button>
