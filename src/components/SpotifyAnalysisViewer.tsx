@@ -306,7 +306,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         </TabsContent>
 
         <TabsContent value="live" className="space-y-4">
-          <Card className="bg-card-texture border-cream/20">
+          <Card className="bg-burgundy-dark/30 border-cream/20">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -336,7 +336,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-cream">
                             <div>
                               <p className="text-green-400 font-semibold">{log.track_name}</p>
-                              <p className="text-cream/80 text-xs">{formatTime(log.playback_position_ms)}</p>
+                              <p className="text-cream/90 text-xs">{formatTime(log.playback_position_ms)}</p>
                             </div>
                             <div>
                               <p className="text-cream">Tempo: <span className="text-yellow-400">{log.track_tempo?.toFixed(1)} BPM</span></p>
@@ -347,7 +347,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               <p className="text-cream">Phase: <span className="text-purple-400">{log.fitness_phase || 'N/A'}</span></p>
                             </div>
                             <div className="text-right text-cream">
-                              <p className="text-cream/70 text-xs">
+                              <p className="text-cream/90 text-xs">
                                 {new Date(log.created_at || log.timestamp || Date.now()).toLocaleTimeString()}
                               </p>
                               <Badge variant="outline" className="text-xs text-green-400 border-green-400">
@@ -367,7 +367,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                           : 'Click "Start Live Monitor" to view real-time analysis data'
                         }
                       </p>
-                      <p className="text-sm text-cream/70 mt-2">
+                      <p className="text-sm text-cream/90 mt-2">
                         Start a workout with Spotify playback to see live attribute values
                       </p>
                     </div>
@@ -379,7 +379,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         </TabsContent>
 
         <TabsContent value="sessions" className="space-y-4">
-          <Card className="bg-card-texture border-cream/20">
+          <Card className="bg-burgundy-dark/30 border-cream/20">
             <CardHeader>
               <CardTitle className="text-cream">Playback Sessions</CardTitle>
               <CardDescription className="text-cream/90">
@@ -403,7 +403,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               {new Date(session.start_time).toLocaleString()}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant="secondary" className="text-xs text-cream bg-burgundy border-cream/50">
                                 {session.workout_type}
                               </Badge>
                               <Badge variant="outline" className="text-xs text-cream border-cream/50">
@@ -448,7 +448,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
             </div>
           )}
 
-          <Card className="bg-card-texture border-cream/20">
+          <Card className="bg-burgundy-dark/30 border-cream/20">
             <CardContent className="p-0">
               <ScrollArea className="h-96">
                 <div className="p-4">
