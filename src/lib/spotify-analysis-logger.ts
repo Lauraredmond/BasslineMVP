@@ -292,7 +292,10 @@ class SpotifyAnalysisLogger {
         // Fitness context
         fitness_phase: context.fitnessPhase,
         workout_intensity: context.workoutIntensity,
-        user_notes: context.userNotes
+        user_notes: context.userNotes,
+        
+        // Timestamp for proper ordering
+        timestamp: new Date().toISOString()
       };
 
       const { error } = await supabase

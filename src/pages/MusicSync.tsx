@@ -15,6 +15,7 @@ import { narrativeEngine } from "@/lib/narrative-engine";
 import { dbAdmin } from "@/lib/database-admin";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
+import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
@@ -60,6 +61,10 @@ const MusicSync = () => {
   
   // Workout start timestamp for fallback timing
   const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(null);
+  
+  // Research lab integration
+  const [showResearchLab, setShowResearchLab] = useState(false);
+  const [isAnalysisLogging, setIsAnalysisLogging] = useState(false);
 
   const handleBack = () => {
     navigate(-1);
@@ -288,6 +293,7 @@ const MusicSync = () => {
       
       // Auto-start analysis logging session
       await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
+      setIsAnalysisLogging(true);
       
       setIsWorkoutActive(true);
       setCurrentPhase(0);
@@ -337,6 +343,7 @@ const MusicSync = () => {
         if (playbackStarted) {
           // Auto-start analysis logging session
           await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'spotify');
+          setIsAnalysisLogging(true);
           
           setCurrentTrackPhase(plan.phases[0]);
           setIsWorkoutActive(true);
@@ -604,6 +611,7 @@ const MusicSync = () => {
     
     // Auto-end analysis logging session
     await spotifyAnalysisLogger.endWorkoutSession();
+    setIsAnalysisLogging(false);
     
     setShowWorkoutCompleteModal(false);
     setIsWorkoutActive(false);
@@ -613,6 +621,7 @@ const MusicSync = () => {
   const handleCloseModal = async () => {
     // Auto-end analysis logging session
     await spotifyAnalysisLogger.endWorkoutSession();
+    setIsAnalysisLogging(false);
     
     setShowWorkoutCompleteModal(false);
     setIsWorkoutActive(false);
@@ -1628,6 +1637,46 @@ const MusicSync = () => {
       </Dialog>
 
       <BottomNavigation />
+      
+      {/* Research Lab Toggle */}
+      {isAnalysisLogging && (
+        <div className="fixed bottom-20 right-4 z-50">
+          <Button
+            onClick={() => setShowResearchLab(!showResearchLab)}
+            className={showResearchLab 
+              ? "bg-red-600 hover:bg-red-700 text-white shadow-lg" 
+              : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
+            }
+            size="sm"
+          >
+            {showResearchLab ? '🔬 Hide Lab' : '🔬 Research Lab'}
+          </Button>
+        </div>
+      )}
+      
+      {/* Research Lab Overlay */}
+      {showResearchLab && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setShowResearchLab(false)}>
+          <div className="fixed inset-4 bg-premium-texture rounded-lg shadow-2xl z-50 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="h-full flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-cream/20">
+                <h2 className="text-xl font-bold text-cream">Live Research Lab</h2>
+                <Button
+                  onClick={() => setShowResearchLab(false)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-cream hover:bg-cream/20"
+                >
+                  ✕
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <SpotifyAnalysisViewer autoStart={true} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

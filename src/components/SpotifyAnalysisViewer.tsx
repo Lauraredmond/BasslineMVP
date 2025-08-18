@@ -63,7 +63,11 @@ interface PlaybackSession {
   log_count: number;
 }
 
-export const SpotifyAnalysisViewer: React.FC = () => {
+interface SpotifyAnalysisViewerProps {
+  autoStart?: boolean;
+}
+
+export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ autoStart = false }) => {
   const [sessions, setSessions] = useState<PlaybackSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [analysisLogs, setAnalysisLogs] = useState<AnalysisLog[]>([]);
@@ -193,8 +197,8 @@ export const SpotifyAnalysisViewer: React.FC = () => {
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
-          .gte('timestamp', new Date(Date.now() - 300000).toISOString()) // Last 5 minutes
-          .order('timestamp', { ascending: false })
+          .gte('created_at', new Date(Date.now() - 300000).toISOString()) // Last 5 minutes
+          .order('created_at', { ascending: false })
           .limit(20);
 
         if (error) throw error;
@@ -219,7 +223,21 @@ export const SpotifyAnalysisViewer: React.FC = () => {
 
   useEffect(() => {
     loadSessions();
-  }, []);
+    
+    // Auto-start live monitoring if requested
+    if (autoStart && !isMonitoring) {
+      startLiveMonitoring();
+    }
+  }, [autoStart]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (monitorInterval) {
+        clearInterval(monitorInterval);
+      }
+    };
+  }, [monitorInterval]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
@@ -295,7 +313,7 @@ export const SpotifyAnalysisViewer: React.FC = () => {
                             </div>
                             <div className="text-right">
                               <p className="text-cream/70 text-xs">
-                                {new Date(log.timestamp).toLocaleTimeString()}
+                                {new Date(log.created_at || log.timestamp || Date.now()).toLocaleTimeString()}
                               </p>
                               <Badge variant="outline" className="text-xs text-green-400 border-green-400">
                                 LIVE
