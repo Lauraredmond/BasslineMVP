@@ -522,18 +522,18 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         </TabsContent>
 
         <TabsContent value="patterns" className="space-y-4">
-          <Card className="bg-card-texture border-cream/20">
+          <Card className="bg-burgundy-dark/30 border-cream/20">
             <CardHeader>
-              <CardTitle className="text-cream">Pattern Analysis</CardTitle>
-              <CardDescription className="text-cream/90">
+              <CardTitle className="text-cream font-bold">Pattern Analysis</CardTitle>
+              <CardDescription className="text-cream">
                 Study correlations between audio attributes and fitness phases
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-cream/80">
+              <div className="text-center py-8">
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
-                <p className="text-cream">Pattern analysis coming soon</p>
-                <p className="text-sm text-cream/90">Will include tempo/loudness trends, key changes, and fitness phase correlations</p>
+                <p className="text-cream text-lg font-medium">Pattern analysis coming soon</p>
+                <p className="text-cream/90 mt-2">Will include tempo/loudness trends, key changes, and fitness phase correlations</p>
               </div>
             </CardContent>
           </Card>
