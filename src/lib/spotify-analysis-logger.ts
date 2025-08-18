@@ -206,7 +206,9 @@ class SpotifyAnalysisLogger {
     if (!this.sessionId || !this.analysisData) return;
 
     try {
-      const positionSeconds = context.positionMs / 1000;
+      // Use updated position if available, otherwise use context position
+      const currentPositionMs = this.currentPlaybackPosition > 0 ? this.currentPlaybackPosition : context.positionMs;
+      const positionSeconds = currentPositionMs / 1000;
       
       // Find current section, segment, beat, bar, tatum
       const currentSection = this.findCurrentTimeRange(this.analysisData.sections, positionSeconds);
@@ -220,7 +222,7 @@ class SpotifyAnalysisLogger {
         track_id: context.trackId,
         track_name: context.trackName,
         artist_name: context.artistName,
-        playback_position_ms: context.positionMs,
+        playback_position_ms: currentPositionMs,
         
         // Meta
         analyzer_version: this.analysisData.meta.analyzer_version,
@@ -396,9 +398,11 @@ class SpotifyAnalysisLogger {
 
   // Update playback position (called by music player)
   updatePlaybackPosition(positionMs: number): void {
-    // This would update the position for the next log entry
-    // The actual logging happens in the interval in logCurrentState
+    // Update the position for the next log entry - store current position
+    this.currentPlaybackPosition = positionMs;
   }
+  
+  private currentPlaybackPosition = 0;
 }
 
 // Export singleton instance
