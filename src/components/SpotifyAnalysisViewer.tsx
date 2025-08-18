@@ -69,6 +69,9 @@ export const SpotifyAnalysisViewer: React.FC = () => {
   const [analysisLogs, setAnalysisLogs] = useState<AnalysisLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('demo');
+  const [liveData, setLiveData] = useState<AnalysisLog[]>([]);
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [monitorInterval, setMonitorInterval] = useState<number | null>(null);
 
   // Load all sessions
   const loadSessions = async () => {
@@ -179,6 +182,41 @@ export const SpotifyAnalysisViewer: React.FC = () => {
     return `${keys[key] || 'Unknown'} ${modes[mode] || 'unknown'}`;
   };
 
+  // Monitor for live data
+  const startLiveMonitoring = async () => {
+    setIsMonitoring(true);
+    setActiveTab('live');
+    
+    // Poll for recent data every 2 seconds
+    const pollInterval = window.setInterval(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('spotify_analysis_logs')
+          .select('*')
+          .gte('timestamp', new Date(Date.now() - 300000).toISOString()) // Last 5 minutes
+          .order('timestamp', { ascending: false })
+          .limit(20);
+
+        if (error) throw error;
+        
+        setLiveData(data || []);
+      } catch (error) {
+        console.error('Error fetching live data:', error);
+      }
+    }, 2000);
+
+    setMonitorInterval(pollInterval);
+  };
+
+  const stopLiveMonitoring = () => {
+    setIsMonitoring(false);
+    setLiveData([]);
+    if (monitorInterval) {
+      clearInterval(monitorInterval);
+      setMonitorInterval(null);
+    }
+  };
+
   useEffect(() => {
     loadSessions();
   }, []);
@@ -187,8 +225,8 @@ export const SpotifyAnalysisViewer: React.FC = () => {
     <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-maroon">Spotify Analysis Research Lab</h1>
-          <p className="text-maroon/80">Study audio analysis patterns for fitness narrative mapping</p>
+          <h1 className="text-3xl font-bold text-cream">Spotify Analysis Research Lab</h1>
+          <p className="text-cream/90">Study audio analysis patterns for fitness narrative mapping</p>
         </div>
         <Button
           onClick={loadSessions}
@@ -202,8 +240,9 @@ export const SpotifyAnalysisViewer: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
           <TabsTrigger value="demo">Demo Logger</TabsTrigger>
+          <TabsTrigger value="live">Live Data</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
           <TabsTrigger value="data">Analysis Data</TabsTrigger>
           <TabsTrigger value="patterns">Patterns</TabsTrigger>
@@ -213,11 +252,84 @@ export const SpotifyAnalysisViewer: React.FC = () => {
           <SpotifyAnalysisLoggerDemo />
         </TabsContent>
 
+        <TabsContent value="live" className="space-y-4">
+          <Card className="bg-card-texture border-cream/20">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-cream">Live Analysis Stream</CardTitle>
+                  <CardDescription className="text-cream/90">
+                    Real-time Spotify attribute logging during workout playback
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={isMonitoring ? stopLiveMonitoring : startLiveMonitoring}
+                  className={isMonitoring 
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-green-600 hover:bg-green-700 text-white"
+                  }
+                >
+                  {isMonitoring ? 'Stop Monitoring' : 'Start Live Monitor'}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-96">
+                <div className="space-y-3">
+                  {liveData.length > 0 ? (
+                    liveData.map((log, index) => (
+                      <Card key={log.id} className="border-green-500/30 bg-green-950/20">
+                        <CardContent className="p-3">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div>
+                              <p className="text-green-400 font-semibold">{log.track_name}</p>
+                              <p className="text-cream/80 text-xs">{formatTime(log.playback_position_ms)}</p>
+                            </div>
+                            <div>
+                              <p className="text-cream">Tempo: <span className="text-yellow-400">{log.track_tempo?.toFixed(1)} BPM</span></p>
+                              <p className="text-cream">Key: <span className="text-blue-400">{formatKey(log.track_key, log.track_mode)}</span></p>
+                            </div>
+                            <div>
+                              <p className="text-cream">Loudness: <span className="text-red-400">{log.current_section_loudness?.toFixed(1)} dB</span></p>
+                              <p className="text-cream">Phase: <span className="text-purple-400">{log.fitness_phase || 'N/A'}</span></p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-cream/70 text-xs">
+                                {new Date(log.timestamp).toLocaleTimeString()}
+                              </p>
+                              <Badge variant="outline" className="text-xs text-green-400 border-green-400">
+                                LIVE
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-cream/80">
+                      <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
+                      <p>
+                        {isMonitoring 
+                          ? 'Waiting for live analysis data...'
+                          : 'Click "Start Live Monitor" to view real-time analysis data'
+                        }
+                      </p>
+                      <p className="text-sm text-cream/70 mt-2">
+                        Start a workout with Spotify playback to see live attribute values
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="sessions" className="space-y-4">
           <Card className="bg-card-texture border-cream/20">
             <CardHeader>
-              <CardTitle className="text-maroon">Playback Sessions</CardTitle>
-              <CardDescription className="text-maroon/80">
+              <CardTitle className="text-cream">Playback Sessions</CardTitle>
+              <CardDescription className="text-cream/90">
                 Click a session to view its detailed analysis data
               </CardDescription>
             </CardHeader>
@@ -233,15 +345,15 @@ export const SpotifyAnalysisViewer: React.FC = () => {
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="font-semibold text-maroon">{session.session_name}</h3>
-                            <p className="text-sm text-maroon/80">
+                            <h3 className="font-semibold text-cream">{session.session_name}</h3>
+                            <p className="text-sm text-cream/90">
                               {new Date(session.start_time).toLocaleString()}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                               <Badge variant="secondary" className="text-xs">
                                 {session.workout_type}
                               </Badge>
-                              <Badge variant="outline" className="text-xs text-maroon border-maroon/50">
+                              <Badge variant="outline" className="text-xs text-cream border-cream/50">
                                 {session.log_count} data points
                               </Badge>
                             </div>
@@ -251,8 +363,8 @@ export const SpotifyAnalysisViewer: React.FC = () => {
                     </Card>
                   ))}
                   {sessions.length === 0 && !loading && (
-                    <div className="text-center py-8 text-maroon/70">
-                      <AlertCircle className="w-12 h-12 mx-auto mb-4 text-maroon/50" />
+                    <div className="text-center py-8 text-cream/80">
+                      <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
                       <p>No analysis sessions recorded yet</p>
                       <p className="text-sm">Start playing music with analysis logging enabled</p>
                     </div>
@@ -266,7 +378,7 @@ export const SpotifyAnalysisViewer: React.FC = () => {
         <TabsContent value="data" className="space-y-4">
           {selectedSession && (
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-maroon">
+              <h2 className="text-xl font-semibold text-cream">
                 Analysis Data ({analysisLogs.length} entries)
               </h2>
               <div className="flex gap-2">
@@ -294,50 +406,50 @@ export const SpotifyAnalysisViewer: React.FC = () => {
                           <CardContent className="p-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Track Info</h4>
-                                <p className="text-maroon/90">{log.track_name}</p>
-                                <p className="text-maroon/70">{log.artist_name}</p>
-                                <p className="text-maroon/70">Position: {formatTime(log.playback_position_ms)}</p>
+                                <h4 className="font-semibold text-cream mb-2">Track Info</h4>
+                                <p className="text-cream">{log.track_name}</p>
+                                <p className="text-cream/90">{log.artist_name}</p>
+                                <p className="text-cream/90">Position: {formatTime(log.playback_position_ms)}</p>
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Musical Attributes</h4>
-                                <p className="text-maroon/90">Tempo: {log.track_tempo?.toFixed(1)} BPM</p>
-                                <p className="text-maroon/90">Key: {formatKey(log.track_key, log.track_mode)}</p>
-                                <p className="text-maroon/90">Time Sig: {log.time_signature}/4</p>
-                                <p className="text-maroon/90">Loudness: {log.track_loudness?.toFixed(1)} dB</p>
+                                <h4 className="font-semibold text-cream mb-2">Musical Attributes</h4>
+                                <p className="text-cream">Tempo: {log.track_tempo?.toFixed(1)} BPM</p>
+                                <p className="text-cream">Key: {formatKey(log.track_key, log.track_mode)}</p>
+                                <p className="text-cream">Time Sig: {log.time_signature}/4</p>
+                                <p className="text-cream">Loudness: {log.track_loudness?.toFixed(1)} dB</p>
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Current Section</h4>
-                                <p className="text-maroon/90">Tempo: {log.current_section_tempo?.toFixed(1)} BPM</p>
-                                <p className="text-maroon/90">Loudness: {log.current_section_loudness?.toFixed(1)} dB</p>
-                                <p className="text-maroon/90">Confidence: {(log.current_section_confidence * 100)?.toFixed(1)}%</p>
+                                <h4 className="font-semibold text-cream mb-2">Current Section</h4>
+                                <p className="text-cream">Tempo: {log.current_section_tempo?.toFixed(1)} BPM</p>
+                                <p className="text-cream">Loudness: {log.current_section_loudness?.toFixed(1)} dB</p>
+                                <p className="text-cream">Confidence: {(log.current_section_confidence * 100)?.toFixed(1)}%</p>
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Current Segment</h4>
-                                <p className="text-maroon/90">Max Loudness: {log.current_segment_loudness_max?.toFixed(1)} dB</p>
-                                <p className="text-maroon/90">Confidence: {(log.current_segment_confidence * 100)?.toFixed(1)}%</p>
+                                <h4 className="font-semibold text-cream mb-2">Current Segment</h4>
+                                <p className="text-cream">Max Loudness: {log.current_segment_loudness_max?.toFixed(1)} dB</p>
+                                <p className="text-cream">Confidence: {(log.current_segment_confidence * 100)?.toFixed(1)}%</p>
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Fitness Context</h4>
-                                <p className="text-maroon/90">Phase: {log.fitness_phase || 'Not set'}</p>
-                                <p className="text-maroon/90">Intensity: {log.workout_intensity || 'Not set'}</p>
+                                <h4 className="font-semibold text-cream mb-2">Fitness Context</h4>
+                                <p className="text-cream">Phase: {log.fitness_phase || 'Not set'}</p>
+                                <p className="text-cream">Intensity: {log.workout_intensity || 'Not set'}</p>
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-maroon mb-2">Timing</h4>
-                                <p className="text-maroon/90">Beat Confidence: {(log.current_beat_confidence * 100)?.toFixed(1)}%</p>
-                                <p className="text-maroon/90">Bar Confidence: {(log.current_bar_confidence * 100)?.toFixed(1)}%</p>
+                                <h4 className="font-semibold text-cream mb-2">Timing</h4>
+                                <p className="text-cream">Beat Confidence: {(log.current_beat_confidence * 100)?.toFixed(1)}%</p>
+                                <p className="text-cream">Bar Confidence: {(log.current_bar_confidence * 100)?.toFixed(1)}%</p>
                               </div>
                             </div>
                             
                             {log.user_notes && (
                               <div className="mt-4 p-3 bg-burgundy-dark/20 rounded-lg">
-                                <h4 className="font-semibold text-maroon mb-1">Notes</h4>
-                                <p className="text-maroon/90 text-sm">{log.user_notes}</p>
+                                <h4 className="font-semibold text-cream mb-1">Notes</h4>
+                                <p className="text-cream text-sm">{log.user_notes}</p>
                               </div>
                             )}
                           </CardContent>
@@ -345,8 +457,8 @@ export const SpotifyAnalysisViewer: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-maroon/70">
-                      <Filter className="w-12 h-12 mx-auto mb-4 text-maroon/50" />
+                    <div className="text-center py-8 text-cream/80">
+                      <Filter className="w-12 h-12 mx-auto mb-4 text-cream/60" />
                       <p>Select a session to view analysis data</p>
                     </div>
                   )}
@@ -359,14 +471,14 @@ export const SpotifyAnalysisViewer: React.FC = () => {
         <TabsContent value="patterns" className="space-y-4">
           <Card className="bg-card-texture border-cream/20">
             <CardHeader>
-              <CardTitle className="text-maroon">Pattern Analysis</CardTitle>
-              <CardDescription className="text-maroon/80">
+              <CardTitle className="text-cream">Pattern Analysis</CardTitle>
+              <CardDescription className="text-cream/90">
                 Study correlations between audio attributes and fitness phases
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-maroon/70">
-                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-maroon/50" />
+              <div className="text-center py-8 text-cream/80">
+                <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
                 <p>Pattern analysis coming soon</p>
                 <p className="text-sm">Will include tempo/loudness trends, key changes, and fitness phase correlations</p>
               </div>
