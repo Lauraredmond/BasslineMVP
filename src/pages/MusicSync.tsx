@@ -342,8 +342,10 @@ const MusicSync = () => {
         
         if (playbackStarted) {
           // Auto-start analysis logging session
+          console.log('🏋️ STARTING WORKOUT SESSION for analysis logging...');
           await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'spotify');
           setIsAnalysisLogging(true);
+          console.log('✅ Analysis logging session started, isAnalysisLogging set to true');
           
           setCurrentTrackPhase(plan.phases[0]);
           setIsWorkoutActive(true);
@@ -685,6 +687,13 @@ const MusicSync = () => {
         
         // Reset narrative states when track changes
         if (currentTrackId !== playbackState.item.id) {
+          console.log('🎵 TRACK CHANGE DETECTED!');
+          console.log('  - Previous track ID:', currentTrackId);
+          console.log('  - New track ID:', playbackState.item.id);
+          console.log('  - New track name:', playbackState.item.name);
+          console.log('  - Is workout active?:', isWorkoutActive);
+          console.log('  - Is Spotify authenticated?:', isSpotifyAuthenticated);
+          
           setCurrentTrackId(playbackState.item.id);
           setNarrativeStates({
             first_shown: false,
@@ -693,6 +702,7 @@ const MusicSync = () => {
           
           // Start Spotify analysis logging for the new track
           if (isWorkoutActive && isSpotifyAuthenticated) {
+            console.log('✅ CONDITIONS MET - Starting track logging...');
             const startTrackLogging = async () => {
               try {
                 console.log('🎵 📊 Starting analysis logging for:', playbackState.item.name);

@@ -261,7 +261,10 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     console.log('🔍 SpotifyAnalysisViewer mounted - autoStart:', autoStart, 'isMonitoring:', isMonitoring);
     if (autoStart && !isMonitoring) {
       console.log('✅ Auto-starting live monitoring...');
-      startLiveMonitoring();
+      setTimeout(() => {
+        startLiveMonitoring();
+        console.log('🔄 Live monitoring should now be active');
+      }, 1000); // Give component time to fully mount
     }
   }, [autoStart]);
   
