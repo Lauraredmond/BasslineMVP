@@ -194,6 +194,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     // Poll for recent data every 2 seconds
     const pollInterval = window.setInterval(async () => {
       try {
+        console.log('🔍 Polling for live data...');
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
@@ -201,11 +202,19 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
           .order('created_at', { ascending: false })
           .limit(20);
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Database query error:', error);
+          throw error;
+        }
+        
+        console.log('📊 Found', data?.length || 0, 'recent analysis logs');
+        if (data && data.length > 0) {
+          console.log('🎵 Latest log:', data[0]);
+        }
         
         setLiveData(data || []);
       } catch (error) {
-        console.error('Error fetching live data:', error);
+        console.error('❌ Error fetching live data:', error);
       }
     }, 2000);
 
@@ -383,8 +392,8 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                   {sessions.length === 0 && !loading && (
                     <div className="text-center py-8 text-cream/80">
                       <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
-                      <p>No analysis sessions recorded yet</p>
-                      <p className="text-sm">Start playing music with analysis logging enabled</p>
+                      <p className="text-cream">No analysis sessions recorded yet</p>
+                      <p className="text-sm text-cream/90">Start playing music with analysis logging enabled</p>
                     </div>
                   )}
                 </div>
@@ -477,7 +486,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                   ) : (
                     <div className="text-center py-8 text-cream/80">
                       <Filter className="w-12 h-12 mx-auto mb-4 text-cream/60" />
-                      <p>Select a session to view analysis data</p>
+                      <p className="text-cream">Select a session to view analysis data</p>
                     </div>
                   )}
                 </div>
@@ -497,8 +506,8 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
             <CardContent>
               <div className="text-center py-8 text-cream/80">
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
-                <p>Pattern analysis coming soon</p>
-                <p className="text-sm">Will include tempo/loudness trends, key changes, and fitness phase correlations</p>
+                <p className="text-cream">Pattern analysis coming soon</p>
+                <p className="text-sm text-cream/90">Will include tempo/loudness trends, key changes, and fitness phase correlations</p>
               </div>
             </CardContent>
           </Card>

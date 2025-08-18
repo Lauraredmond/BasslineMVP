@@ -150,11 +150,20 @@ class SpotifyAnalysisLogger {
 
   // Start logging for a specific track
   startTrackLogging(context: PlaybackContext): void {
-    if (!this.sessionId || !this.analysisData) {
-      console.error('Cannot start logging: no session or analysis data');
+    if (!this.sessionId) {
+      console.error('❌ Cannot start logging: no session ID');
+      return;
+    }
+    
+    if (!this.analysisData) {
+      console.error('❌ Cannot start logging: no analysis data');
       return;
     }
 
+    console.log('🎵 Starting track logging for:', context.trackName);
+    console.log('📊 Analysis data available:', !!this.analysisData);
+    console.log('🔗 Session ID:', this.sessionId);
+    
     this.isLogging = true;
     
     // Log immediately
@@ -167,7 +176,7 @@ class SpotifyAnalysisLogger {
       }
     }, this.LOG_INTERVAL_MS);
 
-    console.log('Started track logging for:', context.trackName);
+    console.log('✅ Track logging started with', this.LOG_INTERVAL_MS, 'ms interval');
   }
 
   // Stop logging
@@ -298,12 +307,16 @@ class SpotifyAnalysisLogger {
         timestamp: new Date().toISOString()
       };
 
+      console.log('📝 Logging analysis entry for:', context.trackName, 'at position', currentPositionMs, 'ms');
+      
       const { error } = await supabase
         .from('spotify_analysis_logs')
         .insert(logEntry);
 
       if (error) {
-        console.error('Error logging analysis data:', error);
+        console.error('❌ Error logging analysis data:', error);
+      } else {
+        console.log('✅ Successfully logged analysis data to database');
       }
     } catch (error) {
       console.error('Error in logCurrentState:', error);
