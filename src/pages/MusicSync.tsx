@@ -1071,6 +1071,18 @@ const MusicSync = () => {
                     )}
                   </div>
                   <div className="space-y-3">
+                    {/* Database Narrative Display */}
+                    {(() => {
+                      const dbNarrative = getCurrentDatabaseNarrative();
+                      return dbNarrative ? (
+                        <div className="bg-cream/20 rounded-lg p-4 border border-cream/30 min-h-[60px] flex items-center justify-center">
+                          <p className="text-primary font-medium text-center leading-relaxed">
+                            {dbNarrative.text}
+                          </p>
+                        </div>
+                      ) : null;
+                    })()}
+                    
                     {/* Enhanced Music Player */}
                     <div className="bg-burgundy-dark/30 rounded-lg p-5 border border-cream/30">
                   <div className="flex items-center justify-between mb-4">
