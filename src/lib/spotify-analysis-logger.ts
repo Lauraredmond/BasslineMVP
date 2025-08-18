@@ -91,6 +91,20 @@ export interface PlaybackContext {
   fitnessPhase?: string;
   workoutIntensity?: number;
   userNotes?: string;
+  audioFeatures?: {
+    danceability: number;
+    energy: number;
+    key: number;
+    loudness: number;
+    mode: number;
+    speechiness: number;
+    acousticness: number;
+    instrumentalness: number;
+    liveness: number;
+    valence: number;
+    tempo: number;
+    time_signature: number;
+  };
 }
 
 class SpotifyAnalysisLogger {
@@ -304,6 +318,15 @@ class SpotifyAnalysisLogger {
         workout_intensity: context.workoutIntensity,
         user_notes: context.userNotes,
         
+        // Audio Features (if available)
+        danceability: context.audioFeatures?.danceability,
+        energy: context.audioFeatures?.energy,
+        speechiness: context.audioFeatures?.speechiness,
+        acousticness: context.audioFeatures?.acousticness,
+        instrumentalness: context.audioFeatures?.instrumentalness,
+        liveness: context.audioFeatures?.liveness,
+        valence: context.audioFeatures?.valence,
+        
         // Timestamp for proper ordering
         timestamp: new Date().toISOString()
       };
@@ -415,45 +438,60 @@ class SpotifyAnalysisLogger {
 
   // Create minimal analysis data for basic logging when Spotify API fails
   private createMinimalAnalysisData(context: PlaybackContext): void {
-    console.log('🔧 Creating minimal analysis data for:', context.trackName);
+    console.log('🔧 Creating analysis data for:', context.trackName);
     
-    // Create minimal structure that satisfies the logging requirements
+    // Use Audio Features if available, otherwise use defaults
+    const features = context.audioFeatures;
+    const hasRealData = !!features;
+    
+    if (hasRealData) {
+      console.log('🎵 Using REAL Audio Features data:', {
+        tempo: features.tempo,
+        key: features.key, 
+        danceability: features.danceability,
+        energy: features.energy
+      });
+    } else {
+      console.log('⚠️ No Audio Features available, using minimal defaults');
+    }
+    
+    // Create structure that satisfies the logging requirements
     this.analysisData = {
       meta: {
-        analyzer_version: '4.0.0-fallback',
-        platform: 'web-fallback',
-        detailed_status: 'OK-fallback',
+        analyzer_version: hasRealData ? '4.0.0-audio-features' : '4.0.0-fallback',
+        platform: hasRealData ? 'web-audio-features' : 'web-fallback',
+        detailed_status: hasRealData ? 'OK-audio-features' : 'OK-fallback',
         status_code: 200,
         timestamp: Date.now() / 1000,
         analysis_time: 0.1,
-        input_process: 'fallback'
+        input_process: hasRealData ? 'audio-features' : 'fallback'
       },
       track: {
         num_samples: 44100,
-        duration: 180, // Default 3 minutes
-        sample_md5: 'fallback-md5',
+        duration: 180, // Default 3 minutes  
+        sample_md5: hasRealData ? 'audio-features-md5' : 'fallback-md5',
         offset_seconds: 0,
         window_seconds: 0,
         analysis_sample_rate: 44100,
         analysis_channels: 2,
         end_of_fade_in: 0,
         start_of_fade_out: 170,
-        loudness: -10,
-        tempo: 120, // Default tempo
+        loudness: features?.loudness || -10,
+        tempo: features?.tempo || 120,
         tempo_confidence: 0.8,
-        time_signature: 4,
+        time_signature: features?.time_signature || 4,
         time_signature_confidence: 0.9,
-        key: 0,
+        key: features?.key || 0,
         key_confidence: 0.7,
-        mode: 1,
+        mode: features?.mode || 1,
         mode_confidence: 0.8,
-        codestring: 'fallback',
+        codestring: hasRealData ? 'audio-features' : 'fallback',
         code_version: 4.0,
-        echoprintstring: 'fallback',
+        echoprintstring: hasRealData ? 'audio-features' : 'fallback',
         echoprint_version: 4.0,
-        synchstring: 'fallback',
+        synchstring: hasRealData ? 'audio-features' : 'fallback',
         synch_version: 1.0,
-        rhythmstring: 'fallback',
+        rhythmstring: hasRealData ? 'audio-features' : 'fallback',
         rhythm_version: 1.0
       },
       bars: [{ start: 0, duration: 2.0, confidence: 0.8 }],

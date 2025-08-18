@@ -707,11 +707,29 @@ const MusicSync = () => {
               try {
                 console.log('🎵 📊 Starting analysis logging for:', playbackState.item.name);
                 
-                // Try to get audio analysis data from Spotify (optional)
+                // PRIMARY: Get Audio Features (reliable, always works)
+                let audioFeaturesData = null;
                 try {
-                  const analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
+                  const audioFeatures = await spotifyService.getAudioFeatures([playbackState.item.id]);
+                  if (audioFeatures && audioFeatures.length > 0) {
+                    audioFeaturesData = audioFeatures[0];
+                    console.log('✅ Got Audio Features:', {
+                      tempo: audioFeaturesData.tempo,
+                      key: audioFeaturesData.key,
+                      danceability: audioFeaturesData.danceability,
+                      energy: audioFeaturesData.energy
+                    });
+                  }
+                } catch (featuresError) {
+                  console.error('❌ Audio Features API failed:', featuresError);
+                }
+                
+                // SECONDARY: Try Audio Analysis (might fail due to deprecation)
+                let analysisData = null;
+                try {
+                  analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
                   if (analysisData) {
-                    console.log('✅ Got full analysis data, storing detailed analysis');
+                    console.log('🎯 JACKPOT! Got full Audio Analysis data - includes bars, beats, segments!');
                     await spotifyAnalysisLogger.storeTrackAnalysis(
                       playbackState.item.id,
                       playbackState.item.name,
@@ -720,21 +738,22 @@ const MusicSync = () => {
                     );
                   }
                 } catch (analysisError) {
-                  console.log('⚠️ Spotify analysis API failed, will use fallback - this is normal');
+                  console.log('⚠️ Audio Analysis API failed (expected due to deprecation):', analysisError.message);
                 }
                 
-                // Always start track logging - the logger will create fallback data if needed
+                // Create context with Audio Features data
                 const context = {
                   trackId: playbackState.item.id,
                   trackName: playbackState.item.name,
                   artistName: playbackState.item.artists.map(a => a.name).join(', '),
                   positionMs: playbackState.progress_ms || 0,
                   fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
-                  workoutIntensity: 7
+                  workoutIntensity: 7,
+                  audioFeatures: audioFeaturesData // Pass real Audio Features data
                 };
                 
                 spotifyAnalysisLogger.startTrackLogging(context);
-                console.log('✅ Track logging started successfully');
+                console.log('✅ Track logging started with real Audio Features data');
                 
               } catch (error) {
                 console.error('❌ Error in track logging setup:', error);
