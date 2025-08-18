@@ -710,35 +710,56 @@ const MusicSync = () => {
                 // PRIMARY: Get Audio Features (reliable, always works)
                 let audioFeaturesData = null;
                 try {
+                  console.log('🎯 Attempting Audio Features API call for track:', playbackState.item.id);
                   const audioFeatures = await spotifyService.getAudioFeatures([playbackState.item.id]);
+                  console.log('🔍 Audio Features API response:', audioFeatures);
+                  
                   if (audioFeatures && audioFeatures.length > 0) {
                     audioFeaturesData = audioFeatures[0];
-                    console.log('✅ Got Audio Features:', {
+                    console.log('🎉 SUCCESS! Got Audio Features:', {
                       tempo: audioFeaturesData.tempo,
                       key: audioFeaturesData.key,
                       danceability: audioFeaturesData.danceability,
-                      energy: audioFeaturesData.energy
+                      energy: audioFeaturesData.energy,
+                      valence: audioFeaturesData.valence,
+                      acousticness: audioFeaturesData.acousticness
                     });
+                  } else {
+                    console.warn('⚠️ Audio Features API returned empty array');
                   }
                 } catch (featuresError) {
                   console.error('❌ Audio Features API failed:', featuresError);
+                  console.error('❌ Error details:', featuresError.message, featuresError.status);
                 }
                 
                 // SECONDARY: Try Audio Analysis (might fail due to deprecation)
                 let analysisData = null;
                 try {
+                  console.log('🎯 Attempting Audio Analysis API call for track:', playbackState.item.id);
                   analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
+                  
                   if (analysisData) {
-                    console.log('🎯 JACKPOT! Got full Audio Analysis data - includes bars, beats, segments!');
+                    console.log('🚀 JACKPOT! Got full Audio Analysis data:', {
+                      bars: analysisData.bars?.length,
+                      beats: analysisData.beats?.length,
+                      sections: analysisData.sections?.length,
+                      segments: analysisData.segments?.length,
+                      track_tempo: analysisData.track?.tempo,
+                      track_key: analysisData.track?.key
+                    });
+                    
                     await spotifyAnalysisLogger.storeTrackAnalysis(
                       playbackState.item.id,
                       playbackState.item.name,
                       playbackState.item.artists.map(a => a.name).join(', '),
                       analysisData
                     );
+                  } else {
+                    console.warn('⚠️ Audio Analysis API returned null');
                   }
                 } catch (analysisError) {
-                  console.log('⚠️ Audio Analysis API failed (expected due to deprecation):', analysisError.message);
+                  console.error('❌ Audio Analysis API failed:', analysisError);
+                  console.error('❌ Analysis error details:', analysisError.message, analysisError.status);
                 }
                 
                 // Create context with Audio Features data
