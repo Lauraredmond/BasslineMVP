@@ -267,18 +267,20 @@ const MusicSync = () => {
 
   const handleStartWorkout = async () => {
     
-    // Initialize database narratives for ALL phases
-    const allPhasesResult = await dbAdmin.insertNarrativesForAllPhases();
-    if (!allPhasesResult.success) {
-      alert('Error setting up workout narratives. Please try again.');
-      return;
-    }
-    
-    // Load warmup narratives specifically
-    const narrativesReady = await initializeDatabaseNarratives();
-    if (!narrativesReady) {
-      alert('Error loading warmup narratives. Please try again.');
-      return;
+    // Try to initialize database narratives, but don't block workout if it fails
+    try {
+      const allPhasesResult = await dbAdmin.insertNarrativesForAllPhases();
+      if (allPhasesResult.success) {
+        // Try to load warmup narratives specifically
+        const narrativesReady = await initializeDatabaseNarratives();
+        if (!narrativesReady) {
+          console.warn('Database narratives failed to load, will use fallback narratives');
+        }
+      } else {
+        console.warn('Database setup failed, will use fallback narratives');
+      }
+    } catch (error) {
+      console.warn('Database initialization failed, proceeding with fallback narratives:', error);
     }
 
     if (!selectedPlaylist || selectedService !== 'spotify') {
@@ -1071,13 +1073,17 @@ const MusicSync = () => {
                     )}
                   </div>
                   <div className="space-y-3">
-                    {/* Database Narrative Display */}
+                    {/* Coaching Narrative Display */}
                     {(() => {
+                      // Try database narratives first, fallback to regular narratives
                       const dbNarrative = getCurrentDatabaseNarrative();
-                      return dbNarrative ? (
+                      const fallbackNarrative = getCurrentNarrative();
+                      const narrativeToShow = dbNarrative ? dbNarrative.text : fallbackNarrative;
+                      
+                      return narrativeToShow ? (
                         <div className="bg-cream/20 rounded-lg p-4 border border-cream/30 min-h-[60px] flex items-center justify-center">
                           <p className="text-primary font-medium text-center leading-relaxed">
-                            {dbNarrative.text}
+                            {narrativeToShow}
                           </p>
                         </div>
                       ) : null;
