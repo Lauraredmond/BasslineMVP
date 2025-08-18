@@ -106,7 +106,6 @@ const MusicSync = () => {
     
     // FOR WARMUP: Use database narratives ONLY
     if (phaseName === 'Warm Up' && databaseNarratives.length > 0) {
-      console.log('🎵 Using DATABASE narratives for warmup:', databaseNarratives.map(n => n.text));
       return databaseNarratives.map(n => n.text);
     }
     
@@ -149,9 +148,8 @@ const MusicSync = () => {
       ]
     };
     
-    // If warmup but no database narratives, show error message
+    // If warmup but no database narratives, show fallback message
     if (phaseName === 'Warm Up') {
-      console.error('❌ No database narratives loaded for warmup!');
       return ["Loading warm-up instructions..."];
     }
     
@@ -232,22 +230,17 @@ const MusicSync = () => {
   // Initialize database narratives for warmup
   const initializeDatabaseNarratives = async () => {
     try {
-      console.log('🎵 Initializing database narratives for warmup...');
-      
       // Clear existing narratives and insert ONLY your 2 specific ones
       const result = await dbAdmin.insertWarmupNarratives();
       if (!result.success) {
-        console.error('❌ Failed to setup database narratives:', result.error);
         return false;
       }
       
       // Load narratives from database
       const narratives = await dbAdmin.getNarrativesForPhase('spinning', 'warmup');
-      console.log('📊 Loaded narratives from database:', narratives.map(n => n.text));
       
       // Verify we have exactly 2 narratives
       if (narratives.length !== 2) {
-        console.error(`❌ Expected 2 narratives, got ${narratives.length}`);
         return false;
       }
       
@@ -261,29 +254,20 @@ const MusicSync = () => {
       const hasCorrectNarratives = expectedTexts.every(text => actualTexts.includes(text));
       
       if (!hasCorrectNarratives) {
-        console.error('❌ Database narratives do not match expected texts:', {
-          expected: expectedTexts,
-          actual: actualTexts
-        });
         return false;
       }
       
       setDatabaseNarratives(narratives);
-      console.log('✅ Database narratives ready for warmup');
       return true;
       
     } catch (error) {
-      console.error('❌ Error initializing database narratives:', error);
       return false;
     }
   };
 
   const handleStartWorkout = async () => {
-    console.log('🎵 🚀 STARTING WORKOUT with database narratives...');
-    console.log('🎵 Selected service:', selectedService, 'Selected playlist:', selectedPlaylist);
     
-    // FIRST: Initialize database narratives for ALL phases (CRITICAL!)
-    console.log('🎵 Setting up database narratives for ALL workout phases...');
+    // Initialize database narratives for ALL phases
     const allPhasesResult = await dbAdmin.insertNarrativesForAllPhases();
     if (!allPhasesResult.success) {
       alert('Error setting up workout narratives. Please try again.');
@@ -298,8 +282,7 @@ const MusicSync = () => {
     }
 
     if (!selectedPlaylist || selectedService !== 'spotify') {
-      // Fallback to old behavior for non-Spotify, but with database narratives
-      console.log('🎵 FALLBACK WORKOUT: Starting without Spotify, database narratives ready');
+      // Fallback to non-Spotify workout with database narratives
       
       // Auto-start analysis logging session
       await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
@@ -370,8 +353,6 @@ const MusicSync = () => {
           
           // Start monitoring playback state
           startPlaybackMonitoring();
-          
-          console.log('✅ Workout started with database narratives ready!');
         } else {
           alert('Could not start Spotify playback. Please make sure music is playing in Spotify and try again.');
         }
@@ -566,26 +547,13 @@ const MusicSync = () => {
     };
   }, [isWorkoutActive, isPlaying, currentPhase, workoutPhases, workoutPlan, currentTrackPhase, playbackState]);
 
-  // Force database narrative checking every second (fallback mode)
-  useEffect(() => {
-    if (!isWorkoutActive || !isPlaying) return;
-    
-    const narrativeCheckInterval = setInterval(() => {
-      // Trigger getCurrentDatabaseNarrative by calling it
-      const narrative = getCurrentDatabaseNarrative();
-      console.log('🎵 INTERVAL CHECK:', narrative ? `Showing: "${narrative.text}"` : 'No narrative');
-    }, 1000); // Check every second
-    
-    return () => clearInterval(narrativeCheckInterval);
-  }, [isWorkoutActive, isPlaying, databaseNarratives, currentPhase, workoutStartTime, narrativeStates]);
 
   // Reset narrative and progress when phase changes
   useEffect(() => {
     setCurrentNarrative(0);
     setPhaseProgress(0);
     
-    // CRITICAL: Reset narrative states when phase changes for fallback timing
-    console.log('🎵 PHASE CHANGE: Resetting narrative states for phase', currentPhase);
+    // Reset narrative states when phase changes for fallback timing
     setNarrativeStates({
       first_shown: false,
       second_shown: false
@@ -626,7 +594,6 @@ const MusicSync = () => {
       timestamp: new Date().toISOString()
     };
     
-    console.log("Sharing workout:", completeWorkoutData);
     
     // Auto-end analysis logging session
     await spotifyAnalysisLogger.endWorkoutSession();
@@ -658,32 +625,24 @@ const MusicSync = () => {
   
   // Get current database-driven narrative (works in ALL phases now)
   const getCurrentDatabaseNarrative = () => {
-    console.log('🎵 DATABASE CHECK: narratives length:', databaseNarratives.length);
-  console.log('🎵 DATABASE CHECK: isWorkoutActive:', isWorkoutActive, 'currentPhase:', currentPhase);
     
     // Show database narratives in ALL phases (not just warmup)
     if (databaseNarratives.length > 0) {
-      console.log('🎵 DATABASE: Narratives available:', databaseNarratives.map(n => n.text));
       
       // FALLBACK: If no Spotify playback, show narratives based on simple timing
       if (!playbackState || !playbackState.progress_ms || !playbackState.item) {
-        console.log('🎵 FALLBACK: No Spotify playback, using simple timing');
         
         // Simple time-based logic (show first narrative after 10 seconds, second after 30 seconds)
         if (!workoutStartTime) {
-          console.log('🎵 FALLBACK: No workout start time available');
           return null;
         }
         
         const phaseStartTime = workoutStartTime + (currentPhase * 60000); // Each phase is 1 min
         const phaseElapsed = Date.now() - phaseStartTime; // Time within current phase
         
-        console.log(`🎵 FALLBACK TIMING: Phase ${currentPhase}, elapsed: ${(phaseElapsed/1000).toFixed(1)}s`);
-        
         if (phaseElapsed >= 10000 && phaseElapsed < 20000 && !narrativeStates.first_shown) {
           const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
           if (firstNarrative) {
-            console.log('🎵 FALLBACK: Showing FIRST narrative (10s mark)');
             setNarrativeStates(prev => ({ ...prev, first_shown: true }));
             setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
             return { text: firstNarrative.text };
@@ -691,16 +650,14 @@ const MusicSync = () => {
         } else if (phaseElapsed >= 30000 && phaseElapsed < 40000 && !narrativeStates.second_shown) {
           const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
           if (secondNarrative) {
-            console.log('🎵 FALLBACK: Showing SECOND narrative (30s mark)');
             setNarrativeStates(prev => ({ ...prev, second_shown: true }));
             setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
             return { text: secondNarrative.text };
           }
         }
         
-        // Show persisted narrative for entire track/phase (for easier testing)
+        // Show persisted narrative for entire track/phase
         if (displayedNarrative) {
-          console.log('🎵 FALLBACK: Showing persisted narrative (lingers until track/phase change)');
           return { text: displayedNarrative.text };
         }
         
@@ -709,11 +666,9 @@ const MusicSync = () => {
       
       // Use intelligent timing based on track structure (Spotify mode)
       if (playbackState && playbackState.progress_ms && playbackState.item) {
-        console.log('🎵 SPOTIFY: Using intelligent timing with track structure');
         
         // Reset narrative states when track changes
         if (currentTrackId !== playbackState.item.id) {
-          console.log(`🎵 📀 NEW TRACK: ${playbackState.item.name} by ${playbackState.item.artists.map(a => a.name).join(', ')}`);
           setCurrentTrackId(playbackState.item.id);
           setNarrativeStates({
             first_shown: false,
@@ -746,12 +701,11 @@ const MusicSync = () => {
                   };
                   
                   spotifyAnalysisLogger.startTrackLogging(context);
-                  console.log('🎵 📊 Started analysis logging for:', playbackState.item.name);
                 } else {
-                  console.log('🎵 📊 No analysis data available for track');
+                  // No analysis data available for track
                 }
               } catch (error) {
-                console.error('🎵 📊 Error starting track logging:', error);
+                console.error('Error starting track logging:', error);
               }
             };
             
@@ -776,20 +730,17 @@ const MusicSync = () => {
         if (track?.id && isSpotifyAuthenticated) {
           const cachedAnalysis = trackAnalysisCache.get(track.id);
           if (cachedAnalysis) {
-            console.log('🎵 Using cached advanced analysis for precise chorus detection');
             if (cachedAnalysis.chorusStart !== null) {
               chorusStartTime = cachedAnalysis.chorusStart;
               chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
-              console.log(`🎵 🎯 PRECISE chorus timing from Spotify analysis: ${chorusStartTime.toFixed(1)}s`);
             }
           } else {
             // Trigger background analysis for future use
             advancedMusicAnalysis.analyzeTrackStructure(track.id).then(analysis => {
               if (analysis) {
                 setTrackAnalysisCache(prev => new Map(prev.set(track.id, analysis)));
-                console.log(`🎵 📊 Cached advanced analysis for ${track.name}`);
               }
-            }).catch(err => console.log('🎵 ⚠️ Advanced analysis not available:', err));
+            }).catch(err => {});
           }
         }
         
@@ -811,53 +762,33 @@ const MusicSync = () => {
           }
           
           chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
-          console.log(`🎵 📊 ESTIMATED chorus timing: ${chorusStartTime.toFixed(1)}s`);
         }
         
-        console.log(`🎵 [Phase ${currentPhase}] Track: ${trackDuration.toFixed(1)}s, Tempo: ${tempo}BPM`);
-        console.log(`🎵 Progress: ${trackProgressSeconds.toFixed(1)}s, 4-bars: ${secondsPer4Bars.toFixed(1)}s, Chorus: ${chorusStartTime.toFixed(1)}s, Approach: ${chorusApproachTime.toFixed(1)}s`);
-        
-        // DEBUG: Show timing windows
         const inFirstWindow = trackProgressSeconds >= secondsPer4Bars && trackProgressSeconds < chorusApproachTime;
         const inSecondWindow = trackProgressSeconds >= chorusApproachTime && trackProgressSeconds < chorusStartTime + 3;
-        console.log(`🎵 DEBUG: First window (4-bars to chorus-7s): ${inFirstWindow}, Second window (chorus-7s to chorus+3s): ${inSecondWindow}`);
         
         // Check which narrative should show (with state tracking to prevent repeats)
         if (inFirstWindow && !narrativeStates.first_shown) {
           // Show first narrative: "We're just warming up the legs here"
           const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
           if (firstNarrative) {
-            console.log('🎵 ✅ Showing FIRST database narrative (after 4 bars)');
             setNarrativeStates(prev => ({ ...prev, first_shown: true }));
             setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
             return { text: firstNarrative.text };
-          } else {
-            console.log('🎵 ❌ First narrative not found in database!', databaseNarratives.map(n => n.text));
           }
         } else if (inSecondWindow && !narrativeStates.second_shown) {
           // Show second narrative: "Chorus in 7 seconds" (with 3-second buffer after chorus starts)
           const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
           if (secondNarrative) {
-            console.log('🎵 ✅ Showing SECOND database narrative (chorus approach)');
             setNarrativeStates(prev => ({ ...prev, second_shown: true }));
             setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
             return { text: secondNarrative.text };
-          } else {
-            console.log('🎵 ❌ Second narrative not found in database!', databaseNarratives.map(n => n.text));
           }
         }
         
-        // Show persisted narrative for entire track/phase (for easier testing)
+        // Show persisted narrative for entire track/phase
         if (displayedNarrative) {
-          console.log('🎵 SPOTIFY: Showing persisted narrative (lingers until track/phase change)');
           return { text: displayedNarrative.text };
-        }
-        
-        // Debug output for inactive periods
-        if (trackProgressSeconds < secondsPer4Bars) {
-          console.log(`🎵 ⏳ Waiting for 4-bar mark: ${trackProgressSeconds.toFixed(1)}s < ${secondsPer4Bars.toFixed(1)}s`);
-        } else if (narrativeStates.first_shown && narrativeStates.second_shown) {
-          console.log(`🎵 ✅ Both narratives shown for this track`);
         }
       }
     }
@@ -1140,12 +1071,6 @@ const MusicSync = () => {
                     )}
                   </div>
                   <div className="space-y-3">
-                    <div className="bg-cream/20 rounded-lg p-4 border border-cream/30 min-h-[60px] flex items-center justify-center">
-                      <p className="text-primary font-medium text-center leading-relaxed">
-                        {getCurrentNarrative()}
-                      </p>
-                    </div>
-                    
                     {/* Enhanced Music Player */}
                     <div className="bg-burgundy-dark/30 rounded-lg p-5 border border-cream/30">
                   <div className="flex items-center justify-between mb-4">
@@ -1258,7 +1183,6 @@ const MusicSync = () => {
                                 selectedDevice
                               );
                             } catch (error) {
-                              console.log('Could not skip to previous track, using manual skip');
                               await spotifyService.skipToPrevious(selectedDevice);
                             }
                           }
@@ -1290,7 +1214,6 @@ const MusicSync = () => {
                                 selectedDevice
                               );
                             } catch (error) {
-                              console.log('Could not skip to next track, using manual skip');
                               await spotifyService.skipToNext(selectedDevice);
                             }
                           } else {
