@@ -697,100 +697,35 @@ const MusicSync = () => {
               try {
                 console.log('🎵 📊 Starting analysis logging for:', playbackState.item.name);
                 
-                // Try to get audio analysis data from Spotify
-                const analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
-                if (analysisData) {
-                  console.log('✅ Got full analysis data, starting detailed logging');
-                  // Store the analysis data
-                  await spotifyAnalysisLogger.storeTrackAnalysis(
-                    playbackState.item.id,
-                    playbackState.item.name,
-                    playbackState.item.artists.map(a => a.name).join(', '),
-                    analysisData
-                  );
-                  
-                  // Start logging with current playback context
-                  const context = {
-                    trackId: playbackState.item.id,
-                    trackName: playbackState.item.name,
-                    artistName: playbackState.item.artists.map(a => a.name).join(', '),
-                    positionMs: playbackState.progress_ms || 0,
-                    fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
-                    workoutIntensity: 7
-                  };
-                  
-                  spotifyAnalysisLogger.startTrackLogging(context);
-                } else {
-                  console.warn('⚠️ No detailed analysis data available, trying basic track features');
-                  
-                  // Fallback: try to get basic audio features
-                  try {
-                    const audioFeatures = await spotifyService.getAudioFeatures([playbackState.item.id]);
-                    if (audioFeatures && audioFeatures.length > 0) {
-                      const features = audioFeatures[0];
-                      console.log('✅ Got basic audio features, starting basic logging');
-                      
-                      // Create minimal analysis data structure for basic logging
-                      const minimalAnalysis = {
-                        track: {
-                          loudness: -10, // Default values
-                          tempo: features.tempo,
-                          tempo_confidence: 0.8,
-                          time_signature: features.time_signature,
-                          key: features.key,
-                          mode: features.mode,
-                          duration: playbackState.item.duration_ms / 1000
-                        },
-                        sections: [{
-                          start: 0,
-                          duration: playbackState.item.duration_ms / 1000,
-                          confidence: 0.7,
-                          loudness: -10,
-                          tempo: features.tempo,
-                          key: features.key,
-                          mode: features.mode,
-                          time_signature: features.time_signature
-                        }],
-                        segments: [{
-                          start: 0,
-                          duration: 1.0,
-                          confidence: 0.7,
-                          loudness_start: -10,
-                          loudness_max: -8,
-                          loudness_end: -10,
-                          pitches: [0.5, 0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-                          timbre: [30, -10, 0, 5, -2, 8, 12, -5, 3, 1, -3, 7]
-                        }],
-                        bars: [{ start: 0, duration: 60/features.tempo * 4, confidence: 0.8 }],
-                        beats: [{ start: 0, duration: 60/features.tempo, confidence: 0.8 }],
-                        tatums: [{ start: 0, duration: 60/features.tempo/2, confidence: 0.8 }],
-                        meta: { analyzer_version: '4.0.0', timestamp: Date.now()/1000 }
-                      };
-                      
-                      await spotifyAnalysisLogger.storeTrackAnalysis(
-                        playbackState.item.id,
-                        playbackState.item.name,
-                        playbackState.item.artists.map(a => a.name).join(', '),
-                        minimalAnalysis
-                      );
-                      
-                      const context = {
-                        trackId: playbackState.item.id,
-                        trackName: playbackState.item.name,
-                        artistName: playbackState.item.artists.map(a => a.name).join(', '),
-                        positionMs: playbackState.progress_ms || 0,
-                        fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
-                        workoutIntensity: 7
-                      };
-                      
-                      spotifyAnalysisLogger.startTrackLogging(context);
-                    } else {
-                      console.warn('⚠️ No audio features available either');
-                    }
-                  } catch (featuresError) {
-                    console.error('❌ Error getting audio features:', featuresError);
+                // Try to get audio analysis data from Spotify (optional)
+                try {
+                  const analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
+                  if (analysisData) {
+                    console.log('✅ Got full analysis data, storing detailed analysis');
+                    await spotifyAnalysisLogger.storeTrackAnalysis(
+                      playbackState.item.id,
+                      playbackState.item.name,
+                      playbackState.item.artists.map(a => a.name).join(', '),
+                      analysisData
+                    );
                   }
+                } catch (analysisError) {
+                  console.log('⚠️ Spotify analysis API failed, will use fallback - this is normal');
                 }
+                
+                // Always start track logging - the logger will create fallback data if needed
+                const context = {
+                  trackId: playbackState.item.id,
+                  trackName: playbackState.item.name,
+                  artistName: playbackState.item.artists.map(a => a.name).join(', '),
+                  positionMs: playbackState.progress_ms || 0,
+                  fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
+                  workoutIntensity: 7
+                };
+                
+                spotifyAnalysisLogger.startTrackLogging(context);
+                console.log('✅ Track logging started successfully');
+                
               } catch (error) {
                 console.error('❌ Error in track logging setup:', error);
               }

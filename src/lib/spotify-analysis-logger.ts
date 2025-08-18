@@ -155,9 +155,10 @@ class SpotifyAnalysisLogger {
       return;
     }
     
+    // If no analysis data, create minimal fallback data for basic logging
     if (!this.analysisData) {
-      console.error('❌ Cannot start logging: no analysis data');
-      return;
+      console.warn('⚠️ No analysis data available, creating minimal fallback for basic logging');
+      this.createMinimalAnalysisData(context);
     }
 
     console.log('🎵 Starting track logging for:', context.trackName);
@@ -410,6 +411,82 @@ class SpotifyAnalysisLogger {
     } catch (error) {
       console.error('Error auto-starting track logging:', error);
     }
+  }
+
+  // Create minimal analysis data for basic logging when Spotify API fails
+  private createMinimalAnalysisData(context: PlaybackContext): void {
+    console.log('🔧 Creating minimal analysis data for:', context.trackName);
+    
+    // Create minimal structure that satisfies the logging requirements
+    this.analysisData = {
+      meta: {
+        analyzer_version: '4.0.0-fallback',
+        platform: 'web-fallback',
+        detailed_status: 'OK-fallback',
+        status_code: 200,
+        timestamp: Date.now() / 1000,
+        analysis_time: 0.1,
+        input_process: 'fallback'
+      },
+      track: {
+        num_samples: 44100,
+        duration: 180, // Default 3 minutes
+        sample_md5: 'fallback-md5',
+        offset_seconds: 0,
+        window_seconds: 0,
+        analysis_sample_rate: 44100,
+        analysis_channels: 2,
+        end_of_fade_in: 0,
+        start_of_fade_out: 170,
+        loudness: -10,
+        tempo: 120, // Default tempo
+        tempo_confidence: 0.8,
+        time_signature: 4,
+        time_signature_confidence: 0.9,
+        key: 0,
+        key_confidence: 0.7,
+        mode: 1,
+        mode_confidence: 0.8,
+        codestring: 'fallback',
+        code_version: 4.0,
+        echoprintstring: 'fallback',
+        echoprint_version: 4.0,
+        synchstring: 'fallback',
+        synch_version: 1.0,
+        rhythmstring: 'fallback',
+        rhythm_version: 1.0
+      },
+      bars: [{ start: 0, duration: 2.0, confidence: 0.8 }],
+      beats: [{ start: 0, duration: 0.5, confidence: 0.8 }],
+      sections: [{
+        start: 0,
+        duration: 180,
+        confidence: 0.7,
+        loudness: -10,
+        tempo: 120,
+        tempo_confidence: 0.8,
+        key: 0,
+        key_confidence: 0.7,
+        mode: 1,
+        mode_confidence: 0.8,
+        time_signature: 4,
+        time_signature_confidence: 0.9
+      }],
+      segments: [{
+        start: 0,
+        duration: 1.0,
+        confidence: 0.7,
+        loudness_start: -10,
+        loudness_max: -8,
+        loudness_max_time: 0.5,
+        loudness_end: -10,
+        pitches: [0.5, 0.3, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+        timbre: [30, -10, 0, 5, -2, 8, 12, -5, 3, 1, -3, 7]
+      }],
+      tatums: [{ start: 0, duration: 0.25, confidence: 0.8 }]
+    };
+    
+    console.log('✅ Created minimal analysis data for basic logging');
   }
 
   // Update playback position (called by music player)
