@@ -195,10 +195,14 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     const pollInterval = window.setInterval(async () => {
       try {
         console.log('🔍 Polling for live data...');
+        const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
+        console.log('📅 Searching for logs since:', fiveMinutesAgo);
+        
+        // Try both timestamp and created_at columns to be safe
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
-          .gte('created_at', new Date(Date.now() - 300000).toISOString()) // Last 5 minutes
+          .or(`created_at.gte.${fiveMinutesAgo},timestamp.gte.${fiveMinutesAgo}`)
           .order('created_at', { ascending: false })
           .limit(20);
 
@@ -209,7 +213,27 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         
         console.log('📊 Found', data?.length || 0, 'recent analysis logs');
         if (data && data.length > 0) {
-          console.log('🎵 Latest log:', data[0]);
+          console.log('🎵 Latest log sample:', {
+            track_name: data[0].track_name,
+            created_at: data[0].created_at,
+            tempo: data[0].track_tempo,
+            fitness_phase: data[0].fitness_phase
+          });
+        } else {
+          console.log('🔍 No data found - checking if any logs exist at all...');
+          // Check if there are ANY logs in the database
+          const { data: allLogs, error: allError } = await supabase
+            .from('spotify_analysis_logs')
+            .select('track_name, created_at')
+            .order('created_at', { ascending: false })
+            .limit(3);
+          
+          if (!allError && allLogs) {
+            console.log('📋 Total logs in database:', allLogs.length);
+            if (allLogs.length > 0) {
+              console.log('🎵 Most recent logs:', allLogs);
+            }
+          }
         }
         
         setLiveData(data || []);
@@ -234,7 +258,9 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     loadSessions();
     
     // Auto-start live monitoring if requested
+    console.log('🔍 SpotifyAnalysisViewer mounted - autoStart:', autoStart, 'isMonitoring:', isMonitoring);
     if (autoStart && !isMonitoring) {
+      console.log('✅ Auto-starting live monitoring...');
       startLiveMonitoring();
     }
   }, [autoStart]);
@@ -307,7 +333,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                     liveData.map((log, index) => (
                       <Card key={log.id} className="border-green-500/30 bg-green-950/20">
                         <CardContent className="p-3">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-cream">
                             <div>
                               <p className="text-green-400 font-semibold">{log.track_name}</p>
                               <p className="text-cream/80 text-xs">{formatTime(log.playback_position_ms)}</p>
@@ -320,7 +346,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               <p className="text-cream">Loudness: <span className="text-red-400">{log.current_section_loudness?.toFixed(1)} dB</span></p>
                               <p className="text-cream">Phase: <span className="text-purple-400">{log.fitness_phase || 'N/A'}</span></p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right text-cream">
                               <p className="text-cream/70 text-xs">
                                 {new Date(log.created_at || log.timestamp || Date.now()).toLocaleTimeString()}
                               </p>
@@ -335,7 +361,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                   ) : (
                     <div className="text-center py-8 text-cream/80">
                       <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
-                      <p>
+                      <p className="text-cream">
                         {isMonitoring 
                           ? 'Waiting for live analysis data...'
                           : 'Click "Start Live Monitor" to view real-time analysis data'
@@ -431,7 +457,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                       {analysisLogs.map((log, index) => (
                         <Card key={log.id} className="border-cream/10">
                           <CardContent className="p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-cream">
                               <div>
                                 <h4 className="font-semibold text-cream mb-2">Track Info</h4>
                                 <p className="text-cream">{log.track_name}</p>
