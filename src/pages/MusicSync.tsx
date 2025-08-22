@@ -744,15 +744,27 @@ const MusicSync = () => {
           });
           
           // Start analysis logging for the new track
-          console.log('🔍 WORKOUT DETECTION DEBUG:', {
+          console.log('🔍 [DEBUG] WORKOUT DETECTION DEBUG:', {
             isWorkoutActive,
             isSpotifyAuthenticated,
             bothConditionsMet: isWorkoutActive && isSpotifyAuthenticated,
-            currentTrack: playbackState.item.name
+            currentTrack: playbackState.item.name,
+            hasPlaybackState: !!playbackState,
+            hasItem: !!playbackState?.item
           });
           
+          if (!isWorkoutActive) {
+            console.error('❌ [DEBUG] WORKOUT IS NOT ACTIVE - Logging blocked');
+            console.error('❌ [DEBUG] Check if workout timer is running');
+          }
+          
+          if (!isSpotifyAuthenticated) {
+            console.error('❌ [DEBUG] SPOTIFY NOT AUTHENTICATED - Logging blocked');
+            console.error('❌ [DEBUG] Check Spotify connection status');
+          }
+          
           if (isWorkoutActive && isSpotifyAuthenticated) {
-            console.log('✅ CONDITIONS MET - Starting track logging...');
+            console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
             // Start Web Audio analysis logging (real-time musical intelligence)
             if (webAudioLogger && isWebAudioEnabled) {
