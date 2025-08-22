@@ -712,6 +712,13 @@ const MusicSync = () => {
       }
       
       // Use intelligent timing based on track structure (Spotify mode)
+      console.log('🔍 PLAYBACK STATE CHECK:', {
+        hasPlaybackState: !!playbackState,
+        hasProgressMs: !!playbackState?.progress_ms,
+        hasItem: !!playbackState?.item,
+        currentTrack: playbackState?.item?.name || 'None'
+      });
+      
       if (playbackState && playbackState.progress_ms && playbackState.item) {
         
         // Reset narrative states when track changes
