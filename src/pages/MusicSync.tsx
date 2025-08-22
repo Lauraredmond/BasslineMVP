@@ -735,23 +735,25 @@ const MusicSync = () => {
             
             // Start Web Audio analysis logging (real-time musical intelligence)
             if (webAudioLogger && isWebAudioEnabled) {
-              try {
-                const webAudioContext = {
-                  trackName: playbackState.item.name,
-                  artistName: playbackState.item.artists.map(a => a.name).join(', '),
-                  trackId: playbackState.item.id,
-                  trackUri: playbackState.item.uri,
-                  positionMs: playbackState.progress_ms,
-                  isPlaying: playbackState.is_playing,
-                  fitnessPhase: currentPhase < 5 ? phases[currentPhase]?.name : 'Unknown',
-                  workoutIntensity: currentPhase + 1 // Simple intensity based on phase
-                };
-                
-                await webAudioLogger.startTrackLogging(webAudioContext);
-                console.log('🎵 Web Audio Intelligence logging started for:', playbackState.item.name);
-              } catch (error) {
-                console.warn('⚠️ Web Audio track logging failed:', error);
-              }
+              (async () => {
+                try {
+                  const webAudioContext = {
+                    trackName: playbackState.item.name,
+                    artistName: playbackState.item.artists.map(a => a.name).join(', '),
+                    trackId: playbackState.item.id,
+                    trackUri: playbackState.item.uri,
+                    positionMs: playbackState.progress_ms,
+                    isPlaying: playbackState.is_playing,
+                    fitnessPhase: currentPhase < 5 ? phases[currentPhase]?.name : 'Unknown',
+                    workoutIntensity: currentPhase + 1 // Simple intensity based on phase
+                  };
+                  
+                  await webAudioLogger.startTrackLogging(webAudioContext);
+                  console.log('🎵 Web Audio Intelligence logging started for:', playbackState.item.name);
+                } catch (error) {
+                  console.warn('⚠️ Web Audio track logging failed:', error);
+                }
+              })();
             }
             const startTrackLogging = async () => {
               try {
