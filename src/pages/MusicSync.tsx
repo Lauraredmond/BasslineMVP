@@ -722,6 +722,13 @@ const MusicSync = () => {
       if (playbackState && playbackState.progress_ms && playbackState.item) {
         
         // Reset narrative states when track changes
+        console.log('🔍 TRACK ID COMPARISON:', {
+          currentTrackId,
+          playbackStateId: playbackState.item.id,
+          areEqual: currentTrackId === playbackState.item.id,
+          trackName: playbackState.item.name
+        });
+        
         if (currentTrackId !== playbackState.item.id) {
           console.log('🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration...');
           console.log('  - Previous track ID:', currentTrackId);
