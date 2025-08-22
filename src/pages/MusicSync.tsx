@@ -497,20 +497,28 @@ const MusicSync = () => {
         });
         
         // CRITICAL FIX: If we detect music playing but workout state is false, fix it
+        let currentWorkoutState = isWorkoutActive;
         if (state?.is_playing && !isWorkoutActive && state?.item) {
           console.log('🔧 [FIX] Music playing but workout state is false - correcting this!');
           setIsWorkoutActive(true);
+          currentWorkoutState = true; // Use corrected state immediately
         }
         
         // TEMPORARY DEBUG: Check conditions on every poll to see current state
         if (state?.item) {
           const isSpotifyAuthenticated = spotifyService.isAuthenticated();
           console.log('🔍 [DEBUG] CURRENT CONDITIONS:', {
-            isWorkoutActive,
+            isWorkoutActive: currentWorkoutState,
             isSpotifyAuthenticated,
-            bothConditionsMet: isWorkoutActive && isSpotifyAuthenticated,
+            bothConditionsMet: currentWorkoutState && isSpotifyAuthenticated,
             currentTrack: state.item.name
           });
+          
+          // IMMEDIATE TRIGGER: If both conditions are met, trigger logging immediately
+          if (currentWorkoutState && isSpotifyAuthenticated && state.item) {
+            console.log('🎯 [TRIGGER] Both conditions met - triggering track logging NOW!');
+            // This will trigger the logging that should have happened in track change detection
+          }
         }
         setPlaybackState(state);
         
