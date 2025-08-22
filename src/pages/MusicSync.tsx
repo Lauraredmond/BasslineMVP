@@ -791,22 +791,28 @@ const MusicSync = () => {
                   const trackIds = [playbackState.item.id];
                   audioFeatures = await spotifyService.getAudioFeatures(trackIds);
                   
-                  // If Spotify fails, manually trigger Rapid Soundnet
+                  // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
+                  console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
+                  const rapidResult = await spotifyService.forceRapidSoundnetAnalysis(
+                    playbackState.item.name, 
+                    playbackState.item.artists.map(a => a.name).join(', ')
+                  );
+                  
+                  // Store RapidAPI metadata for enhanced logging (always captured now)
+                  if (rapidResult) {
+                    rapidSoundnetMetadata = {
+                      dataSource: 'rapidapi',
+                      fromCache: false,
+                      fallbackType: 'api'
+                    };
+                    console.log('✅ Got Rapid Soundnet enhanced data for advanced metrics');
+                  }
+                  
+                  // Use Spotify audio features if available, otherwise use RapidAPI as fallback
                   if (!audioFeatures || !audioFeatures[0]) {
-                    console.log('⚠️ Spotify audio features failed, trying Rapid Soundnet...');
-                    const rapidResult = await spotifyService.forceRapidSoundnetAnalysis(
-                      playbackState.item.name, 
-                      playbackState.item.artists.map(a => a.name).join(', ')
-                    );
-                    
                     if (rapidResult) {
                       audioFeatures = [rapidResult];
-                      rapidSoundnetMetadata = {
-                        dataSource: 'rapidapi',
-                        fromCache: false,
-                        fallbackType: 'api'
-                      };
-                      console.log('✅ Got Rapid Soundnet audio features:', rapidResult);
+                      console.log('✅ Using RapidAPI audio features as fallback');
                     }
                   } else {
                     console.log('✅ Got Spotify audio features:', audioFeatures[0]);

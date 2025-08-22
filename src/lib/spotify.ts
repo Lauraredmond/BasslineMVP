@@ -493,34 +493,38 @@ class SpotifyService {
       let audio_features = audioFeatures[index];
       let rapidSoundnetMetadata = null;
       
-      // If Spotify audio features failed, try Rapid Soundnet
-      if (!audio_features) {
-        console.log(`⚠️ No Spotify audio features for: ${track.name} by ${track.artists?.[0]?.name}`);
-        const rapidResult = await this.getRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+      // Always try to get Rapid Soundnet data for enhanced analysis (regardless of Spotify audio features)
+      console.log(`🚀 Getting Rapid Soundnet enhanced analysis for: ${track.name} by ${track.artists?.[0]?.name}`);
+      const rapidResult = await this.getRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+      
+      // Use Spotify audio features if available, otherwise use RapidAPI fallback
+      if (!audio_features && rapidResult.audioFeatures) {
+        console.log(`✅ Using RapidAPI audio features as fallback for: ${track.name}`);
         audio_features = rapidResult.audioFeatures;
-        
-        // Store metadata for research lab
-        if (rapidResult.rapidSoundnetData) {
-          rapidSoundnetMetadata = {
-            ...rapidResult,
-            // Convert raw data for logging
-            rapidSoundnetData: {
-              key: rapidResult.rapidSoundnetData.key,
-              mode: rapidResult.rapidSoundnetData.mode,
-              camelot: rapidResult.rapidSoundnetData.camelot,
-              happiness: rapidResult.rapidSoundnetData.happiness,
-              popularity: rapidResult.rapidSoundnetData.popularity,
-              duration: rapidResult.rapidSoundnetData.duration,
-              loudness: rapidResult.rapidSoundnetData.loudness,
-              energy_raw: rapidResult.rapidSoundnetData.energy,
-              danceability_raw: rapidResult.rapidSoundnetData.danceability,
-              acousticness_raw: rapidResult.rapidSoundnetData.acousticness,
-              instrumentalness_raw: rapidResult.rapidSoundnetData.instrumentalness,
-              speechiness_raw: rapidResult.rapidSoundnetData.speechiness,
-              liveness_raw: rapidResult.rapidSoundnetData.liveness
-            }
-          };
-        }
+      }
+      
+      // Always store RapidAPI metadata for research lab (purple badges and advanced metrics)
+      if (rapidResult.rapidSoundnetData) {
+        rapidSoundnetMetadata = {
+          ...rapidResult,
+          // Convert raw data for logging
+          rapidSoundnetData: {
+            key: rapidResult.rapidSoundnetData.key,
+            mode: rapidResult.rapidSoundnetData.mode,
+            camelot: rapidResult.rapidSoundnetData.camelot,
+            happiness: rapidResult.rapidSoundnetData.happiness,
+            popularity: rapidResult.rapidSoundnetData.popularity,
+            duration: rapidResult.rapidSoundnetData.duration,
+            loudness: rapidResult.rapidSoundnetData.loudness,
+            energy_raw: rapidResult.rapidSoundnetData.energy,
+            danceability_raw: rapidResult.rapidSoundnetData.danceability,
+            acousticness_raw: rapidResult.rapidSoundnetData.acousticness,
+            instrumentalness_raw: rapidResult.rapidSoundnetData.instrumentalness,
+            speechiness_raw: rapidResult.rapidSoundnetData.speechiness,
+            liveness_raw: rapidResult.rapidSoundnetData.liveness
+          }
+        };
+        console.log(`🎯 Captured RapidAPI advanced metrics: happiness=${rapidResult.rapidSoundnetData.happiness}, popularity=${rapidResult.rapidSoundnetData.popularity}`);
       }
       
       return {
