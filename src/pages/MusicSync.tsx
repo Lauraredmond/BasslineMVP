@@ -478,6 +478,13 @@ const MusicSync = () => {
     playbackMonitoringRef.current = setInterval(async () => {
       try {
         const state = await spotifyService.getCurrentPlayback();
+        console.log('🔍 [DEBUG] Spotify polling result:', {
+          hasState: !!state,
+          hasItem: !!state?.item,
+          trackName: state?.item?.name,
+          isPlaying: state?.is_playing,
+          isWorkoutActive
+        });
         setPlaybackState(state);
         
         if (state) {
