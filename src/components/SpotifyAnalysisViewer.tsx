@@ -274,6 +274,19 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     const pollInterval = window.setInterval(async () => {
       try {
         console.log('🔍 Polling for live data...');
+        
+        // First, check if ANY data exists in the table
+        const { data: allData, error: allError } = await supabase
+          .from('spotify_analysis_logs')
+          .select('track_name, created_at, id')
+          .order('created_at', { ascending: false })
+          .limit(5);
+          
+        console.log('🗃️ Total recent entries in database:', allData?.length || 0);
+        if (allData && allData.length > 0) {
+          console.log('📊 Latest database entries:', allData);
+        }
+        
         const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString(); // Only last 60 seconds
         console.log('📅 Searching for logs since:', sixtySecondsAgo, '(last 60 seconds)');
         

@@ -811,7 +811,10 @@ const MusicSync = () => {
                   })
                 };
                 
+                console.log('🔥 ABOUT TO CALL spotifyAnalysisLogger.startTrackLogging with context:', context);
                 spotifyAnalysisLogger.startTrackLogging(context);
+                console.log('🔥 spotifyAnalysisLogger.startTrackLogging CALLED - check if data appears in DB');
+                
                 if (rapidSoundnetMetadata) {
                   console.log('✅ 🚀 Enhanced track logging started with Rapid Soundnet data');
                 } else if (audioFeatures?.[0]) {
