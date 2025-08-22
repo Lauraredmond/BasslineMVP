@@ -957,14 +957,33 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                     </div>
                   )}
                   
-                  <Button
-                    onClick={loadApiUsage}
-                    variant="outline"
-                    className="w-full text-cream border-cream hover:bg-cream hover:text-maroon"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Refresh Usage
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={loadApiUsage}
+                      variant="outline"
+                      className="w-full text-cream border-cream hover:bg-cream hover:text-maroon"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh Usage
+                    </Button>
+                    
+                    <Button
+                      onClick={async () => {
+                        console.log('🧪 TESTING RapidAPI manually...');
+                        try {
+                          const result = await spotifyService.forceRapidSoundnetAnalysis("Blinding Lights", "The Weeknd");
+                          console.log('✅ Manual RapidAPI test result:', result);
+                          loadApiUsage(); // Refresh to see if request count increased
+                        } catch (error) {
+                          console.error('❌ Manual RapidAPI test failed:', error);
+                        }
+                      }}
+                      variant="outline"
+                      className="w-full text-purple-400 border-purple-400 hover:bg-purple-400 hover:text-white"
+                    >
+                      🧪 Test RapidAPI
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

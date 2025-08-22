@@ -716,7 +716,7 @@ const MusicSync = () => {
         
         // Reset narrative states when track changes
         if (currentTrackId !== playbackState.item.id) {
-          console.log('🎵 TRACK CHANGE DETECTED!');
+          console.log('🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration...');
           console.log('  - Previous track ID:', currentTrackId);
           console.log('  - New track ID:', playbackState.item.id);
           console.log('  - New track name:', playbackState.item.name);
@@ -730,6 +730,13 @@ const MusicSync = () => {
           });
           
           // Start analysis logging for the new track
+          console.log('🔍 WORKOUT DETECTION DEBUG:', {
+            isWorkoutActive,
+            isSpotifyAuthenticated,
+            bothConditionsMet: isWorkoutActive && isSpotifyAuthenticated,
+            currentTrack: playbackState.item.name
+          });
+          
           if (isWorkoutActive && isSpotifyAuthenticated) {
             console.log('✅ CONDITIONS MET - Starting track logging...');
             
