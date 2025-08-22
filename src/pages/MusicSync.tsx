@@ -501,6 +501,17 @@ const MusicSync = () => {
           console.log('🔧 [FIX] Music playing but workout state is false - correcting this!');
           setIsWorkoutActive(true);
         }
+        
+        // TEMPORARY DEBUG: Check conditions on every poll to see current state
+        if (state?.item) {
+          const isSpotifyAuthenticated = spotifyService.isAuthenticated();
+          console.log('🔍 [DEBUG] CURRENT CONDITIONS:', {
+            isWorkoutActive,
+            isSpotifyAuthenticated,
+            bothConditionsMet: isWorkoutActive && isSpotifyAuthenticated,
+            currentTrack: state.item.name
+          });
+        }
         setPlaybackState(state);
         
         if (state) {
