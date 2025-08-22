@@ -815,7 +815,7 @@ const MusicSync = () => {
                   console.warn('⚠️ Audio features failed:', error);
                 }
 
-                // Create enhanced context with audio features and Rapid Soundnet metadata
+                // Create enhanced context with audio features and ALL Rapid Soundnet metadata
                 const context = {
                   trackId: playbackState.item.id,
                   trackName: playbackState.item.name,
@@ -824,13 +824,26 @@ const MusicSync = () => {
                   fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
                   workoutIntensity: 7,
                   audioFeatures: audioFeatures?.[0] || null,
-                  // Add Rapid Soundnet metadata if available
-                  ...(rapidSoundnetMetadata && {
-                    dataSource: rapidSoundnetMetadata.dataSource,
-                    fromCache: rapidSoundnetMetadata.fromCache,
-                    fallbackType: rapidSoundnetMetadata.fallbackType
+                  
+                  // Add ALL Rapid Soundnet metadata for comprehensive logging
+                  dataSource: rapidSoundnetMetadata?.dataSource || (audioFeatures?.[0] ? 'spotify' : 'none'),
+                  fromCache: rapidSoundnetMetadata?.fromCache || false,
+                  fallbackType: rapidSoundnetMetadata?.fallbackType || 'none',
+                  
+                  // Include ALL raw Rapid Soundnet data for analysis
+                  ...(rapidSoundnetMetadata?.rapidSoundnetData && {
+                    rapidSoundnetData: rapidSoundnetMetadata.rapidSoundnetData
                   })
                 };
+                
+                console.log('🔥 COMPREHENSIVE CONTEXT FOR LOGGING:', {
+                  trackName: context.trackName,
+                  hasAudioFeatures: !!context.audioFeatures,
+                  dataSource: context.dataSource,
+                  hasRapidSoundnetData: !!context.rapidSoundnetData,
+                  rapidSoundnetKeys: context.rapidSoundnetData ? Object.keys(context.rapidSoundnetData) : [],
+                  timestamp: new Date().toISOString()
+                });
                 
                 console.log('🔥 ABOUT TO CALL spotifyAnalysisLogger.startTrackLogging with context:', context);
                 spotifyAnalysisLogger.startTrackLogging(context);

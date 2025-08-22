@@ -651,11 +651,11 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                             {/* Rapid Soundnet Specific Metrics */}
                             {(log.rs_key || log.rs_camelot || log.rs_popularity) && (
                               <div>
-                                <p className="text-cream font-semibold text-sm mb-2">🚀 Rapid Soundnet Metrics</p>
+                                <p className="text-cream font-semibold text-sm mb-2">🚀 Rapid Soundnet Metrics - {new Date(log.created_at || log.timestamp).toLocaleTimeString()}</p>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                                   {log.rs_key && (
                                     <div>
-                                      <p className="text-cream/70">Key</p>
+                                      <p className="text-cream/70">Key & Mode</p>
                                       <p className="text-purple-400 font-bold">{log.rs_key} {log.rs_mode}</p>
                                     </div>
                                   )}
@@ -665,17 +665,69 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                                       <p className="text-purple-400 font-bold">{log.rs_camelot}</p>
                                     </div>
                                   )}
+                                  {log.rs_happiness && (
+                                    <div>
+                                      <p className="text-cream/70">Happiness</p>
+                                      <p className="text-purple-400 font-bold">{log.rs_happiness}/100</p>
+                                    </div>
+                                  )}
                                   {log.rs_popularity && (
                                     <div>
                                       <p className="text-cream/70">Popularity</p>
                                       <p className="text-purple-400 font-bold">{log.rs_popularity}/100</p>
                                     </div>
                                   )}
-                                  {log.rs_duration && (
+                                </div>
+                                
+                                {/* Additional RapidAPI Raw Metrics */}
+                                <div className="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+                                  {log.rs_energy_raw && (
                                     <div>
-                                      <p className="text-cream/70">Duration</p>
-                                      <p className="text-purple-400 font-bold">{log.rs_duration}</p>
+                                      <p className="text-cream/60">Energy (Raw)</p>
+                                      <p className="text-red-300 font-semibold">{log.rs_energy_raw}/100</p>
                                     </div>
+                                  )}
+                                  {log.rs_danceability_raw && (
+                                    <div>
+                                      <p className="text-cream/60">Dance (Raw)</p>
+                                      <p className="text-orange-300 font-semibold">{log.rs_danceability_raw}/100</p>
+                                    </div>
+                                  )}
+                                  {log.rs_acousticness_raw && (
+                                    <div>
+                                      <p className="text-cream/60">Acoustic (Raw)</p>
+                                      <p className="text-blue-300 font-semibold">{log.rs_acousticness_raw}/100</p>
+                                    </div>
+                                  )}
+                                  {log.rs_speechiness_raw && (
+                                    <div>
+                                      <p className="text-cream/60">Speech (Raw)</p>
+                                      <p className="text-yellow-300 font-semibold">{log.rs_speechiness_raw}/100</p>
+                                    </div>
+                                  )}
+                                  {log.rs_liveness_raw && (
+                                    <div>
+                                      <p className="text-cream/60">Live (Raw)</p>
+                                      <p className="text-green-300 font-semibold">{log.rs_liveness_raw}/100</p>
+                                    </div>
+                                  )}
+                                  {log.rs_instrumentalness_raw && (
+                                    <div>
+                                      <p className="text-cream/60">Instrumental</p>
+                                      <p className="text-indigo-300 font-semibold">{log.rs_instrumentalness_raw}/100</p>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Data Quality Info */}
+                                <div className="mt-2 flex gap-2 text-[10px]">
+                                  <span className="text-purple-300">
+                                    📊 Source: {log.data_source} {log.from_cache ? '(cached)' : '(fresh)'}
+                                  </span>
+                                  {log.fallback_type && (
+                                    <span className="text-yellow-300">
+                                      🔄 Type: {log.fallback_type}
+                                    </span>
                                   )}
                                 </div>
                               </div>
