@@ -291,12 +291,25 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         console.log('📅 Searching for logs since:', tenMinutesAgo, '(last 10 minutes)');
         
         // Try both timestamp and created_at columns to be safe
+        console.log('🔥 [DEBUG] Querying for live data with time window:', tenMinutesAgo);
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
           .or(`created_at.gte.${tenMinutesAgo},timestamp.gte.${tenMinutesAgo}`)
           .order('created_at', { ascending: false })
           .limit(20);
+          
+        console.log('🔥 [DEBUG] Live data query result:', {
+          error,
+          dataCount: data?.length || 0,
+          sampleData: data?.[0] ? {
+            track_name: data[0].track_name,
+            data_source: data[0].data_source,
+            rs_happiness: data[0].rs_happiness,
+            rs_popularity: data[0].rs_popularity,
+            hasRapidApiColumns: data[0].rs_happiness !== undefined
+          } : 'No data'
+        });
 
         if (error) {
           console.error('❌ Database query error:', error);

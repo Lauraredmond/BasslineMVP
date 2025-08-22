@@ -250,7 +250,21 @@ class SpotifyAnalysisLogger {
 
   // Log the current state based on playback position
   private async logCurrentState(context: PlaybackContext): Promise<void> {
-    if (!this.sessionId || !this.analysisData) return;
+    console.log('🔥 [DEBUG] logCurrentState called with:', {
+      hasSessionId: !!this.sessionId,
+      hasAnalysisData: !!this.analysisData,
+      trackName: context.trackName,
+      hasRapidSoundnetData: !!context.rapidSoundnetData,
+      dataSource: context.dataSource
+    });
+    
+    if (!this.sessionId || !this.analysisData) {
+      console.error('❌ [DEBUG] Cannot log - missing sessionId or analysisData:', {
+        sessionId: this.sessionId,
+        analysisData: !!this.analysisData
+      });
+      return;
+    }
 
     try {
       // Use updated position if available, otherwise use context position
@@ -435,22 +449,37 @@ class SpotifyAnalysisLogger {
         }
       });
       
+      console.log('🔥 [DEBUG] About to insert log entry with RapidAPI data:', {
+        hasRapidSoundnetData: !!(logEntry.rs_happiness || logEntry.rs_popularity),
+        rapidApiFields: {
+          rs_key: logEntry.rs_key,
+          rs_happiness: logEntry.rs_happiness,
+          rs_popularity: logEntry.rs_popularity,
+          data_source: logEntry.data_source
+        }
+      });
+
       const { error } = await supabase
         .from('spotify_analysis_logs')
         .insert(logEntry);
 
       if (error) {
-        console.error('❌ Error logging analysis data:', error);
-        console.error('❌ Error details:', {
+        console.error('❌ [DEBUG] Database insert failed:', error);
+        console.error('❌ [DEBUG] Error details:', {
           code: error.code,
           message: error.message,
           details: error.details,
           hint: error.hint
         });
-        console.error('❌ Failed log entry keys:', Object.keys(logEntry));
+        console.error('❌ [DEBUG] Failed log entry keys:', Object.keys(logEntry));
       } else {
-        console.log('✅ Successfully logged analysis data to database');
-        console.log('✅ Logged entry included Audio Features:', !!(logEntry.danceability || logEntry.energy));
+        console.log('✅ [DEBUG] Successfully logged analysis data to database');
+        console.log('✅ [DEBUG] Logged entry included RapidAPI data:', {
+          hasRapidApiData: !!(logEntry.rs_happiness || logEntry.rs_popularity),
+          dataSource: logEntry.data_source,
+          happiness: logEntry.rs_happiness,
+          popularity: logEntry.rs_popularity
+        });
       }
     } catch (error) {
       console.error('Error in logCurrentState:', error);

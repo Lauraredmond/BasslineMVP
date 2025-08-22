@@ -842,18 +842,28 @@ const MusicSync = () => {
                   })
                 };
                 
-                console.log('🔥 COMPREHENSIVE CONTEXT FOR LOGGING:', {
+                console.log('🔥 [DEBUG] COMPREHENSIVE CONTEXT FOR LOGGING:', {
                   trackName: context.trackName,
                   hasAudioFeatures: !!context.audioFeatures,
                   dataSource: context.dataSource,
                   hasRapidSoundnetData: !!context.rapidSoundnetData,
                   rapidSoundnetKeys: context.rapidSoundnetData ? Object.keys(context.rapidSoundnetData) : [],
+                  sessionId: spotifyAnalysisLogger.getCurrentSessionId(),
+                  isLogging: spotifyAnalysisLogger.isCurrentlyLogging(),
                   timestamp: new Date().toISOString()
                 });
                 
-                console.log('🔥 ABOUT TO CALL spotifyAnalysisLogger.startTrackLogging with context:', context);
+                console.log('🔥 [DEBUG] ABOUT TO CALL spotifyAnalysisLogger.startTrackLogging with context:', context);
                 spotifyAnalysisLogger.startTrackLogging(context);
-                console.log('🔥 spotifyAnalysisLogger.startTrackLogging CALLED - check if data appears in DB');
+                console.log('🔥 [DEBUG] spotifyAnalysisLogger.startTrackLogging CALLED');
+                
+                // Verify session state after calling startTrackLogging
+                setTimeout(() => {
+                  console.log('🔥 [DEBUG] Session state after startTrackLogging:', {
+                    sessionId: spotifyAnalysisLogger.getCurrentSessionId(),
+                    isLogging: spotifyAnalysisLogger.isCurrentlyLogging()
+                  });
+                }, 1000);
                 
                 if (rapidSoundnetMetadata) {
                   console.log('✅ 🚀 Enhanced track logging started with Rapid Soundnet data');
