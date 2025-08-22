@@ -480,13 +480,13 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full max-w-5xl gap-1">
-          <TabsTrigger value="demo" className="text-xs md:text-sm">Demo</TabsTrigger>
-          <TabsTrigger value="live" className="text-xs md:text-sm">Live Data</TabsTrigger>
-          <TabsTrigger value="sessions" className="text-xs md:text-sm">Sessions</TabsTrigger>
-          <TabsTrigger value="data" className="text-xs md:text-sm">Analysis</TabsTrigger>
-          <TabsTrigger value="api" className="text-xs md:text-sm">API Usage</TabsTrigger>
-          <TabsTrigger value="patterns" className="text-xs md:text-sm">Patterns</TabsTrigger>
+        <TabsList className="flex flex-wrap w-full max-w-6xl gap-1 h-auto p-1">
+          <TabsTrigger value="demo" className="text-xs md:text-sm flex-shrink-0">Demo</TabsTrigger>
+          <TabsTrigger value="live" className="text-xs md:text-sm flex-shrink-0">Live Data</TabsTrigger>
+          <TabsTrigger value="sessions" className="text-xs md:text-sm flex-shrink-0">Sessions</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs md:text-sm flex-shrink-0">Analysis</TabsTrigger>
+          <TabsTrigger value="api" className="text-xs md:text-sm flex-shrink-0 bg-purple-500/20">API Usage</TabsTrigger>
+          <TabsTrigger value="patterns" className="text-xs md:text-sm flex-shrink-0">Patterns</TabsTrigger>
         </TabsList>
 
         <TabsContent value="demo" className="space-y-4">
