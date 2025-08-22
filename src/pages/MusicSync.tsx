@@ -491,8 +491,16 @@ const MusicSync = () => {
           hasItem: !!state?.item,
           trackName: state?.item?.name,
           isPlaying: state?.is_playing,
-          isWorkoutActive
+          isWorkoutActive,
+          hasWorkoutTimer: !!workoutStartTime,
+          currentPhase
         });
+        
+        // CRITICAL FIX: If we detect music playing but workout state is false, fix it
+        if (state?.is_playing && !isWorkoutActive && state?.item) {
+          console.log('🔧 [FIX] Music playing but workout state is false - correcting this!');
+          setIsWorkoutActive(true);
+        }
         setPlaybackState(state);
         
         if (state) {
@@ -1538,7 +1546,10 @@ const MusicSync = () => {
           {!isWorkoutActive ? (
             <div className="space-y-3">
               <Button 
-                onClick={handleStartWorkout}
+                onClick={() => {
+                  console.log('🏋️ [DEBUG] Start Workout button clicked!');
+                  handleStartWorkout();
+                }}
                 disabled={!selectedService || !selectedPlaylist || isAnalyzingPlaylist}
                 className="w-full h-14 text-lg bg-energy-gradient hover:opacity-90 shadow-button transition-smooth disabled:opacity-50 text-cream font-semibold"
               >
