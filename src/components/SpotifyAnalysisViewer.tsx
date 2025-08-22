@@ -287,14 +287,14 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
           console.log('📊 Latest database entries:', allData);
         }
         
-        const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString(); // Only last 60 seconds
-        console.log('📅 Searching for logs since:', sixtySecondsAgo, '(last 60 seconds)');
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60000).toISOString(); // Last 10 minutes for testing
+        console.log('📅 Searching for logs since:', tenMinutesAgo, '(last 10 minutes)');
         
         // Try both timestamp and created_at columns to be safe
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
-          .or(`created_at.gte.${sixtySecondsAgo},timestamp.gte.${sixtySecondsAgo}`)
+          .or(`created_at.gte.${tenMinutesAgo},timestamp.gte.${tenMinutesAgo}`)
           .order('created_at', { ascending: false })
           .limit(20);
 
@@ -356,7 +356,22 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
           }
         }
         
-        setLiveData(data || []);
+        if (data && data.length > 0) {
+          console.log(`✅ Found ${data.length} logs in 10-minute window - updating live stream`);
+          setLiveData(data);
+        } else if (allData && allData.length > 0) {
+          console.log(`🔄 No recent data in time window, showing latest ${allData.length} database entries`);
+          // Get full details for the latest entries
+          const { data: recentData } = await supabase
+            .from('spotify_analysis_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+          setLiveData(recentData || []);
+        } else {
+          console.log('❌ No data found at all');
+          setLiveData([]);
+        }
         
         // Test database schema by trying to select Audio Features columns explicitly
         if (data && data.length > 0) {
