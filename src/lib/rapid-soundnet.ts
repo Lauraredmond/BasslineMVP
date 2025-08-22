@@ -80,7 +80,15 @@ class RapidSoundnetService {
       
       if (allowFallback) {
         console.log('🔄 Using intelligent fallback analysis (quota exhausted)');
-        return this.generateIntelligentFallback(trackTitle, artistName);
+        const fallbackResult = this.generateIntelligentFallback(trackTitle, artistName);
+        
+        // CRITICAL: Cache the fallback result to prevent infinite loops
+        if (fallbackResult) {
+          this.cache.store(trackTitle, artistName, fallbackResult);
+          console.log('✅ Cached fallback result for:', trackTitle);
+        }
+        
+        return fallbackResult;
       }
       
       return null;
@@ -133,7 +141,15 @@ class RapidSoundnetService {
       
       if (allowFallback) {
         console.log('🔄 Using fallback analysis (network error)');
-        return this.generateIntelligentFallback(trackTitle, artistName);
+        const fallbackResult = this.generateIntelligentFallback(trackTitle, artistName);
+        
+        // CRITICAL: Cache the fallback result to prevent infinite loops
+        if (fallbackResult) {
+          this.cache.store(trackTitle, artistName, fallbackResult);
+          console.log('✅ Cached fallback result for:', trackTitle);
+        }
+        
+        return fallbackResult;
       }
       
       return null;
@@ -143,6 +159,8 @@ class RapidSoundnetService {
   // Generate intelligent fallback analysis based on track/artist patterns
   private generateIntelligentFallback(trackTitle: string, artistName?: string): RapidSoundnetTrackAnalysis {
     console.log('🧠 Generating intelligent fallback for:', trackTitle, 'by', artistName);
+    
+    try {
     
     // Basic genre/mood detection from title and artist keywords
     const titleLower = trackTitle.toLowerCase();
@@ -248,7 +266,7 @@ class RapidSoundnetService {
       };
     }
 
-    return {
+    const result = {
       key: this.generateRandomKey(),
       mode: Math.random() > 0.6 ? 'major' : 'minor',
       tempo: baseAttributes.tempo + Math.floor(Math.random() * 20 - 10), // ±10 BPM variation
@@ -264,6 +282,22 @@ class RapidSoundnetService {
       duration: '3:30', // Default duration
       popularity: 50 + Math.floor(Math.random() * 30) // 50-80 range
     };
+    
+    console.log('✅ Generated intelligent fallback data:', {
+      key: result.key,
+      mode: result.mode,
+      happiness: result.happiness,
+      popularity: result.popularity,
+      energy: result.energy
+    });
+    
+    return result;
+    
+    } catch (error) {
+      console.error('❌ Error generating intelligent fallback:', error);
+      // Return basic fallback as last resort
+      return this.generateFallbackAnalysis(trackTitle, artistName);
+    }
   }
 
   // Generate basic fallback when no API is available
