@@ -28,6 +28,11 @@ const MusicSync = () => {
   const [selectedService, setSelectedService] = useState<string>("");
   const [selectedPlaylist, setSelectedPlaylist] = useState<string>("");
   const [isWorkoutActive, setIsWorkoutActive] = useState<boolean>(false);
+  
+  // Debug workout state changes
+  useEffect(() => {
+    console.log('🏋️ [DEBUG] Workout state changed:', { isWorkoutActive });
+  }, [isWorkoutActive]);
   const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [currentNarrative, setCurrentNarrative] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -279,6 +284,7 @@ const MusicSync = () => {
   };
 
   const handleStartWorkout = async () => {
+    console.log('🏋️ [DEBUG] handleStartWorkout called - beginning workout start process');
     
     // Try to initialize database narratives, but don't block workout if it fails
     try {
@@ -315,6 +321,7 @@ const MusicSync = () => {
         console.warn('⚠️ Web Audio Intelligence not available:', error);
       }
       
+      console.log('🏋️ [DEBUG] Setting workout as ACTIVE (non-Spotify path)');
       setIsWorkoutActive(true);
       setCurrentPhase(0);
       setCurrentNarrative(0);
@@ -380,6 +387,7 @@ const MusicSync = () => {
           }
           
           setCurrentTrackPhase(plan.phases[0]);
+          console.log('🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path)');
           setIsWorkoutActive(true);
           setCurrentPhase(0);
           setCurrentNarrative(0);
