@@ -480,14 +480,16 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex flex-wrap w-full max-w-6xl gap-1 h-auto p-1">
-          <TabsTrigger value="demo" className="text-xs md:text-sm flex-shrink-0">Demo</TabsTrigger>
-          <TabsTrigger value="live" className="text-xs md:text-sm flex-shrink-0">Live Data</TabsTrigger>
-          <TabsTrigger value="sessions" className="text-xs md:text-sm flex-shrink-0">Sessions</TabsTrigger>
-          <TabsTrigger value="data" className="text-xs md:text-sm flex-shrink-0">Analysis</TabsTrigger>
-          <TabsTrigger value="api" className="text-xs md:text-sm flex-shrink-0 bg-purple-500/20">API Usage</TabsTrigger>
-          <TabsTrigger value="patterns" className="text-xs md:text-sm flex-shrink-0">Patterns</TabsTrigger>
-        </TabsList>
+        <div className="w-full overflow-x-auto">
+          <TabsList className="flex w-full min-w-max gap-1 h-auto p-1">
+            <TabsTrigger value="demo" className="text-xs whitespace-nowrap">Demo</TabsTrigger>
+            <TabsTrigger value="live" className="text-xs whitespace-nowrap">Live Data</TabsTrigger>
+            <TabsTrigger value="sessions" className="text-xs whitespace-nowrap">Sessions</TabsTrigger>
+            <TabsTrigger value="data" className="text-xs whitespace-nowrap">Analysis</TabsTrigger>
+            <TabsTrigger value="api" className="text-xs whitespace-nowrap bg-purple-600 text-white border-purple-400">🚀 API Usage</TabsTrigger>
+            <TabsTrigger value="patterns" className="text-xs whitespace-nowrap">Patterns</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="demo" className="space-y-4">
           <SpotifyAnalysisLoggerDemo />

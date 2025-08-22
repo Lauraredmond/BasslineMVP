@@ -758,7 +758,41 @@ const MusicSync = () => {
                 console.log('🎵 📊 Starting FALLBACK Spotify analysis logging for:', playbackState.item.name);
                 console.log('⚠️ SKIPPING Spotify API calls - using Web Audio Intelligence instead');
                 
-                // Create minimal context for Spotify fallback logger (just basic track info)
+                // Get enhanced track data including Rapid Soundnet fallbacks
+                console.log('🔍 Attempting to get audio features with Rapid Soundnet fallback...');
+                let audioFeatures = null;
+                let rapidSoundnetMetadata = null;
+                
+                try {
+                  // Try to get audio features from Spotify first, then Rapid Soundnet
+                  const trackIds = [playbackState.item.id];
+                  audioFeatures = await spotifyService.getAudioFeatures(trackIds);
+                  
+                  // If Spotify fails, manually trigger Rapid Soundnet
+                  if (!audioFeatures || !audioFeatures[0]) {
+                    console.log('⚠️ Spotify audio features failed, trying Rapid Soundnet...');
+                    const rapidResult = await spotifyService.forceRapidSoundnetAnalysis(
+                      playbackState.item.name, 
+                      playbackState.item.artists.map(a => a.name).join(', ')
+                    );
+                    
+                    if (rapidResult) {
+                      audioFeatures = [rapidResult];
+                      rapidSoundnetMetadata = {
+                        dataSource: 'rapidapi',
+                        fromCache: false,
+                        fallbackType: 'api'
+                      };
+                      console.log('✅ Got Rapid Soundnet audio features:', rapidResult);
+                    }
+                  } else {
+                    console.log('✅ Got Spotify audio features:', audioFeatures[0]);
+                  }
+                } catch (error) {
+                  console.warn('⚠️ Audio features failed:', error);
+                }
+
+                // Create enhanced context with audio features and Rapid Soundnet metadata
                 const context = {
                   trackId: playbackState.item.id,
                   trackName: playbackState.item.name,
@@ -766,11 +800,23 @@ const MusicSync = () => {
                   positionMs: playbackState.progress_ms || 0,
                   fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
                   workoutIntensity: 7,
-                  audioFeatures: null // No real Spotify data - Web Audio Intelligence handles this
+                  audioFeatures: audioFeatures?.[0] || null,
+                  // Add Rapid Soundnet metadata if available
+                  ...(rapidSoundnetMetadata && {
+                    dataSource: rapidSoundnetMetadata.dataSource,
+                    fromCache: rapidSoundnetMetadata.fromCache,
+                    fallbackType: rapidSoundnetMetadata.fallbackType
+                  })
                 };
                 
                 spotifyAnalysisLogger.startTrackLogging(context);
-                console.log('✅ Minimal Spotify track logging started (Web Audio Intelligence does the real work)');
+                if (rapidSoundnetMetadata) {
+                  console.log('✅ 🚀 Enhanced track logging started with Rapid Soundnet data');
+                } else if (audioFeatures?.[0]) {
+                  console.log('✅ 🎵 Enhanced track logging started with Spotify audio features');
+                } else {
+                  console.log('✅ ⚠️ Basic track logging started (no audio features available)');
+                }
                 
               } catch (error) {
                 console.error('❌ Error in track logging setup:', error);
