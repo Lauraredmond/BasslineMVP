@@ -105,6 +105,29 @@ export interface PlaybackContext {
     tempo: number;
     time_signature: number;
   };
+  // Rapid Soundnet data (when available)
+  rapidSoundnetData?: {
+    key: string;               // Musical key as string
+    mode: string;              // 'major' or 'minor'  
+    camelot: string;           // Harmonic mixing notation
+    happiness: number;         // 0-100 scale
+    popularity: number;        // 0-100 scale
+    duration: string;          // Duration string
+    loudness: string;          // Loudness with unit
+    // Raw 0-100 values before Spotify conversion
+    energy_raw: number;
+    danceability_raw: number;
+    acousticness_raw: number;
+    instrumentalness_raw: number;
+    speechiness_raw: number;
+    liveness_raw: number;
+  };
+  // Data source info
+  dataSource?: 'spotify' | 'rapidapi' | 'fallback';
+  fromCache?: boolean;
+  fallbackType?: 'api' | 'cache' | 'intelligent' | 'basic';
+  detectedGenre?: string;
+  apiRequestsUsed?: number;
 }
 
 class SpotifyAnalysisLogger {
@@ -327,11 +350,90 @@ class SpotifyAnalysisLogger {
         liveness: context.audioFeatures?.liveness,
         valence: context.audioFeatures?.valence,
         
+        // Data source tracking
+        data_source: context.dataSource || (context.audioFeatures ? 'spotify' : 'fallback'),
+        has_real_audio_features: !!(context.audioFeatures),
+        from_cache: context.fromCache || false,
+        fallback_type: context.fallbackType,
+        detected_genre: context.detectedGenre,
+        api_requests_used: context.apiRequestsUsed,
+        
+        // Rapid Soundnet specific data (when available)
+        rs_key: context.rapidSoundnetData?.key,
+        rs_mode: context.rapidSoundnetData?.mode,
+        rs_camelot: context.rapidSoundnetData?.camelot,
+        rs_happiness: context.rapidSoundnetData?.happiness,
+        rs_popularity: context.rapidSoundnetData?.popularity,
+        rs_duration: context.rapidSoundnetData?.duration,
+        rs_loudness: context.rapidSoundnetData?.loudness,
+        rs_energy_raw: context.rapidSoundnetData?.energy_raw,
+        rs_danceability_raw: context.rapidSoundnetData?.danceability_raw,
+        rs_acousticness_raw: context.rapidSoundnetData?.acousticness_raw,
+        rs_instrumentalness_raw: context.rapidSoundnetData?.instrumentalness_raw,
+        rs_speechiness_raw: context.rapidSoundnetData?.speechiness_raw,
+        rs_liveness_raw: context.rapidSoundnetData?.liveness_raw,
+        
         // Timestamp for proper ordering
         timestamp: new Date().toISOString()
       };
 
       console.log('📝 Logging analysis entry for:', context.trackName, 'at position', currentPositionMs, 'ms');
+      console.log('📊 CAPTURED ATTRIBUTES:', {
+        // Basic track info
+        track: context.trackName,
+        artist: context.artistName,
+        tempo: logEntry.tempo,
+        key: logEntry.key_name,
+        loudness_db: logEntry.loudness,
+        
+        // Audio Features (Spotify API)
+        audioFeatures: context.audioFeatures ? {
+          danceability: context.audioFeatures.danceability,
+          energy: context.audioFeatures.energy,
+          valence: context.audioFeatures.valence,
+          acousticness: context.audioFeatures.acousticness,
+          instrumentalness: context.audioFeatures.instrumentalness,
+          liveness: context.audioFeatures.liveness,
+          speechiness: context.audioFeatures.speechiness
+        } : '❌ NO AUDIO FEATURES',
+        
+        // Advanced Analysis (deprecated API)
+        currentSection: currentSection ? {
+          start: currentSection.start,
+          tempo: currentSection.tempo,
+          key: currentSection.key,
+          loudness: currentSection.loudness
+        } : '❌ NO SECTION DATA',
+        
+        currentSegment: currentSegment ? {
+          start: currentSegment.start,
+          loudness_max: currentSegment.loudness_max,
+          pitches_count: currentSegment.pitches?.length
+        } : '❌ NO SEGMENT DATA',
+        
+        currentBeat: currentBeat ? {
+          start: currentBeat.start,
+          confidence: currentBeat.confidence
+        } : '❌ NO BEAT DATA'
+      });
+      
+      console.log('🗄️ DATABASE LOG ENTRY:', {
+        // Show exactly what's being written to database
+        audioFeaturesInLogEntry: {
+          danceability: logEntry.danceability,
+          energy: logEntry.energy,
+          valence: logEntry.valence,
+          acousticness: logEntry.acousticness,
+          instrumentalness: logEntry.instrumentalness,
+          liveness: logEntry.liveness,
+          speechiness: logEntry.speechiness
+        },
+        advancedAnalysisInLogEntry: {
+          current_section_start: logEntry.current_section_start,
+          current_beat_start: logEntry.current_beat_start,
+          current_segment_loudness_max: logEntry.current_segment_loudness_max
+        }
+      });
       
       const { error } = await supabase
         .from('spotify_analysis_logs')
@@ -339,8 +441,16 @@ class SpotifyAnalysisLogger {
 
       if (error) {
         console.error('❌ Error logging analysis data:', error);
+        console.error('❌ Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        console.error('❌ Failed log entry keys:', Object.keys(logEntry));
       } else {
         console.log('✅ Successfully logged analysis data to database');
+        console.log('✅ Logged entry included Audio Features:', !!(logEntry.danceability || logEntry.energy));
       }
     } catch (error) {
       console.error('Error in logCurrentState:', error);

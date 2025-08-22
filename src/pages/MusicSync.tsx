@@ -15,6 +15,7 @@ import { narrativeEngine } from "@/lib/narrative-engine";
 import { dbAdmin } from "@/lib/database-admin";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
+import WebAudioAnalysisLogger from "@/lib/web-audio-analysis-logger";
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
@@ -65,6 +66,10 @@ const MusicSync = () => {
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
   const [isAnalysisLogging, setIsAnalysisLogging] = useState(false);
+  
+  // Web Audio Analysis Logger
+  const [webAudioLogger, setWebAudioLogger] = useState<WebAudioAnalysisLogger | null>(null);
+  const [isWebAudioEnabled, setIsWebAudioEnabled] = useState(false);
 
   const handleBack = () => {
     navigate(-1);
@@ -295,6 +300,18 @@ const MusicSync = () => {
       await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
       setIsAnalysisLogging(true);
       
+      // Initialize Web Audio Analysis Logger as backup/alternative
+      try {
+        const logger = new WebAudioAnalysisLogger();
+        await logger.initialize();
+        await logger.startWorkoutSession(workoutFormat || 'general');
+        setWebAudioLogger(logger);
+        setIsWebAudioEnabled(true);
+        console.log('🎵 Web Audio Intelligence enabled as backup system');
+      } catch (error) {
+        console.warn('⚠️ Web Audio Intelligence not available:', error);
+      }
+      
       setIsWorkoutActive(true);
       setCurrentPhase(0);
       setCurrentNarrative(0);
@@ -346,6 +363,18 @@ const MusicSync = () => {
           await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'spotify');
           setIsAnalysisLogging(true);
           console.log('✅ Analysis logging session started, isAnalysisLogging set to true');
+          
+          // Initialize Web Audio Analysis Logger for real music intelligence
+          try {
+            const logger = new WebAudioAnalysisLogger();
+            await logger.initialize();
+            await logger.startWorkoutSession(workoutFormat || 'spotify');
+            setWebAudioLogger(logger);
+            setIsWebAudioEnabled(true);
+            console.log('🎵 Web Audio Intelligence enabled for Spotify workout');
+          } catch (error) {
+            console.warn('⚠️ Web Audio Intelligence not available:', error);
+          }
           
           setCurrentTrackPhase(plan.phases[0]);
           setIsWorkoutActive(true);
@@ -700,69 +729,36 @@ const MusicSync = () => {
             second_shown: false
           });
           
-          // Start Spotify analysis logging for the new track
+          // Start analysis logging for the new track
           if (isWorkoutActive && isSpotifyAuthenticated) {
             console.log('✅ CONDITIONS MET - Starting track logging...');
+            
+            // Start Web Audio analysis logging (real-time musical intelligence)
+            if (webAudioLogger && isWebAudioEnabled) {
+              try {
+                const webAudioContext = {
+                  trackName: playbackState.item.name,
+                  artistName: playbackState.item.artists.map(a => a.name).join(', '),
+                  trackId: playbackState.item.id,
+                  trackUri: playbackState.item.uri,
+                  positionMs: playbackState.progress_ms,
+                  isPlaying: playbackState.is_playing,
+                  fitnessPhase: currentPhase < 5 ? phases[currentPhase]?.name : 'Unknown',
+                  workoutIntensity: currentPhase + 1 // Simple intensity based on phase
+                };
+                
+                await webAudioLogger.startTrackLogging(webAudioContext);
+                console.log('🎵 Web Audio Intelligence logging started for:', playbackState.item.name);
+              } catch (error) {
+                console.warn('⚠️ Web Audio track logging failed:', error);
+              }
+            }
             const startTrackLogging = async () => {
               try {
-                console.log('🎵 📊 Starting analysis logging for:', playbackState.item.name);
+                console.log('🎵 📊 Starting FALLBACK Spotify analysis logging for:', playbackState.item.name);
+                console.log('⚠️ SKIPPING Spotify API calls - using Web Audio Intelligence instead');
                 
-                // PRIMARY: Get Audio Features (reliable, always works)
-                let audioFeaturesData = null;
-                try {
-                  console.log('🎯 Attempting Audio Features API call for track:', playbackState.item.id);
-                  const audioFeatures = await spotifyService.getAudioFeatures([playbackState.item.id]);
-                  console.log('🔍 Audio Features API response:', audioFeatures);
-                  
-                  if (audioFeatures && audioFeatures.length > 0) {
-                    audioFeaturesData = audioFeatures[0];
-                    console.log('🎉 SUCCESS! Got Audio Features:', {
-                      tempo: audioFeaturesData.tempo,
-                      key: audioFeaturesData.key,
-                      danceability: audioFeaturesData.danceability,
-                      energy: audioFeaturesData.energy,
-                      valence: audioFeaturesData.valence,
-                      acousticness: audioFeaturesData.acousticness
-                    });
-                  } else {
-                    console.warn('⚠️ Audio Features API returned empty array');
-                  }
-                } catch (featuresError) {
-                  console.error('❌ Audio Features API failed:', featuresError);
-                  console.error('❌ Error details:', featuresError.message, featuresError.status);
-                }
-                
-                // SECONDARY: Try Audio Analysis (might fail due to deprecation)
-                let analysisData = null;
-                try {
-                  console.log('🎯 Attempting Audio Analysis API call for track:', playbackState.item.id);
-                  analysisData = await spotifyService.getAudioAnalysis(playbackState.item.id);
-                  
-                  if (analysisData) {
-                    console.log('🚀 JACKPOT! Got full Audio Analysis data:', {
-                      bars: analysisData.bars?.length,
-                      beats: analysisData.beats?.length,
-                      sections: analysisData.sections?.length,
-                      segments: analysisData.segments?.length,
-                      track_tempo: analysisData.track?.tempo,
-                      track_key: analysisData.track?.key
-                    });
-                    
-                    await spotifyAnalysisLogger.storeTrackAnalysis(
-                      playbackState.item.id,
-                      playbackState.item.name,
-                      playbackState.item.artists.map(a => a.name).join(', '),
-                      analysisData
-                    );
-                  } else {
-                    console.warn('⚠️ Audio Analysis API returned null');
-                  }
-                } catch (analysisError) {
-                  console.error('❌ Audio Analysis API failed:', analysisError);
-                  console.error('❌ Analysis error details:', analysisError.message, analysisError.status);
-                }
-                
-                // Create context with Audio Features data
+                // Create minimal context for Spotify fallback logger (just basic track info)
                 const context = {
                   trackId: playbackState.item.id,
                   trackName: playbackState.item.name,
@@ -770,11 +766,11 @@ const MusicSync = () => {
                   positionMs: playbackState.progress_ms || 0,
                   fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
                   workoutIntensity: 7,
-                  audioFeatures: audioFeaturesData // Pass real Audio Features data
+                  audioFeatures: null // No real Spotify data - Web Audio Intelligence handles this
                 };
                 
                 spotifyAnalysisLogger.startTrackLogging(context);
-                console.log('✅ Track logging started with real Audio Features data');
+                console.log('✅ Minimal Spotify track logging started (Web Audio Intelligence does the real work)');
                 
               } catch (error) {
                 console.error('❌ Error in track logging setup:', error);
@@ -1622,6 +1618,15 @@ const MusicSync = () => {
       </Dialog>
 
       <BottomNavigation />
+      
+      {/* Web Audio Intelligence Status */}
+      {isWebAudioEnabled && (
+        <div className="fixed bottom-32 right-4 z-50">
+          <div className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg text-xs">
+            🎵 Web Audio Intelligence Active
+          </div>
+        </div>
+      )}
       
       {/* Research Lab Toggle */}
       {isAnalysisLogging && (

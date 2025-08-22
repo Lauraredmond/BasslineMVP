@@ -1,6 +1,9 @@
 // Spotify Web API integration for Bassline Fitness
 // Using Authorization Code with PKCE flow for secure frontend authentication
 
+import { rapidSoundnetService } from './rapid-soundnet';
+import { trackAnalysisCache } from './track-analysis-cache';
+
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
 // Automatically detect environment and use appropriate redirect URI
@@ -197,7 +200,9 @@ class SpotifyService {
       'user-read-email',
       'user-read-playback-state',
       'user-modify-playback-state',
-      'streaming'
+      'streaming',
+      'user-read-currently-playing',
+      'user-read-recently-played'
     ].join(' ');
 
     // Generate PKCE parameters
@@ -269,6 +274,55 @@ class SpotifyService {
     return !!this.accessToken;
   }
 
+  // Validate current access token by making a simple API call
+  async validateToken(): Promise<boolean> {
+    if (!this.accessToken) {
+      console.log('🚨 No access token to validate');
+      return false;
+    }
+
+    try {
+      console.log('🔍 Validating Spotify access token...');
+      const response = await fetch('https://api.spotify.com/v1/me', {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`
+        }
+      });
+
+      console.log('🔍 Token validation response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('✅ Token is valid! User:', {
+          id: userData.id,
+          display_name: userData.display_name,
+          product: userData.product
+        });
+        return true;
+      } else {
+        console.error('❌ Token validation failed:', {
+          status: response.status,
+          statusText: response.statusText
+        });
+        
+        if (response.status === 401) {
+          console.log('🔄 Token expired, clearing stored token');
+          this.accessToken = null;
+          localStorage.removeItem('spotify_access_token');
+          localStorage.removeItem('spotify_refresh_token');
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error('💥 Token validation exception:', error);
+      return false;
+    }
+  }
+
   // Get current user's playlists
   async getUserPlaylists(): Promise<SpotifyPlaylist[]> {
     if (!this.accessToken) {
@@ -324,20 +378,64 @@ class SpotifyService {
   // Get audio features for tracks
   async getAudioFeatures(trackIds: string[]): Promise<SpotifyAudioFeatures[]> {
     if (!this.accessToken || trackIds.length === 0) {
+      console.log('🚨 getAudioFeatures: Missing access token or empty trackIds', {
+        hasAccessToken: !!this.accessToken,
+        trackIdsLength: trackIds.length,
+        trackIds
+      });
       return [];
     }
 
     try {
+      console.log('🎯 Making Audio Features API request:', {
+        url: `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`,
+        trackIds,
+        hasToken: !!this.accessToken
+      });
+      
       const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`
         }
       });
 
+      console.log('📡 Audio Features API response status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        console.error('❌ Audio Features API error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+        
+        const errorText = await response.text();
+        console.error('❌ Audio Features API error body:', errorText);
+        return [];
+      }
+
       const data = await response.json();
-      return data.audio_features || [];
+      console.log('📊 Audio Features API raw data:', data);
+      
+      const features = data.audio_features || [];
+      console.log('🔍 Parsed audio features:', {
+        count: features.length,
+        features: features.map(f => f ? {
+          id: f.id,
+          tempo: f.tempo,
+          key: f.key,
+          danceability: f.danceability,
+          energy: f.energy
+        } : null)
+      });
+      
+      return features;
     } catch (error) {
-      console.error('Error fetching audio features:', error);
+      console.error('💥 Audio Features API exception:', error);
+      console.error('💥 Exception details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return [];
     }
   }
@@ -382,7 +480,7 @@ class SpotifyService {
     }
   }
 
-  // Enhance tracks with audio features
+  // Enhance tracks with audio features using Spotify API + Rapid Soundnet fallback
   private async enhanceTracksWithAudioFeatures(tracks: SpotifyTrack[]): Promise<SpotifyTrack[]> {
     const validTracks = tracks.filter(track => track && track.id);
     if (validTracks.length === 0) return tracks;
@@ -390,10 +488,149 @@ class SpotifyService {
     const trackIds = validTracks.map(track => track.id);
     const audioFeatures = await this.getAudioFeatures(trackIds);
     
-    return validTracks.map((track, index) => ({
-      ...track,
-      audio_features: audioFeatures[index] || undefined
+    // Enhanced tracks with Spotify audio features first, then Rapid Soundnet fallback
+    const enhancedTracks = await Promise.all(validTracks.map(async (track, index) => {
+      let audio_features = audioFeatures[index];
+      let rapidSoundnetMetadata = null;
+      
+      // If Spotify audio features failed, try Rapid Soundnet
+      if (!audio_features) {
+        console.log(`⚠️ No Spotify audio features for: ${track.name} by ${track.artists?.[0]?.name}`);
+        const rapidResult = await this.getRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+        audio_features = rapidResult.audioFeatures;
+        
+        // Store metadata for research lab
+        if (rapidResult.rapidSoundnetData) {
+          rapidSoundnetMetadata = {
+            ...rapidResult,
+            // Convert raw data for logging
+            rapidSoundnetData: {
+              key: rapidResult.rapidSoundnetData.key,
+              mode: rapidResult.rapidSoundnetData.mode,
+              camelot: rapidResult.rapidSoundnetData.camelot,
+              happiness: rapidResult.rapidSoundnetData.happiness,
+              popularity: rapidResult.rapidSoundnetData.popularity,
+              duration: rapidResult.rapidSoundnetData.duration,
+              loudness: rapidResult.rapidSoundnetData.loudness,
+              energy_raw: rapidResult.rapidSoundnetData.energy,
+              danceability_raw: rapidResult.rapidSoundnetData.danceability,
+              acousticness_raw: rapidResult.rapidSoundnetData.acousticness,
+              instrumentalness_raw: rapidResult.rapidSoundnetData.instrumentalness,
+              speechiness_raw: rapidResult.rapidSoundnetData.speechiness,
+              liveness_raw: rapidResult.rapidSoundnetData.liveness
+            }
+          };
+        }
+      }
+      
+      return {
+        ...track,
+        audio_features: audio_features || undefined,
+        // Add metadata for research lab integration
+        _rapidSoundnetMetadata: rapidSoundnetMetadata
+      };
     }));
+    
+    return enhancedTracks;
+  }
+
+  // Get audio features from Rapid Soundnet API (with caching) - returns both Spotify format and metadata
+  private async getRapidSoundnetAudioFeatures(trackName: string, artistName?: string): Promise<{
+    audioFeatures: SpotifyAudioFeatures | null;
+    rapidSoundnetData?: any;
+    dataSource?: string;
+    fromCache?: boolean;
+    fallbackType?: string;
+    detectedGenre?: string;
+    apiRequestsUsed?: number;
+  }> {
+    try {
+      const usage = rapidSoundnetService.getRequestUsage();
+      
+      // Check cache first
+      const cached = trackAnalysisCache.getCached(trackName, artistName);
+      if (cached) {
+        console.log('📚 Using cached Rapid Soundnet data for:', trackName);
+        const audioFeatures = rapidSoundnetService.convertToSpotifyAudioFeatures(cached);
+        return {
+          audioFeatures,
+          rapidSoundnetData: cached,
+          dataSource: 'rapidapi',
+          fromCache: true,
+          fallbackType: 'cache',
+          apiRequestsUsed: usage.used
+        };
+      }
+
+      // Check if we can make a request
+      if (!rapidSoundnetService.canMakeRequest()) {
+        console.warn(`⚠️ Rapid Soundnet API limit reached (${usage.used}/${3}). Next reset: ${rapidSoundnetService.getTimeUntilReset()}`);
+        
+        // Try intelligent fallback
+        const analysis = await rapidSoundnetService.getTrackAnalysis(trackName, artistName, true);
+        if (analysis) {
+          const audioFeatures = rapidSoundnetService.convertToSpotifyAudioFeatures(analysis);
+          return {
+            audioFeatures,
+            rapidSoundnetData: analysis,
+            dataSource: 'fallback',
+            fromCache: false,
+            fallbackType: 'intelligent',
+            detectedGenre: this.detectGenreFromName(trackName, artistName),
+            apiRequestsUsed: usage.used
+          };
+        }
+        
+        return { audioFeatures: null };
+      }
+
+      // Make API request
+      console.log('🎯 Fetching from Rapid Soundnet API:', trackName, 'by', artistName);
+      const analysis = await rapidSoundnetService.getTrackAnalysis(trackName, artistName);
+      
+      if (analysis) {
+        // Cache the result
+        trackAnalysisCache.setCached(trackName, analysis, artistName, 'rapidapi');
+        
+        // Convert to Spotify format
+        const audioFeatures = rapidSoundnetService.convertToSpotifyAudioFeatures(analysis);
+        console.log('✅ Rapid Soundnet analysis converted to Spotify format:', {
+          track: trackName,
+          tempo: audioFeatures.tempo,
+          key: audioFeatures.key,
+          energy: audioFeatures.energy,
+          danceability: audioFeatures.danceability
+        });
+        
+        const newUsage = rapidSoundnetService.getRequestUsage();
+        return {
+          audioFeatures,
+          rapidSoundnetData: analysis,
+          dataSource: 'rapidapi',
+          fromCache: false,
+          fallbackType: 'api',
+          apiRequestsUsed: newUsage.used
+        };
+      }
+      
+      return { audioFeatures: null };
+    } catch (error) {
+      console.error('💥 Error getting Rapid Soundnet audio features:', error);
+      return { audioFeatures: null };
+    }
+  }
+
+  // Simple genre detection helper
+  private detectGenreFromName(trackName: string, artistName?: string): string {
+    const text = `${trackName} ${artistName || ''}`.toLowerCase();
+    
+    if (text.includes('remix') || text.includes('dance') || text.includes('electronic') || text.includes('edm')) return 'electronic';
+    if (text.includes('acoustic') || text.includes('folk') || text.includes('unplugged')) return 'acoustic';
+    if (text.includes('rock') || text.includes('metal') || text.includes('punk')) return 'rock';
+    if (text.includes('rap') || text.includes('hip hop') || text.includes('trap')) return 'hip-hop';
+    if (text.includes('pop') || text.includes('hit') || text.includes('single')) return 'pop';
+    
+    return 'unknown';
   }
 
   // Refresh access token using PKCE
@@ -438,6 +675,8 @@ class SpotifyService {
     this.refreshToken = null;
     localStorage.removeItem('spotify_access_token');
     localStorage.removeItem('spotify_refresh_token');
+    localStorage.removeItem('spotify_pkce_verifier');
+    console.log('🚪 Cleared all Spotify tokens - please re-authenticate');
   }
 
   // Get current user profile
@@ -697,6 +936,21 @@ class SpotifyService {
       offset: { uri: trackUri },
       device_id
     });
+  }
+
+  // Get Rapid Soundnet API usage info
+  getRapidSoundnetUsage() {
+    return rapidSoundnetService.getRequestUsage();
+  }
+
+  // Get track analysis cache stats
+  getCacheStats() {
+    return trackAnalysisCache.getStats();
+  }
+
+  // Force refresh track with Rapid Soundnet (for testing/manual override)
+  async forceRapidSoundnetAnalysis(trackName: string, artistName?: string): Promise<SpotifyAudioFeatures | null> {
+    return this.getRapidSoundnetAudioFeatures(trackName, artistName);
   }
 }
 

@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '../lib/supabase';
 import { SpotifyAnalysisLoggerDemo } from './SpotifyAnalysisLoggerDemo';
-import { AlertCircle, Download, Filter, RefreshCw } from 'lucide-react';
+import { AlertCircle, Download, Filter, RefreshCw, Activity, Clock, Database, TrendingUp } from 'lucide-react';
+import { spotifyService } from '../lib/spotify';
 
 interface AnalysisLog {
   id: string;
@@ -47,11 +48,47 @@ interface AnalysisLog {
   current_beat_confidence: number;
   current_bar_confidence: number;
   current_tatum_confidence: number;
+  current_beat_start: number;
+  current_bar_start: number;
+  current_section_start: number;
+  
+  // Audio Features (from Spotify Audio Features API)
+  danceability: number;
+  energy: number;
+  valence: number;
+  acousticness: number;
+  instrumentalness: number;
+  liveness: number;
+  speechiness: number;
+  
+  // Data source info
+  data_source: string;
+  has_real_audio_features: boolean;
+  from_cache: boolean;
+  fallback_type: string;
+  detected_genre: string;
+  api_requests_used: number;
+  
+  // Rapid Soundnet specific attributes
+  rs_key: string;
+  rs_mode: string;
+  rs_camelot: string;
+  rs_happiness: number;
+  rs_popularity: number;
+  rs_duration: string;
+  rs_loudness: string;
+  rs_energy_raw: number;
+  rs_danceability_raw: number;
+  rs_acousticness_raw: number;
+  rs_instrumentalness_raw: number;
+  rs_speechiness_raw: number;
+  rs_liveness_raw: number;
   
   // Fitness context
   fitness_phase: string;
   workout_intensity: number;
   user_notes: string;
+  created_at?: string;
 }
 
 interface PlaybackSession {
@@ -76,6 +113,8 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
   const [liveData, setLiveData] = useState<AnalysisLog[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [monitorInterval, setMonitorInterval] = useState<number | null>(null);
+  const [apiUsage, setApiUsage] = useState<any>(null);
+  const [cacheStats, setCacheStats] = useState<any>(null);
 
   // Load all sessions
   const loadSessions = async () => {
@@ -134,7 +173,18 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
       'track_key', 'track_mode', 'current_section_loudness', 'current_section_tempo',
       'current_section_key', 'current_section_mode', 'current_segment_loudness_max',
       'current_segment_pitches', 'current_segment_timbre', 'fitness_phase',
-      'workout_intensity', 'user_notes'
+      'workout_intensity', 'user_notes',
+      // Audio Features
+      'danceability', 'energy', 'valence', 'acousticness', 'instrumentalness', 
+      'liveness', 'speechiness',
+      // Data source info
+      'data_source', 'has_real_audio_features', 'from_cache', 'fallback_type', 
+      'detected_genre', 'api_requests_used',
+      // Rapid Soundnet specific
+      'rs_key', 'rs_mode', 'rs_camelot', 'rs_happiness', 'rs_popularity', 
+      'rs_duration', 'rs_loudness', 'rs_energy_raw', 'rs_danceability_raw',
+      'rs_acousticness_raw', 'rs_instrumentalness_raw', 'rs_speechiness_raw', 
+      'rs_liveness_raw'
     ];
 
     const csvContent = [
@@ -159,7 +209,36 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         `"${log.current_segment_timbre?.join(';') || ''}"`,
         log.fitness_phase || '',
         log.workout_intensity || '',
-        `"${log.user_notes || ''}"`
+        `"${log.user_notes || ''}"`,
+        // Audio Features
+        log.danceability || '',
+        log.energy || '',
+        log.valence || '',
+        log.acousticness || '',
+        log.instrumentalness || '',
+        log.liveness || '',
+        log.speechiness || '',
+        // Data source info
+        log.data_source || '',
+        log.has_real_audio_features || false,
+        log.from_cache || false,
+        log.fallback_type || '',
+        log.detected_genre || '',
+        log.api_requests_used || '',
+        // Rapid Soundnet specific
+        log.rs_key || '',
+        log.rs_mode || '',
+        log.rs_camelot || '',
+        log.rs_happiness || '',
+        log.rs_popularity || '',
+        log.rs_duration || '',
+        `"${log.rs_loudness || ''}"`,
+        log.rs_energy_raw || '',
+        log.rs_danceability_raw || '',
+        log.rs_acousticness_raw || '',
+        log.rs_instrumentalness_raw || '',
+        log.rs_speechiness_raw || '',
+        log.rs_liveness_raw || ''
       ].join(','))
     ].join('\n');
 
@@ -195,14 +274,14 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     const pollInterval = window.setInterval(async () => {
       try {
         console.log('🔍 Polling for live data...');
-        const fiveMinutesAgo = new Date(Date.now() - 300000).toISOString();
-        console.log('📅 Searching for logs since:', fiveMinutesAgo);
+        const sixtySecondsAgo = new Date(Date.now() - 60000).toISOString(); // Only last 60 seconds
+        console.log('📅 Searching for logs since:', sixtySecondsAgo, '(last 60 seconds)');
         
         // Try both timestamp and created_at columns to be safe
         const { data, error } = await supabase
           .from('spotify_analysis_logs')
           .select('*')
-          .or(`created_at.gte.${fiveMinutesAgo},timestamp.gte.${fiveMinutesAgo}`)
+          .or(`created_at.gte.${sixtySecondsAgo},timestamp.gte.${sixtySecondsAgo}`)
           .order('created_at', { ascending: false })
           .limit(20);
 
@@ -212,12 +291,40 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         }
         
         console.log('📊 Found', data?.length || 0, 'recent analysis logs');
+        console.log('🚨 RAW DATABASE RESPONSE:', JSON.stringify(data, null, 2));
         if (data && data.length > 0) {
-          console.log('🎵 Latest log sample:', {
-            track_name: data[0].track_name,
-            created_at: data[0].created_at,
-            tempo: data[0].track_tempo,
-            fitness_phase: data[0].fitness_phase
+          const sample = data[0];
+          console.log('🔍 DETAILED log entry analysis:', {
+            trackName: sample.track_name,
+            
+            // Basic attributes
+            tempo: sample.track_tempo,
+            key: sample.track_key,
+            loudness: sample.track_loudness,
+            
+            // Audio Features
+            hasAudioFeatures: !!(sample.danceability || sample.energy || sample.valence),
+            audioFeatures: {
+              danceability: sample.danceability,
+              energy: sample.energy,
+              valence: sample.valence,
+              acousticness: sample.acousticness,
+              instrumentalness: sample.instrumentalness,
+              liveness: sample.liveness,
+              speechiness: sample.speechiness
+            },
+            
+            // Advanced Analysis
+            hasAdvancedAnalysis: !!(sample.current_section_start !== undefined || sample.current_beat_start !== undefined),
+            advancedAnalysis: {
+              sectionStart: sample.current_section_start,
+              beatStart: sample.current_beat_start,
+              sectionTempo: sample.current_section_tempo,
+              segmentLoudnessMax: sample.current_segment_loudness_max
+            },
+            
+            // All available columns
+            allKeys: Object.keys(sample)
           });
         } else {
           console.log('🔍 No data found - checking if any logs exist at all...');
@@ -237,6 +344,28 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         }
         
         setLiveData(data || []);
+        
+        // Test database schema by trying to select Audio Features columns explicitly
+        if (data && data.length > 0) {
+          console.log('🔬 SCHEMA TEST - Testing if Audio Features columns exist...');
+          try {
+            const { data: schemaTest, error: schemaError } = await supabase
+              .from('spotify_analysis_logs')
+              .select('danceability, energy, valence, acousticness')
+              .limit(1);
+            
+            if (schemaError) {
+              console.error('❌ SCHEMA ERROR - Audio Features columns missing:', schemaError.message);
+              console.error('❌ Database table needs Audio Features columns added!');
+            } else {
+              console.log('✅ SCHEMA OK - Audio Features columns exist in database');
+              console.log('✅ Schema test result:', schemaTest);
+            }
+          } catch (schemaErr) {
+            console.error('❌ SCHEMA TEST FAILED:', schemaErr);
+          }
+        }
+        
       } catch (error) {
         console.error('❌ Error fetching live data:', error);
       }
@@ -254,8 +383,63 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     }
   };
 
+  // Load API usage statistics
+  const loadApiUsage = () => {
+    try {
+      const usage = spotifyService.getRapidSoundnetUsage();
+      const cache = spotifyService.getCacheStats();
+      setApiUsage(usage);
+      setCacheStats(cache);
+    } catch (error) {
+      console.error('Error loading API usage:', error);
+    }
+  };
+
+  // Calculate API usage statistics from database
+  const [dataSourceStats, setDataSourceStats] = useState<any>(null);
+  
+  const loadDataSourceStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('spotify_analysis_logs')
+        .select('data_source, fallback_type, from_cache, api_requests_used, detected_genre')
+        .order('created_at', { ascending: false })
+        .limit(1000); // Last 1000 entries
+
+      if (error) throw error;
+
+      if (data) {
+        const stats = {
+          total: data.length,
+          bySource: data.reduce((acc: any, log: any) => {
+            acc[log.data_source] = (acc[log.data_source] || 0) + 1;
+            return acc;
+          }, {}),
+          byFallback: data.reduce((acc: any, log: any) => {
+            if (log.fallback_type) {
+              acc[log.fallback_type] = (acc[log.fallback_type] || 0) + 1;
+            }
+            return acc;
+          }, {}),
+          cached: data.filter(log => log.from_cache).length,
+          genres: data.reduce((acc: any, log: any) => {
+            if (log.detected_genre) {
+              acc[log.detected_genre] = (acc[log.detected_genre] || 0) + 1;
+            }
+            return acc;
+          }, {})
+        };
+        setDataSourceStats(stats);
+      }
+    } catch (error) {
+      console.error('Error loading data source stats:', error);
+    }
+  };
+
   useEffect(() => {
     loadSessions();
+    loadApiUsage();
+    loadDataSourceStats();
     
     // Auto-start live monitoring if requested
     console.log('🔍 SpotifyAnalysisViewer mounted - autoStart:', autoStart, 'isMonitoring:', isMonitoring);
@@ -296,12 +480,13 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 w-full max-w-3xl">
-          <TabsTrigger value="demo">Demo Logger</TabsTrigger>
-          <TabsTrigger value="live">Live Data</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="data">Analysis Data</TabsTrigger>
-          <TabsTrigger value="patterns">Patterns</TabsTrigger>
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full max-w-5xl gap-1">
+          <TabsTrigger value="demo" className="text-xs md:text-sm">Demo</TabsTrigger>
+          <TabsTrigger value="live" className="text-xs md:text-sm">Live Data</TabsTrigger>
+          <TabsTrigger value="sessions" className="text-xs md:text-sm">Sessions</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs md:text-sm">Analysis</TabsTrigger>
+          <TabsTrigger value="api" className="text-xs md:text-sm">API Usage</TabsTrigger>
+          <TabsTrigger value="patterns" className="text-xs md:text-sm">Patterns</TabsTrigger>
         </TabsList>
 
         <TabsContent value="demo" className="space-y-4">
@@ -333,30 +518,165 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
               <ScrollArea className="h-96">
                 <div className="space-y-3">
                   {liveData.length > 0 ? (
-                    liveData.map((log, index) => (
+                    liveData
+                      .sort((a, b) => new Date(b.created_at || b.timestamp || 0).getTime() - new Date(a.created_at || a.timestamp || 0).getTime())
+                      .map((log, index) => (
                       <Card key={log.id} className="border-green-500/30 bg-green-950/20">
-                        <CardContent className="p-3">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-cream">
-                            <div>
-                              <p className="text-green-400 font-semibold">{log.track_name}</p>
-                              <p className="text-cream/90 text-xs">{formatTime(log.playback_position_ms)}</p>
+                        <CardContent className="p-4">
+                          <div className="space-y-3">
+                            {/* Track Header */}
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-green-400 font-semibold text-lg">{log.track_name}</p>
+                                <p className="text-cream/90 text-sm">{log.artist_name}</p>
+                                <p className="text-cream/70 text-xs">{formatTime(log.playback_position_ms)} • {new Date(log.created_at || log.timestamp || Date.now()).toLocaleTimeString()}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Badge variant="outline" className="text-xs text-green-400 border-green-400">Live</Badge>
+                                {log.data_source && (
+                                  <Badge 
+                                    variant="outline" 
+                                    className={`text-xs ${
+                                      log.data_source === 'spotify' ? 'text-blue-400 border-blue-400' :
+                                      log.data_source === 'rapidapi' ? 'text-purple-400 border-purple-400' :
+                                      'text-yellow-400 border-yellow-400'
+                                    }`}
+                                  >
+                                    {log.data_source === 'spotify' ? 'Spotify' :
+                                     log.data_source === 'rapidapi' ? 'RapidAPI' :
+                                     'Fallback'}
+                                  </Badge>
+                                )}
+                                {log.from_cache && (
+                                  <Badge variant="outline" className="text-xs text-cyan-400 border-cyan-400">Cache</Badge>
+                                )}
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-cream">Tempo: <span className="text-yellow-400">{log.track_tempo?.toFixed(1)} BPM</span></p>
-                              <p className="text-cream">Key: <span className="text-blue-400">{formatKey(log.track_key, log.track_mode)}</span></p>
+                            
+                            {/* Basic Track Info */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <p className="text-cream/70 text-xs">TEMPO</p>
+                                <p className="text-yellow-400 font-bold">{log.track_tempo?.toFixed(1)} BPM</p>
+                              </div>
+                              <div>
+                                <p className="text-cream/70 text-xs">KEY</p>
+                                <p className="text-blue-400 font-bold">{formatKey(log.track_key, log.track_mode)}</p>
+                              </div>
+                              <div>
+                                <p className="text-cream/70 text-xs">LOUDNESS</p>
+                                <p className="text-red-400 font-bold">{(log.track_loudness || log.current_section_loudness)?.toFixed(1)} dB</p>
+                              </div>
+                              <div>
+                                <p className="text-cream/70 text-xs">PHASE</p>
+                                <p className="text-purple-400 font-bold">{log.fitness_phase || 'N/A'}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-cream">Loudness: <span className="text-red-400">{log.current_section_loudness?.toFixed(1)} dB</span></p>
-                              <p className="text-cream">Phase: <span className="text-purple-400">{log.fitness_phase || 'N/A'}</span></p>
-                            </div>
-                            <div className="text-right text-cream">
-                              <p className="text-cream/90 text-xs">
-                                {new Date(log.created_at || log.timestamp || Date.now()).toLocaleTimeString()}
-                              </p>
-                              <Badge variant="outline" className="text-xs text-green-400 border-green-400">
-                                LIVE
-                              </Badge>
-                            </div>
+
+                            {/* Audio Features */}
+                            {(log.danceability || log.energy || log.valence) && (
+                              <div>
+                                <p className="text-cream font-semibold text-sm mb-2">🎵 Audio Features {log.data_source === 'rapidapi' ? '(RapidAPI)' : '(Spotify)'}</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                  {log.danceability && (
+                                    <div>
+                                      <p className="text-cream/70">Dance</p>
+                                      <p className="text-orange-400 font-bold">{(log.danceability * 100).toFixed(0)}%</p>
+                                      {log.rs_danceability_raw && (
+                                        <p className="text-cream/50 text-[10px]">Raw: {log.rs_danceability_raw}/100</p>
+                                      )}
+                                    </div>
+                                  )}
+                                  {log.energy && (
+                                    <div>
+                                      <p className="text-cream/70">Energy</p>
+                                      <p className="text-red-400 font-bold">{(log.energy * 100).toFixed(0)}%</p>
+                                      {log.rs_energy_raw && (
+                                        <p className="text-cream/50 text-[10px]">Raw: {log.rs_energy_raw}/100</p>
+                                      )}
+                                    </div>
+                                  )}
+                                  {log.valence && (
+                                    <div>
+                                      <p className="text-cream/70">Mood</p>
+                                      <p className="text-green-400 font-bold">{(log.valence * 100).toFixed(0)}%</p>
+                                      {log.rs_happiness && (
+                                        <p className="text-cream/50 text-[10px]">Happy: {log.rs_happiness}/100</p>
+                                      )}
+                                    </div>
+                                  )}
+                                  {log.acousticness && (
+                                    <div>
+                                      <p className="text-cream/70">Acoustic</p>
+                                      <p className="text-blue-400 font-bold">{(log.acousticness * 100).toFixed(0)}%</p>
+                                      {log.rs_acousticness_raw && (
+                                        <p className="text-cream/50 text-[10px]">Raw: {log.rs_acousticness_raw}/100</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Rapid Soundnet Specific Metrics */}
+                            {(log.rs_key || log.rs_camelot || log.rs_popularity) && (
+                              <div>
+                                <p className="text-cream font-semibold text-sm mb-2">🚀 Rapid Soundnet Metrics</p>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                  {log.rs_key && (
+                                    <div>
+                                      <p className="text-cream/70">Key</p>
+                                      <p className="text-purple-400 font-bold">{log.rs_key} {log.rs_mode}</p>
+                                    </div>
+                                  )}
+                                  {log.rs_camelot && (
+                                    <div>
+                                      <p className="text-cream/70">Camelot</p>
+                                      <p className="text-purple-400 font-bold">{log.rs_camelot}</p>
+                                    </div>
+                                  )}
+                                  {log.rs_popularity && (
+                                    <div>
+                                      <p className="text-cream/70">Popularity</p>
+                                      <p className="text-purple-400 font-bold">{log.rs_popularity}/100</p>
+                                    </div>
+                                  )}
+                                  {log.rs_duration && (
+                                    <div>
+                                      <p className="text-cream/70">Duration</p>
+                                      <p className="text-purple-400 font-bold">{log.rs_duration}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Advanced Analysis */}
+                            {(log.current_section_start !== undefined || log.current_beat_start !== undefined) && (
+                              <div>
+                                <p className="text-cream font-semibold text-sm mb-2">🔬 Advanced Analysis</p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                                  {log.current_section_start !== undefined && (
+                                    <div>
+                                      <p className="text-cream/70">Section</p>
+                                      <p className="text-cyan-400">{log.current_section_start?.toFixed(1)}s</p>
+                                    </div>
+                                  )}
+                                  {log.current_beat_start !== undefined && (
+                                    <div>
+                                      <p className="text-cream/70">Beat</p>
+                                      <p className="text-pink-400">{log.current_beat_start?.toFixed(2)}s</p>
+                                    </div>
+                                  )}
+                                  {log.current_segment_loudness_max && (
+                                    <div>
+                                      <p className="text-cream/70">Seg Peak</p>
+                                      <p className="text-yellow-400">{log.current_segment_loudness_max?.toFixed(1)} dB</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
@@ -496,9 +816,25 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               </div>
                               
                               <div>
-                                <h4 className="font-semibold text-cream mb-2">Timing</h4>
+                                <h4 className="font-semibold text-cream mb-2">Audio Features</h4>
+                                <p className="text-cream">Danceability: {log.danceability ? `${(log.danceability * 100).toFixed(0)}%` : 'N/A'}</p>
+                                <p className="text-cream">Energy: {log.energy ? `${(log.energy * 100).toFixed(0)}%` : 'N/A'}</p>
+                                <p className="text-cream">Valence: {log.valence ? `${(log.valence * 100).toFixed(0)}%` : 'N/A'}</p>
+                                <p className="text-cream">Acousticness: {log.acousticness ? `${(log.acousticness * 100).toFixed(0)}%` : 'N/A'}</p>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold text-cream mb-2">More Features</h4>
+                                <p className="text-cream">Instrumentalness: {log.instrumentalness ? `${(log.instrumentalness * 100).toFixed(0)}%` : 'N/A'}</p>
+                                <p className="text-cream">Liveness: {log.liveness ? `${(log.liveness * 100).toFixed(0)}%` : 'N/A'}</p>
+                                <p className="text-cream">Speechiness: {log.speechiness ? `${(log.speechiness * 100).toFixed(0)}%` : 'N/A'}</p>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold text-cream mb-2">Timing Analysis</h4>
                                 <p className="text-cream">Beat Confidence: {(log.current_beat_confidence * 100)?.toFixed(1)}%</p>
                                 <p className="text-cream">Bar Confidence: {(log.current_bar_confidence * 100)?.toFixed(1)}%</p>
+                                <p className="text-cream">Section Start: {log.current_section_start?.toFixed(1)}s</p>
                               </div>
                             </div>
                             
@@ -508,6 +844,17 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                                 <p className="text-cream text-sm">{log.user_notes}</p>
                               </div>
                             )}
+                            
+                            {/* Debug Info */}
+                            <div className="mt-4 p-3 bg-red-950/20 rounded-lg border border-red-500/30">
+                              <h4 className="font-semibold text-red-400 mb-1">🔧 Debug Status</h4>
+                              <div className="text-xs text-cream/80 space-y-1">
+                                <p>Audio Features: {(log.danceability || log.energy || log.valence) ? '✅ Available' : '❌ Missing'}</p>
+                                <p>Advanced Analysis: {(log.current_section_start !== undefined || log.current_beat_start !== undefined) ? '✅ Available' : '❌ Missing'}</p>
+                                <p>Session ID: {log.session_id}</p>
+                                <p>Created: {new Date(log.timestamp || log.created_at).toLocaleTimeString()}</p>
+                              </div>
+                            </div>
                           </CardContent>
                         </Card>
                       ))}
@@ -522,6 +869,228 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="api" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* API Usage Status */}
+            <Card className="bg-burgundy-dark/30 border-cream/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-purple-400" />
+                  <CardTitle className="text-cream">Rapid Soundnet API Status</CardTitle>
+                </div>
+                <CardDescription className="text-cream/90">
+                  Current API quota and usage statistics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {apiUsage ? (
+                    <>
+                      <div className="flex items-center justify-between p-4 bg-burgundy-accent/20 rounded-lg">
+                        <div>
+                          <p className="text-sm text-cream/70">Requests Used</p>
+                          <p className="text-2xl font-bold text-purple-400">{apiUsage.used} / 3</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-cream/70">Remaining</p>
+                          <p className="text-2xl font-bold text-green-400">{apiUsage.remaining}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 bg-burgundy-accent/20 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Clock className="w-4 h-4 text-cream/70" />
+                          <p className="text-sm text-cream/70">Next Reset</p>
+                        </div>
+                        <p className="text-cream font-semibold">
+                          {new Date(apiUsage.resetTime).toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="w-full bg-burgundy-accent/30 rounded-full h-2">
+                        <div 
+                          className="bg-purple-400 h-2 rounded-full transition-all" 
+                          style={{ width: `${(apiUsage.used / 3) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-cream/70 text-center">
+                        {((apiUsage.used / 3) * 100).toFixed(1)}% quota used
+                      </p>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-cream/70">
+                      <Activity className="w-12 h-12 mx-auto mb-4 text-cream/40" />
+                      <p>Loading API usage statistics...</p>
+                    </div>
+                  )}
+                  
+                  <Button
+                    onClick={loadApiUsage}
+                    variant="outline"
+                    className="w-full text-cream border-cream hover:bg-cream hover:text-maroon"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh Usage
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Cache Statistics */}
+            <Card className="bg-burgundy-dark/30 border-cream/20">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Database className="w-5 h-5 text-blue-400" />
+                  <CardTitle className="text-cream">Cache Statistics</CardTitle>
+                </div>
+                <CardDescription className="text-cream/90">
+                  Track analysis cache performance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {cacheStats ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-burgundy-accent/20 rounded-lg">
+                          <p className="text-sm text-cream/70">Cache Entries</p>
+                          <p className="text-xl font-bold text-blue-400">{cacheStats.totalEntries}</p>
+                        </div>
+                        <div className="p-3 bg-burgundy-accent/20 rounded-lg">
+                          <p className="text-sm text-cream/70">Hit Rate</p>
+                          <p className="text-xl font-bold text-green-400">{cacheStats.hitRate.toFixed(1)}%</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-burgundy-accent/20 rounded-lg">
+                          <p className="text-sm text-cream/70">Cache Hits</p>
+                          <p className="text-lg font-semibold text-green-400">{cacheStats.hits}</p>
+                        </div>
+                        <div className="p-3 bg-burgundy-accent/20 rounded-lg">
+                          <p className="text-sm text-cream/70">Cache Misses</p>
+                          <p className="text-lg font-semibold text-red-400">{cacheStats.misses}</p>
+                        </div>
+                      </div>
+
+                      {cacheStats.oldestEntry && (
+                        <div className="p-3 bg-burgundy-accent/20 rounded-lg">
+                          <p className="text-sm text-cream/70">Cache Age Range</p>
+                          <p className="text-sm text-cream">
+                            {new Date(cacheStats.oldestEntry).toLocaleDateString()} - {new Date(cacheStats.newestEntry).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-cream/70">
+                      <Database className="w-12 h-12 mx-auto mb-4 text-cream/40" />
+                      <p>Loading cache statistics...</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Data Source Statistics */}
+            <Card className="bg-burgundy-dark/30 border-cream/20 md:col-span-2">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-yellow-400" />
+                  <CardTitle className="text-cream">Data Source Analytics</CardTitle>
+                </div>
+                <CardDescription className="text-cream/90">
+                  Analysis of data sources used in recent logging (last 1000 entries)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {dataSourceStats ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-cream">Data Sources</h4>
+                        {Object.entries(dataSourceStats.bySource).map(([source, count]: [string, any]) => (
+                          <div key={source} className="flex justify-between items-center p-2 bg-burgundy-accent/20 rounded">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 rounded-full ${
+                                source === 'spotify' ? 'bg-blue-400' :
+                                source === 'rapidapi' ? 'bg-purple-400' :
+                                'bg-yellow-400'
+                              }`} />
+                              <span className="text-cream text-sm capitalize">{source}</span>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-cream font-semibold">{count}</p>
+                              <p className="text-xs text-cream/70">{((count / dataSourceStats.total) * 100).toFixed(1)}%</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-cream">Fallback Types</h4>
+                        {Object.entries(dataSourceStats.byFallback).map(([type, count]: [string, any]) => (
+                          <div key={type} className="flex justify-between items-center p-2 bg-burgundy-accent/20 rounded">
+                            <span className="text-cream text-sm capitalize">{type}</span>
+                            <div className="text-right">
+                              <p className="text-cream font-semibold">{count}</p>
+                              <p className="text-xs text-cream/70">{((count / dataSourceStats.total) * 100).toFixed(1)}%</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-cream">Detected Genres</h4>
+                        {Object.entries(dataSourceStats.genres).slice(0, 5).map(([genre, count]: [string, any]) => (
+                          <div key={genre} className="flex justify-between items-center p-2 bg-burgundy-accent/20 rounded">
+                            <span className="text-cream text-sm capitalize">{genre}</span>
+                            <div className="text-right">
+                              <p className="text-cream font-semibold">{count}</p>
+                              <p className="text-xs text-cream/70">{((count / dataSourceStats.total) * 100).toFixed(1)}%</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-burgundy-accent/20 rounded-lg">
+                      <div>
+                        <p className="text-sm text-cream/70">Cache Usage</p>
+                        <p className="text-lg font-semibold text-cyan-400">{dataSourceStats.cached} cached entries</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-cream/70">Cache Rate</p>
+                        <p className="text-lg font-semibold text-cyan-400">
+                          {((dataSourceStats.cached / dataSourceStats.total) * 100).toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => {
+                        loadApiUsage();
+                        loadDataSourceStats();
+                      }}
+                      variant="outline"
+                      className="w-full text-cream border-cream hover:bg-cream hover:text-maroon"
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh All Statistics
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-cream/70">
+                    <TrendingUp className="w-12 h-12 mx-auto mb-4 text-cream/40" />
+                    <p>Loading data source statistics...</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="patterns" className="space-y-4">
