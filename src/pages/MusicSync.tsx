@@ -20,6 +20,9 @@ import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
+  // 🚨 DEPLOYMENT TEST - This message should appear immediately on page load
+  console.log('🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time:', new Date().toLocaleTimeString());
+  
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedService, setSelectedService] = useState<string>("");
