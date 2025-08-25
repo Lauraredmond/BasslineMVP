@@ -32,6 +32,30 @@ class RapidSoundnetService {
   private requestCount = 0;
   private lastResetTime = Date.now();
   private readonly RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in ms
+  
+  // Simple cache implementation
+  private cache = {
+    store: (trackTitle: string, artistName: string = '', result: RapidSoundnetTrackAnalysis) => {
+      const key = `${trackTitle}_${artistName}`.toLowerCase();
+      localStorage.setItem(`rapid_cache_${key}`, JSON.stringify({
+        data: result,
+        timestamp: Date.now()
+      }));
+    },
+    
+    get: (trackTitle: string, artistName: string = ''): RapidSoundnetTrackAnalysis | null => {
+      const key = `${trackTitle}_${artistName}`.toLowerCase();
+      const cached = localStorage.getItem(`rapid_cache_${key}`);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        // Cache expires after 7 days
+        if (Date.now() - timestamp < 7 * 24 * 60 * 60 * 1000) {
+          return data;
+        }
+      }
+      return null;
+    }
+  };
 
   constructor() {
     // Load request count from localStorage to persist across sessions
@@ -62,6 +86,13 @@ class RapidSoundnetService {
 
   // Get track analysis from Rapid Soundnet API with fallback strategies
   async getTrackAnalysis(trackTitle: string, artistName?: string, allowFallback = true): Promise<RapidSoundnetTrackAnalysis | null> {
+    // Check cache first
+    const cached = this.cache.get(trackTitle, artistName || '');
+    if (cached) {
+      console.log('✅ Using cached RapidAPI data for:', trackTitle);
+      return cached;
+    }
+    
     if (!this.API_KEY) {
       console.error('❌ RapidAPI key not configured');
       
@@ -135,7 +166,15 @@ class RapidSoundnetService {
       const data = await response.json();
       console.log('📊 Rapid Soundnet analysis received:', data);
       
-      return this.normalizeApiResponse(data);
+      const result = this.normalizeApiResponse(data);
+      
+      // Cache the result
+      if (result) {
+        this.cache.store(trackTitle, artistName || '', result);
+        console.log('✅ Cached RapidAPI result for:', trackTitle);
+      }
+      
+      return result;
     } catch (error) {
       console.error('💥 Rapid Soundnet API exception:', error);
       

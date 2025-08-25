@@ -808,7 +808,8 @@ const MusicSync = () => {
             console.error('❌ [DEBUG] Check Spotify connection status');
           }
           
-          if (isWorkoutActive && isSpotifyAuthenticated) {
+          // CRITICAL FIX: Always proceed if music is playing - bypass state check entirely
+          if (playbackState?.is_playing && isSpotifyAuthenticated) {
             console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
             // Start Web Audio analysis logging (real-time musical intelligence)
@@ -850,7 +851,8 @@ const MusicSync = () => {
                   
                   // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
                   console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
-                  const rapidResult = await spotifyService.forceRapidSoundnetAnalysis(
+                  const { rapidSoundnetService } = await import('@/lib/rapid-soundnet');
+                  const rapidResult = await rapidSoundnetService.getTrackAnalysis(
                     playbackState.item.name, 
                     playbackState.item.artists.map(a => a.name).join(', ')
                   );
@@ -860,9 +862,25 @@ const MusicSync = () => {
                     rapidSoundnetMetadata = {
                       dataSource: 'rapidapi',
                       fromCache: false,
-                      fallbackType: 'api'
+                      fallbackType: 'api',
+                      rapidSoundnetData: rapidResult // STORE ALL DATA!
                     };
-                    console.log('✅ Got Rapid Soundnet enhanced data for advanced metrics');
+                    console.log('🎯 🎵 GOT COMPREHENSIVE RAPID SOUNDNET DATA:', {
+                      camelot: rapidResult.camelot,
+                      energy: rapidResult.energy,
+                      danceability: rapidResult.danceability,
+                      happiness: rapidResult.happiness,
+                      acousticness: rapidResult.acousticness,
+                      instrumentalness: rapidResult.instrumentalness,
+                      liveness: rapidResult.liveness,
+                      speechiness: rapidResult.speechiness,
+                      loudness: rapidResult.loudness,
+                      popularity: rapidResult.popularity,
+                      duration: rapidResult.duration,
+                      key: rapidResult.key,
+                      mode: rapidResult.mode,
+                      tempo: rapidResult.tempo
+                    });
                   }
                   
                   // Use Spotify audio features if available, otherwise use RapidAPI as fallback
