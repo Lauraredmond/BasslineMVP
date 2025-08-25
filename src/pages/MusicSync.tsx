@@ -1523,7 +1523,7 @@ const MusicSync = () => {
                         cursor-pointer p-3 rounded-lg border transition-smooth
                         ${
                           selectedDevice === device.id
-                            ? 'border-cream bg-cream/10 text-cream'
+                            ? 'border-burgundy bg-burgundy text-cream'
                             : 'border-cream/30 text-primary hover:border-cream/50'
                         }
                       `}
