@@ -1083,10 +1083,10 @@ const MusicSync = () => {
                 key={service.id}
                 onClick={() => setSelectedService(service.id)}
                 className={`
-                  cursor-pointer transition-smooth shadow-card border-2 bg-card-texture
+                  cursor-pointer transition-smooth shadow-card border-2
                   ${selectedService === service.id
-                    ? 'border-cream bg-glow-gradient/20'
-                    : 'border-cream/30 hover:border-cream/60'
+                    ? 'border-burgundy-dark bg-burgundy-dark'
+                    : 'border-cream/30 bg-card-texture hover:border-cream/60'
                   }
                 `}
               >
@@ -1095,17 +1095,19 @@ const MusicSync = () => {
                     <div className={`w-10 h-10 rounded-lg ${service.color} flex items-center justify-center`}>
                       <span className="text-white text-lg">{service.icon}</span>
                     </div>
-                    <span className="font-medium text-lg text-primary">{service.name}</span>
+                    <span className={`font-medium text-lg ${
+                      selectedService === service.id ? 'text-cream' : 'text-primary'
+                    }`}>{service.name}</span>
                     <div className="ml-auto">
                       <div className={`
                         w-6 h-6 rounded-full border-2 flex items-center justify-center
                         ${selectedService === service.id
-                          ? 'border-primary bg-primary'
+                          ? 'border-cream bg-cream'
                           : 'border-cream/50'
                         }
                       `}>
                         {selectedService === service.id && (
-                          <span className="text-primary-foreground text-sm">✓</span>
+                          <span className="text-burgundy-dark text-sm">✓</span>
                         )}
                       </div>
                     </div>
@@ -1167,20 +1169,28 @@ const MusicSync = () => {
                       }
                     }}
                     className={`
-                      cursor-pointer transition-smooth shadow-card border-2 bg-card-texture
+                      cursor-pointer transition-smooth shadow-card border-2
                       ${selectedPlaylist === playlist.id && !isLoginRequired
-                        ? 'border-cream bg-glow-gradient/20'
+                        ? 'border-burgundy-dark bg-burgundy-dark'
                         : isLoginRequired
-                        ? 'border-green-500/50 hover:border-green-500'
-                        : 'border-cream/30 hover:border-cream/60'
+                        ? 'border-green-500/50 bg-card-texture hover:border-green-500'
+                        : 'border-cream/30 bg-card-texture hover:border-cream/60'
                       }
                     `}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium text-lg text-primary">{playlist.name}</h4>
-                          <p className="text-sm text-primary/70">
+                          <h4 className={`font-medium text-lg ${
+                            selectedPlaylist === playlist.id && !isLoginRequired
+                              ? 'text-cream'
+                              : 'text-primary'
+                          }`}>{playlist.name}</h4>
+                          <p className={`text-sm ${
+                            selectedPlaylist === playlist.id && !isLoginRequired
+                              ? 'text-cream/70'
+                              : 'text-primary/70'
+                          }`}>
                             {playlist.tracks > 0 ? `${playlist.tracks} tracks • ` : ''}{playlist.genre}
                           </p>
                         </div>
@@ -1188,12 +1198,12 @@ const MusicSync = () => {
                           <div className={`
                             w-6 h-6 rounded-full border-2 flex items-center justify-center
                             ${selectedPlaylist === playlist.id
-                              ? 'border-primary bg-primary'
+                              ? 'border-cream bg-cream'
                               : 'border-cream/50'
                             }
                           `}>
                             {selectedPlaylist === playlist.id && (
-                              <span className="text-primary-foreground text-sm">✓</span>
+                              <span className="text-burgundy-dark text-sm">✓</span>
                             )}
                           </div>
                         )}
@@ -1523,7 +1533,7 @@ const MusicSync = () => {
                         cursor-pointer p-3 rounded-lg border transition-smooth
                         ${
                           selectedDevice === device.id
-                            ? 'border-burgundy bg-burgundy text-cream'
+                            ? 'border-burgundy-dark bg-burgundy-dark text-cream'
                             : 'border-cream/30 text-primary hover:border-cream/50'
                         }
                       `}
