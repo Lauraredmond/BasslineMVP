@@ -251,104 +251,197 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     URL.revokeObjectURL(url);
   };
 
-  // Export timestamped attribute timeline
+  // Export timestamped attribute timeline - optimized for research analysis
   const exportAttributeTimeline = () => {
     if (analysisLogs.length === 0) return;
     
-    // Create detailed timeline export
-    const timelineData = analysisLogs
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      .map(log => {
-        const timestamp = new Date(log.timestamp);
-        const playbackSeconds = Math.round(log.playback_position_ms / 1000);
-        
-        return {
-          timestamp: timestamp.toISOString(),
-          playbackTime: `${Math.floor(playbackSeconds / 60)}:${(playbackSeconds % 60).toString().padStart(2, '0')}`,
-          playbackMs: log.playback_position_ms,
-          
-          // Track Info
-          trackName: log.track_name,
-          artist: log.artist_name,
-          
-          // DYNAMIC ATTRIBUTES (can change during song)
-          currentLoudness: log.current_segment_loudness_max,
-          currentTempo: log.current_section_tempo,
-          currentKey: log.current_section_key,
-          currentMode: log.current_section_mode,
-          sectionConfidence: log.current_section_confidence,
-          
-          // STATIC ATTRIBUTES (per-track averages)
-          overallEnergy: log.energy,
-          overallDanceability: log.danceability,
-          overallHappiness: log.rs_happiness || log.valence,
-          overallAcousticness: log.acousticness,
-          overallInstrumentalness: log.instrumentalness,
-          overallSpeechiness: log.speechiness,
-          overallLiveness: log.liveness,
-          
-          // Spotify Advanced Analysis
-          beatConfidence: log.current_beat_confidence,
-          barConfidence: log.current_bar_confidence,
-          segmentPitches: log.current_segment_pitches?.join(';') || '',
-          segmentTimbre: log.current_segment_timbre?.join(';') || '',
-          
-          // RapidAPI Soundnet Enhanced
-          camelot: log.rs_camelot,
-          popularity: log.rs_popularity,
-          rsLoudness: log.rs_loudness,
-          
-          // Fitness Context
-          fitnessPhase: log.fitness_phase,
-          workoutIntensity: log.workout_intensity
-        };
-      });
+    // Sort chronologically and detect attribute changes
+    const sortedLogs = analysisLogs
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     
-    // Create CSV with detailed headers
+    // Track previous values to detect changes
+    let previousValues: any = {};
+    const changeRows: any[] = [];
+    
+    sortedLogs.forEach((log, index) => {
+      const timestamp = new Date(log.timestamp).toISOString();
+      const playbackSeconds = Math.round(log.playback_position_ms / 1000);
+      const playbackTime = `${Math.floor(playbackSeconds / 60)}:${(playbackSeconds % 60).toString().padStart(2, '0')}`;
+      
+      // ALL SOUNDNET API ATTRIBUTES - Complete set as requested
+      const currentValues = {
+        // Timestamp (First Column)
+        timestamp: timestamp,
+        
+        // Playback Info
+        playback_time_mm_ss: playbackTime,
+        playback_position_ms: log.playback_position_ms,
+        track_name: log.track_name,
+        artist_name: log.artist_name,
+        
+        // SOUNDNET/RAPIDAPI CORE ATTRIBUTES
+        camelot: log.rs_camelot || '',
+        duration: log.rs_duration || '',
+        popularity: log.rs_popularity || '',
+        energy: log.rs_energy_raw || log.energy || '',
+        danceability: log.rs_danceability_raw || log.danceability || '',
+        happiness: log.rs_happiness || log.valence || '',
+        acousticness: log.rs_acousticness_raw || log.acousticness || '',
+        instrumentalness: log.rs_instrumentalness_raw || log.instrumentalness || '',
+        liveness: log.rs_liveness_raw || log.liveness || '',
+        speechiness: log.rs_speechiness_raw || log.speechiness || '',
+        loudness: log.rs_loudness || log.current_segment_loudness_max || '',
+        
+        // MUSICAL KEY & TEMPO
+        key: log.rs_key || log.current_section_key || log.track_key || '',
+        mode: log.rs_mode || log.current_section_mode || log.track_mode || '',
+        tempo: log.current_section_tempo || log.track_tempo || '',
+        
+        // SPOTIFY ADVANCED (Dynamic Segment Analysis)
+        current_loudness_db: log.current_segment_loudness_max || '',
+        current_tempo_bpm: log.current_section_tempo || '',
+        current_key_numeric: log.current_section_key || '',
+        current_mode_numeric: log.current_section_mode || '',
+        section_confidence: log.current_section_confidence || '',
+        beat_confidence: log.current_beat_confidence || '',
+        bar_confidence: log.current_bar_confidence || '',
+        segment_pitches: log.current_segment_pitches?.join(';') || '',
+        segment_timbre: log.current_segment_timbre?.join(';') || '',
+        
+        // FITNESS CONTEXT
+        fitness_phase: log.fitness_phase || '',
+        workout_intensity: log.workout_intensity || '',
+        
+        // DATA SOURCE INFO
+        data_source: log.data_source || '',
+        from_cache: log.from_cache || false,
+        fallback_type: log.fallback_type || ''
+      };
+      
+      // Check if any attributes changed from previous row
+      const hasChanges = index === 0 || Object.keys(currentValues).some(key => {
+        if (key === 'timestamp' || key === 'playback_time_mm_ss' || key === 'playback_position_ms') {
+          return true; // Always include time changes
+        }
+        return previousValues[key] !== currentValues[key];
+      });
+      
+      // Only add row if attributes changed (or first row)
+      if (hasChanges) {
+        changeRows.push(currentValues);
+        console.log(`🎯 Attribute change detected at ${playbackTime} - Creating new timeline row`);
+      }
+      
+      previousValues = { ...currentValues };
+    });
+    
+    // Create CSV headers - TIMESTAMP FIRST as requested
     const headers = [
-      'Timestamp', 'Playback_Time', 'Playback_Ms', 'Track_Name', 'Artist',
+      'Timestamp',
+      'Playback_Time_MM_SS',
+      'Playback_Position_MS',
+      'Track_Name',
+      'Artist_Name',
       
-      // DYNAMIC ATTRIBUTES
-      'Current_Loudness_dB', 'Current_Tempo_BPM', 'Current_Key', 'Current_Mode', 'Section_Confidence',
+      // SOUNDNET API CORE ATTRIBUTES
+      'Camelot',
+      'Duration',
+      'Popularity_0_100',
+      'Energy_0_100',
+      'Danceability_0_100', 
+      'Happiness_0_100',
+      'Acousticness_0_100',
+      'Instrumentalness_0_100',
+      'Liveness_0_100',
+      'Speechiness_0_100',
+      'Loudness_dB',
       
-      // STATIC ATTRIBUTES  
-      'Overall_Energy_0_1', 'Overall_Danceability_0_1', 'Overall_Happiness_0_100', 
-      'Overall_Acousticness_0_1', 'Overall_Instrumentalness_0_1', 
-      'Overall_Speechiness_0_1', 'Overall_Liveness_0_1',
+      // MUSICAL ATTRIBUTES
+      'Key',
+      'Mode',
+      'Tempo_BPM',
       
-      // SPOTIFY ADVANCED
-      'Beat_Confidence', 'Bar_Confidence', 'Segment_Pitches_Array', 'Segment_Timbre_Array',
-      
-      // RAPIDAPI ENHANCED
-      'Camelot_Key', 'Popularity_0_100', 'RS_Loudness_dB',
+      // DYNAMIC SPOTIFY ANALYSIS
+      'Current_Loudness_dB',
+      'Current_Tempo_BPM',
+      'Current_Key_Numeric',
+      'Current_Mode_Numeric', 
+      'Section_Confidence',
+      'Beat_Confidence',
+      'Bar_Confidence',
+      'Segment_Pitches_Array',
+      'Segment_Timbre_Array',
       
       // FITNESS CONTEXT
-      'Fitness_Phase', 'Workout_Intensity'
+      'Fitness_Phase',
+      'Workout_Intensity',
+      
+      // METADATA
+      'Data_Source',
+      'From_Cache',
+      'Fallback_Type'
     ];
     
-    const csvTimeline = [
+    // Create CSV content
+    const csvContent = [
       headers.join(','),
-      ...timelineData.map(row => [
-        row.timestamp, row.playbackTime, row.playbackMs, `"${row.trackName}"`, `"${row.artist}"`,
-        row.currentLoudness || '', row.currentTempo || '', row.currentKey || '', row.currentMode || '', row.sectionConfidence || '',
-        row.overallEnergy || '', row.overallDanceability || '', row.overallHappiness || '',
-        row.overallAcousticness || '', row.overallInstrumentalness || '',
-        row.overallSpeechiness || '', row.overallLiveness || '',
-        row.beatConfidence || '', row.barConfidence || '', `"${row.segmentPitches}"`, `"${row.segmentTimbre}"`,
-        `"${row.camelot || ''}"`, row.popularity || '', `"${row.rsLoudness || ''}"`,
-        `"${row.fitnessPhase || ''}"`, row.workoutIntensity || ''
+      ...changeRows.map(row => [
+        row.timestamp,
+        row.playback_time_mm_ss,
+        row.playback_position_ms,
+        `"${row.track_name}"`,
+        `"${row.artist_name}"`,
+        
+        // SOUNDNET ATTRIBUTES
+        `"${row.camelot}"`,
+        `"${row.duration}"`,
+        row.popularity,
+        row.energy,
+        row.danceability,
+        row.happiness,
+        row.acousticness,
+        row.instrumentalness,
+        row.liveness,
+        row.speechiness,
+        `"${row.loudness}"`,
+        
+        // MUSICAL
+        `"${row.key}"`,
+        `"${row.mode}"`,
+        row.tempo,
+        
+        // DYNAMIC ANALYSIS
+        row.current_loudness_db,
+        row.current_tempo_bpm,
+        row.current_key_numeric,
+        row.current_mode_numeric,
+        row.section_confidence,
+        row.beat_confidence,
+        row.bar_confidence,
+        `"${row.segment_pitches}"`,
+        `"${row.segment_timbre}"`,
+        
+        // FITNESS
+        `"${row.fitness_phase}"`,
+        row.workout_intensity,
+        
+        // METADATA
+        `"${row.data_source}"`,
+        row.from_cache,
+        `"${row.fallback_type}"`
       ].join(','))
     ].join('\n');
     
-    const blob = new Blob([csvTimeline], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `attribute-timeline-${selectedSession}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `soundnet-attribute-timeline-${selectedSession}-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     
-    console.log(`📊 Exported ${timelineData.length} timestamped attribute measurements`);
+    console.log(`📊 Exported ${changeRows.length} attribute change events from ${sortedLogs.length} total measurements`);
+    console.log(`🎯 CSV Format: Timestamp-first, ALL Soundnet attributes as headers, change-triggered rows`);
   };
 
   // Format time position
@@ -969,7 +1062,7 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                   className="text-green-400 border-green-400 hover:bg-green-400 hover:text-maroon"
                 >
                   <TrendingUp className="w-4 h-4 mr-2" />
-                  Export Timeline
+                  Export Soundnet Timeline
                 </Button>
               </div>
             </div>
