@@ -1127,6 +1127,23 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                                 <p className="text-cream">Speechiness: {log.speechiness ? `${(log.speechiness * 100).toFixed(0)}%` : 'N/A'}</p>
                               </div>
                               
+                              {/* SOUNDNET API ATTRIBUTES SECTION */}
+                              <div>
+                                <h4 className="font-semibold text-green-400 mb-2">🎯 Soundnet Attributes</h4>
+                                <p className="text-cream">Camelot: {log.rs_camelot || 'N/A'}</p>
+                                <p className="text-cream">Happiness: {log.rs_happiness || 'N/A'}%</p>
+                                <p className="text-cream">Popularity: {log.rs_popularity || 'N/A'}%</p>
+                                <p className="text-cream">Duration: {log.rs_duration || 'N/A'}</p>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-semibold text-green-400 mb-2">🎵 Soundnet Raw Values</h4>
+                                <p className="text-cream">Energy: {log.rs_energy_raw || 'N/A'}%</p>
+                                <p className="text-cream">Danceability: {log.rs_danceability_raw || 'N/A'}%</p>
+                                <p className="text-cream">Acousticness: {log.rs_acousticness_raw || 'N/A'}%</p>
+                                <p className="text-cream">RS Loudness: {log.rs_loudness || 'N/A'}</p>
+                              </div>
+                              
                               <div>
                                 <h4 className="font-semibold text-cream mb-2">Timing Analysis</h4>
                                 <p className="text-cream">Beat Confidence: {(log.current_beat_confidence * 100)?.toFixed(1)}%</p>
@@ -1147,7 +1164,10 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               <h4 className="font-semibold text-red-400 mb-1">🔧 Debug Status</h4>
                               <div className="text-xs text-cream/80 space-y-1">
                                 <p>Audio Features: {(log.danceability || log.energy || log.valence) ? '✅ Available' : '❌ Missing'}</p>
+                                <p>Soundnet Data: {(log.rs_camelot || log.rs_happiness || log.rs_popularity) ? '✅ Available' : '❌ Missing'}</p>
                                 <p>Advanced Analysis: {(log.current_section_start !== undefined || log.current_beat_start !== undefined) ? '✅ Available' : '❌ Missing'}</p>
+                                <p>Data Source: {log.data_source || 'Unknown'}</p>
+                                <p>From Cache: {log.from_cache ? 'Yes' : 'No'}</p>
                                 <p>Session ID: {log.session_id}</p>
                                 <p>Created: {new Date(log.timestamp || log.created_at).toLocaleTimeString()}</p>
                               </div>
