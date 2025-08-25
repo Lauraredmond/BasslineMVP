@@ -87,6 +87,7 @@ export interface PlaybackContext {
   trackId: string;
   trackName?: string;
   artistName?: string;
+  trackUri?: string;
   positionMs: number;
   fitnessPhase?: string;
   workoutIntensity?: number;
