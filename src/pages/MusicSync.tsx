@@ -1524,7 +1524,7 @@ const MusicSync = () => {
                         ${
                           selectedDevice === device.id
                             ? 'border-cream bg-cream/10 text-cream'
-                            : 'border-cream/30 text-cream/80 hover:border-cream/50'
+                            : 'border-cream/30 text-primary hover:border-cream/50'
                         }
                       `}
                     >
@@ -1536,16 +1536,28 @@ const MusicSync = () => {
                              device.type === 'Speaker' ? '🔊' : '🎵'}
                           </span>
                           <div>
-                            <p className="font-medium">{device.name}</p>
-                            <p className="text-xs opacity-70">
+                            <p className={`font-medium ${
+                              selectedDevice === device.id
+                                ? 'text-cream'
+                                : 'text-foreground'
+                            }`}>{device.name}</p>
+                            <p className={`text-xs opacity-70 ${
+                              selectedDevice === device.id
+                                ? 'text-cream/70'
+                                : 'text-foreground/70'
+                            }`}>
                               {device.type} {device.is_active ? '(Active)' : ''}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs opacity-60">{device.volume_percent}%</span>
+                          <span className={`text-xs opacity-60 ${
+                            selectedDevice === device.id
+                              ? 'text-cream/60'
+                              : 'text-foreground/60'
+                          }`}>{device.volume_percent}%</span>
                           {selectedDevice === device.id && (
-                            <span className="text-sm">✓</span>
+                            <span className="text-sm text-cream">✓</span>
                           )}
                         </div>
                       </div>
