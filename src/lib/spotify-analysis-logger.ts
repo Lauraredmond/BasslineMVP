@@ -278,41 +278,63 @@ class SpotifyAnalysisLogger {
       const currentBar = this.findCurrentTimeRange(this.analysisData.bars, positionSeconds);
       const currentTatum = this.findCurrentTimeRange(this.analysisData.tatums, positionSeconds);
 
+      // Determine vendor source based on data available
+      let vendorSource = 'Unknown';
+      if (context.rapidSoundnetData) {
+        vendorSource = 'Soundnet API';
+      } else if (context.audioFeatures) {
+        vendorSource = 'Spotify API';
+      } else {
+        vendorSource = 'Fallback System';
+      }
+
       const logEntry = {
         session_id: this.sessionId,
+        
+        // VENDOR ATTRIBUTION 
+        vendor_source: vendorSource,
+        data_source: context.dataSource || 'unknown',
+        from_cache: context.fromCache || false,
+        fallback_type: context.fallbackType || null,
+        
+        // TRACK IDENTIFICATION (Universal)
         track_id: context.trackId,
         track_name: context.trackName,
         artist_name: context.artistName,
+        track_uri: context.trackUri,
         playback_position_ms: currentPositionMs,
+        is_playing: true,
         
-        // Meta
-        analyzer_version: this.analysisData.meta.analyzer_version,
-        platform: this.analysisData.meta.platform,
-        detailed_status: this.analysisData.meta.detailed_status,
-        status_code: this.analysisData.meta.status_code,
-        analysis_timestamp: this.analysisData.meta.timestamp ? new Date(this.analysisData.meta.timestamp * 1000).toISOString() : null,
-        analysis_time: this.analysisData.meta.analysis_time,
-        input_process: this.analysisData.meta.input_process,
+        // SOUNDNET API CORE ATTRIBUTES (when available)
+        soundnet_camelot: context.rapidSoundnetData?.camelot,
+        soundnet_duration: context.rapidSoundnetData?.duration,
+        soundnet_popularity: context.rapidSoundnetData?.popularity,
+        soundnet_energy: context.rapidSoundnetData?.energy,
+        soundnet_danceability: context.rapidSoundnetData?.danceability,
+        soundnet_happiness: context.rapidSoundnetData?.happiness,
+        soundnet_acousticness: context.rapidSoundnetData?.acousticness,
+        soundnet_instrumentalness: context.rapidSoundnetData?.instrumentalness,
+        soundnet_liveness: context.rapidSoundnetData?.liveness,
+        soundnet_speechiness: context.rapidSoundnetData?.speechiness,
+        soundnet_loudness: context.rapidSoundnetData?.loudness,
+        soundnet_key: context.rapidSoundnetData?.key,
+        soundnet_mode: context.rapidSoundnetData?.mode,
+        soundnet_tempo: context.rapidSoundnetData?.tempo,
         
-        // Track
-        num_samples: this.analysisData.track.num_samples,
-        duration: this.analysisData.track.duration,
-        sample_md5: this.analysisData.track.sample_md5,
-        offset_seconds: this.analysisData.track.offset_seconds,
-        window_seconds: this.analysisData.track.window_seconds,
-        analysis_sample_rate: this.analysisData.track.analysis_sample_rate,
-        analysis_channels: this.analysisData.track.analysis_channels,
-        end_of_fade_in: this.analysisData.track.end_of_fade_in,
-        start_of_fade_out: this.analysisData.track.start_of_fade_out,
-        track_loudness: this.analysisData.track.loudness,
-        track_tempo: this.analysisData.track.tempo,
-        tempo_confidence: this.analysisData.track.tempo_confidence,
-        time_signature: this.analysisData.track.time_signature,
-        time_signature_confidence: this.analysisData.track.time_signature_confidence,
-        track_key: this.analysisData.track.key,
-        key_confidence: this.analysisData.track.key_confidence,
-        track_mode: this.analysisData.track.mode,
-        mode_confidence: this.analysisData.track.mode_confidence,
+        // SPOTIFY API TRACK-LEVEL ATTRIBUTES (when available)
+        spotify_danceability: context.audioFeatures?.danceability,
+        spotify_energy: context.audioFeatures?.energy,
+        spotify_valence: context.audioFeatures?.valence,
+        spotify_acousticness: context.audioFeatures?.acousticness,
+        spotify_instrumentalness: context.audioFeatures?.instrumentalness,
+        spotify_liveness: context.audioFeatures?.liveness,
+        spotify_speechiness: context.audioFeatures?.speechiness,
+        spotify_loudness: this.analysisData.track.loudness,
+        spotify_tempo: this.analysisData.track.tempo,
+        spotify_key: this.analysisData.track.key,
+        spotify_mode: this.analysisData.track.mode,
+        spotify_time_signature: this.analysisData.track.time_signature,
+        spotify_tempo_confidence: this.analysisData.track.tempo_confidence,
         
         // Current section
         current_section_start: currentSection?.start,
@@ -459,9 +481,20 @@ class SpotifyAnalysisLogger {
         }
       });
 
-      const { error } = await supabase
-        .from('spotify_analysis_logs')
+      // Try new vendor-agnostic table first, fallback to old table for backward compatibility
+      let { error } = await supabase
+        .from('common_streaming_vendor_analysis_logs')
         .insert(logEntry);
+      
+      // If new table doesn't exist yet, try old table
+      if (error && error.code === '42P01') {
+        console.warn('⚠️ New vendor table not found, using legacy spotify_analysis_logs table');
+        const legacyEntry = this.convertToLegacyFormat(logEntry);
+        const legacyResult = await supabase
+          .from('spotify_analysis_logs')
+          .insert(legacyEntry);
+        error = legacyResult.error;
+      }
 
       if (error) {
         console.error('❌ [DEBUG] Database insert failed:', error);
@@ -544,6 +577,59 @@ class SpotifyAnalysisLogger {
   setCurrentFitnessPhase(phase: string): void {
     this.currentFitnessPhase = phase;
     console.log('Updated fitness phase:', phase);
+  }
+
+  // Convert new format to legacy format for backward compatibility
+  private convertToLegacyFormat(newEntry: any): any {
+    return {
+      session_id: newEntry.session_id,
+      track_id: newEntry.track_id,
+      track_name: newEntry.track_name,
+      artist_name: newEntry.artist_name,
+      playback_position_ms: newEntry.playback_position_ms,
+      
+      // Map Spotify attributes to legacy column names
+      danceability: newEntry.spotify_danceability,
+      energy: newEntry.spotify_energy,
+      valence: newEntry.spotify_valence,
+      acousticness: newEntry.spotify_acousticness,
+      instrumentalness: newEntry.spotify_instrumentalness,
+      liveness: newEntry.spotify_liveness,
+      speechiness: newEntry.spotify_speechiness,
+      track_loudness: newEntry.spotify_loudness,
+      track_tempo: newEntry.spotify_tempo,
+      track_key: newEntry.spotify_key,
+      track_mode: newEntry.spotify_mode,
+      time_signature: newEntry.spotify_time_signature,
+      
+      // Keep existing columns
+      current_section_loudness: newEntry.current_section_loudness,
+      current_section_tempo: newEntry.current_section_tempo,
+      current_segment_loudness_max: newEntry.current_segment_loudness_max,
+      fitness_phase: newEntry.fitness_phase,
+      workout_intensity: newEntry.workout_intensity,
+      
+      // Add Soundnet data as separate columns (existing schema)
+      rs_camelot: newEntry.soundnet_camelot,
+      rs_happiness: newEntry.soundnet_happiness,
+      rs_popularity: newEntry.soundnet_popularity,
+      rs_energy_raw: newEntry.soundnet_energy,
+      rs_danceability_raw: newEntry.soundnet_danceability,
+      rs_acousticness_raw: newEntry.soundnet_acousticness,
+      rs_instrumentalness_raw: newEntry.soundnet_instrumentalness,
+      rs_speechiness_raw: newEntry.soundnet_speechiness,
+      rs_liveness_raw: newEntry.soundnet_liveness,
+      rs_loudness: newEntry.soundnet_loudness,
+      rs_key: newEntry.soundnet_key,
+      rs_mode: newEntry.soundnet_mode,
+      rs_duration: newEntry.soundnet_duration,
+      
+      // Metadata
+      data_source: newEntry.data_source,
+      from_cache: newEntry.from_cache,
+      fallback_type: newEntry.fallback_type,
+      timestamp: new Date().toISOString()
+    };
   }
 
   // Auto-start logging when a track plays during workout

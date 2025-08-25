@@ -141,15 +141,48 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     }
   };
 
-  // Load analysis logs for a session
+  // Load analysis logs for a session (try new table first, fallback to old)
   const loadAnalysisLogs = async (sessionId: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('spotify_analysis_logs')
+      // Try new vendor-agnostic table first
+      let { data, error } = await supabase
+        .from('common_streaming_vendor_analysis_logs')
         .select('*')
         .eq('session_id', sessionId)
         .order('playback_position_ms', { ascending: true });
+
+      // If new table doesn't exist, try old table with compatibility mapping
+      if (error && error.code === '42P01') {
+        console.warn('⚠️ Using legacy spotify_analysis_logs table');
+        const legacyResult = await supabase
+          .from('spotify_analysis_logs')
+          .select('*')
+          .eq('session_id', sessionId)
+          .order('playback_position_ms', { ascending: true });
+        
+        if (legacyResult.error) throw legacyResult.error;
+        
+        // Map legacy data to new format for consistent display
+        data = legacyResult.data?.map(log => ({
+          ...log,
+          vendor_source: log.data_source === 'rapidapi' ? 'Soundnet API' : 'Spotify API',
+          soundnet_camelot: log.rs_camelot,
+          soundnet_happiness: log.rs_happiness,
+          soundnet_popularity: log.rs_popularity,
+          soundnet_energy: log.rs_energy_raw,
+          soundnet_danceability: log.rs_danceability_raw,
+          soundnet_acousticness: log.rs_acousticness_raw,
+          soundnet_instrumentalness: log.rs_instrumentalness_raw,
+          soundnet_speechiness: log.rs_speechiness_raw,
+          soundnet_liveness: log.rs_liveness_raw,
+          soundnet_loudness: log.rs_loudness,
+          soundnet_key: log.rs_key,
+          soundnet_mode: log.rs_mode,
+          soundnet_duration: log.rs_duration,
+        }));
+        error = null;
+      }
 
       if (error) throw error;
 
@@ -1130,18 +1163,27 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                               {/* SOUNDNET API ATTRIBUTES SECTION */}
                               <div>
                                 <h4 className="font-semibold text-green-400 mb-2">🎯 Soundnet Attributes</h4>
-                                <p className="text-cream">Camelot: {log.rs_camelot || 'N/A'}</p>
-                                <p className="text-cream">Happiness: {log.rs_happiness || 'N/A'}%</p>
-                                <p className="text-cream">Popularity: {log.rs_popularity || 'N/A'}%</p>
-                                <p className="text-cream">Duration: {log.rs_duration || 'N/A'}</p>
+                                <p className="text-cream">Camelot: {log.soundnet_camelot || log.rs_camelot || 'N/A'}</p>
+                                <p className="text-cream">Happiness: {log.soundnet_happiness || log.rs_happiness || 'N/A'}%</p>
+                                <p className="text-cream">Popularity: {log.soundnet_popularity || log.rs_popularity || 'N/A'}%</p>
+                                <p className="text-cream">Duration: {log.soundnet_duration || log.rs_duration || 'N/A'}</p>
                               </div>
                               
                               <div>
                                 <h4 className="font-semibold text-green-400 mb-2">🎵 Soundnet Raw Values</h4>
-                                <p className="text-cream">Energy: {log.rs_energy_raw || 'N/A'}%</p>
-                                <p className="text-cream">Danceability: {log.rs_danceability_raw || 'N/A'}%</p>
-                                <p className="text-cream">Acousticness: {log.rs_acousticness_raw || 'N/A'}%</p>
-                                <p className="text-cream">RS Loudness: {log.rs_loudness || 'N/A'}</p>
+                                <p className="text-cream">Energy: {log.soundnet_energy || log.rs_energy_raw || 'N/A'}%</p>
+                                <p className="text-cream">Danceability: {log.soundnet_danceability || log.rs_danceability_raw || 'N/A'}%</p>
+                                <p className="text-cream">Acousticness: {log.soundnet_acousticness || log.rs_acousticness_raw || 'N/A'}%</p>
+                                <p className="text-cream">RS Loudness: {log.soundnet_loudness || log.rs_loudness || 'N/A'}</p>
+                              </div>
+                              
+                              {/* VENDOR SOURCE INFO */}
+                              <div>
+                                <h4 className="font-semibold text-purple-400 mb-2">📡 Data Source</h4>
+                                <p className="text-cream">Vendor: {log.vendor_source || 'Unknown'}</p>
+                                <p className="text-cream">Source: {log.data_source || 'Unknown'}</p>
+                                <p className="text-cream">Cached: {log.from_cache ? 'Yes' : 'No'}</p>
+                                <p className="text-cream">Fallback: {log.fallback_type || 'None'}</p>
                               </div>
                               
                               <div>
