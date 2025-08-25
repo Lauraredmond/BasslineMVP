@@ -17,11 +17,30 @@ import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 import WebAudioAnalysisLogger from "@/lib/web-audio-analysis-logger";
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
+import { rapidSoundnetService } from "@/lib/rapid-soundnet";
+import { databaseMigrator } from "@/lib/database-migrator";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
   // 🚨 DEPLOYMENT TEST - This message should appear immediately on page load
   console.log('🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time:', new Date().toLocaleTimeString());
+  
+  // 🔧 TEMPORARY: Expose migration functions for debugging
+  useEffect(() => {
+    (window as any).runMigration = async () => {
+      const result = await databaseMigrator.runVendorAgnosticMigration();
+      console.log('🔄 Migration result:', result);
+      return result;
+    };
+    
+    (window as any).testTable = async () => {
+      const result = await databaseMigrator.testTableAccess();
+      console.log('🔍 Table test result:', result);
+      return result;
+    };
+    
+    console.log('🔧 Migration functions available: window.runMigration() and window.testTable()');
+  }, []);
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -851,11 +870,17 @@ const MusicSync = () => {
                   
                   // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
                   console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
-                  const { rapidSoundnetService } = await import('@/lib/rapid-soundnet');
+                  
+                  console.log('🔍 Testing Rapid Soundnet service availability:', !!rapidSoundnetService);
+                  
+                  // FORCE FRESH API CALL - bypass cache for testing
                   const rapidResult = await rapidSoundnetService.getTrackAnalysis(
                     playbackState.item.name, 
-                    playbackState.item.artists.map(a => a.name).join(', ')
+                    playbackState.item.artists.map(a => a.name).join(', '),
+                    false // allowFallback = false to force API call
                   );
+                  
+                  console.log('🎯 Raw Rapid Soundnet API result:', rapidResult);
                   
                   // Store RapidAPI metadata for enhanced logging (always captured now)
                   if (rapidResult) {
