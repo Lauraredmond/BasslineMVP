@@ -1539,12 +1539,12 @@ const MusicSync = () => {
                             <p className={`font-medium ${
                               selectedDevice === device.id
                                 ? 'text-cream'
-                                : 'text-foreground'
+                                : 'text-gray-900'
                             }`}>{device.name}</p>
                             <p className={`text-xs opacity-70 ${
                               selectedDevice === device.id
                                 ? 'text-cream/70'
-                                : 'text-foreground/70'
+                                : 'text-gray-800'
                             }`}>
                               {device.type} {device.is_active ? '(Active)' : ''}
                             </p>
@@ -1554,7 +1554,7 @@ const MusicSync = () => {
                           <span className={`text-xs opacity-60 ${
                             selectedDevice === device.id
                               ? 'text-cream/60'
-                              : 'text-foreground/60'
+                              : 'text-gray-700'
                           }`}>{device.volume_percent}%</span>
                           {selectedDevice === device.id && (
                             <span className="text-sm text-cream">✓</span>
