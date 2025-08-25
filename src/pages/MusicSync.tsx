@@ -1085,12 +1085,13 @@ const MusicSync = () => {
                 className={`
                   cursor-pointer transition-smooth shadow-card border-2
                   ${selectedService === service.id
-                    ? 'border-burgundy-dark bg-burgundy-dark'
+                    ? 'border-burgundy-dark !bg-burgundy-dark'
                     : 'border-cream/30 bg-card-texture hover:border-cream/60'
                   }
                 `}
+                style={selectedService === service.id ? { backgroundColor: 'hsl(var(--burgundy-dark))' } : {}}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-4" style={selectedService === service.id ? { backgroundColor: 'transparent' } : {}}>
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-lg ${service.color} flex items-center justify-center`}>
                       <span className="text-white text-lg">{service.icon}</span>
@@ -1171,14 +1172,15 @@ const MusicSync = () => {
                     className={`
                       cursor-pointer transition-smooth shadow-card border-2
                       ${selectedPlaylist === playlist.id && !isLoginRequired
-                        ? 'border-burgundy-dark bg-burgundy-dark'
+                        ? 'border-burgundy-dark !bg-burgundy-dark'
                         : isLoginRequired
                         ? 'border-green-500/50 bg-card-texture hover:border-green-500'
                         : 'border-cream/30 bg-card-texture hover:border-cream/60'
                       }
                     `}
+                    style={selectedPlaylist === playlist.id && !isLoginRequired ? { backgroundColor: 'hsl(var(--burgundy-dark))' } : {}}
                   >
-                    <CardContent className="p-4">
+                    <CardContent className="p-4" style={selectedPlaylist === playlist.id && !isLoginRequired ? { backgroundColor: 'transparent' } : {}}>
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className={`font-medium text-lg ${
