@@ -251,6 +251,106 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
     URL.revokeObjectURL(url);
   };
 
+  // Export timestamped attribute timeline
+  const exportAttributeTimeline = () => {
+    if (analysisLogs.length === 0) return;
+    
+    // Create detailed timeline export
+    const timelineData = analysisLogs
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      .map(log => {
+        const timestamp = new Date(log.timestamp);
+        const playbackSeconds = Math.round(log.playback_position_ms / 1000);
+        
+        return {
+          timestamp: timestamp.toISOString(),
+          playbackTime: `${Math.floor(playbackSeconds / 60)}:${(playbackSeconds % 60).toString().padStart(2, '0')}`,
+          playbackMs: log.playback_position_ms,
+          
+          // Track Info
+          trackName: log.track_name,
+          artist: log.artist_name,
+          
+          // DYNAMIC ATTRIBUTES (can change during song)
+          currentLoudness: log.current_segment_loudness_max,
+          currentTempo: log.current_section_tempo,
+          currentKey: log.current_section_key,
+          currentMode: log.current_section_mode,
+          sectionConfidence: log.current_section_confidence,
+          
+          // STATIC ATTRIBUTES (per-track averages)
+          overallEnergy: log.energy,
+          overallDanceability: log.danceability,
+          overallHappiness: log.rs_happiness || log.valence,
+          overallAcousticness: log.acousticness,
+          overallInstrumentalness: log.instrumentalness,
+          overallSpeechiness: log.speechiness,
+          overallLiveness: log.liveness,
+          
+          // Spotify Advanced Analysis
+          beatConfidence: log.current_beat_confidence,
+          barConfidence: log.current_bar_confidence,
+          segmentPitches: log.current_segment_pitches?.join(';') || '',
+          segmentTimbre: log.current_segment_timbre?.join(';') || '',
+          
+          // RapidAPI Soundnet Enhanced
+          camelot: log.rs_camelot,
+          popularity: log.rs_popularity,
+          rsLoudness: log.rs_loudness,
+          
+          // Fitness Context
+          fitnessPhase: log.fitness_phase,
+          workoutIntensity: log.workout_intensity
+        };
+      });
+    
+    // Create CSV with detailed headers
+    const headers = [
+      'Timestamp', 'Playback_Time', 'Playback_Ms', 'Track_Name', 'Artist',
+      
+      // DYNAMIC ATTRIBUTES
+      'Current_Loudness_dB', 'Current_Tempo_BPM', 'Current_Key', 'Current_Mode', 'Section_Confidence',
+      
+      // STATIC ATTRIBUTES  
+      'Overall_Energy_0_1', 'Overall_Danceability_0_1', 'Overall_Happiness_0_100', 
+      'Overall_Acousticness_0_1', 'Overall_Instrumentalness_0_1', 
+      'Overall_Speechiness_0_1', 'Overall_Liveness_0_1',
+      
+      // SPOTIFY ADVANCED
+      'Beat_Confidence', 'Bar_Confidence', 'Segment_Pitches_Array', 'Segment_Timbre_Array',
+      
+      // RAPIDAPI ENHANCED
+      'Camelot_Key', 'Popularity_0_100', 'RS_Loudness_dB',
+      
+      // FITNESS CONTEXT
+      'Fitness_Phase', 'Workout_Intensity'
+    ];
+    
+    const csvTimeline = [
+      headers.join(','),
+      ...timelineData.map(row => [
+        row.timestamp, row.playbackTime, row.playbackMs, `"${row.trackName}"`, `"${row.artist}"`,
+        row.currentLoudness || '', row.currentTempo || '', row.currentKey || '', row.currentMode || '', row.sectionConfidence || '',
+        row.overallEnergy || '', row.overallDanceability || '', row.overallHappiness || '',
+        row.overallAcousticness || '', row.overallInstrumentalness || '',
+        row.overallSpeechiness || '', row.overallLiveness || '',
+        row.beatConfidence || '', row.barConfidence || '', `"${row.segmentPitches}"`, `"${row.segmentTimbre}"`,
+        `"${row.camelot || ''}"`, row.popularity || '', `"${row.rsLoudness || ''}"`,
+        `"${row.fitnessPhase || ''}"`, row.workoutIntensity || ''
+      ].join(','))
+    ].join('\n');
+    
+    const blob = new Blob([csvTimeline], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `attribute-timeline-${selectedSession}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    console.log(`📊 Exported ${timelineData.length} timestamped attribute measurements`);
+  };
+
   // Format time position
   const formatTime = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -860,7 +960,16 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
                   className="text-cream border-cream hover:bg-cream hover:text-maroon"
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Export CSV
+                  Export Raw CSV
+                </Button>
+                <Button
+                  onClick={exportAttributeTimeline}
+                  disabled={analysisLogs.length === 0}
+                  variant="outline"
+                  className="text-green-400 border-green-400 hover:bg-green-400 hover:text-maroon"
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Export Timeline
                 </Button>
               </div>
             </div>
