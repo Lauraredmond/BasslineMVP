@@ -877,7 +877,7 @@ const MusicSync = () => {
                   const rapidResult = await rapidSoundnetService.getTrackAnalysis(
                     playbackState.item.name, 
                     playbackState.item.artists.map(a => a.name).join(', '),
-                    false // allowFallback = false to force API call
+                    true // allowFallback = true to enable intelligent fallbacks when API fails
                   );
                   
                   console.log('🎯 Raw Rapid Soundnet API result:', rapidResult);
