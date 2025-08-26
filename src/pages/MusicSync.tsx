@@ -15,7 +15,7 @@ import { narrativeEngine } from "@/lib/narrative-engine";
 import { dbAdmin } from "@/lib/database-admin";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
-import WebAudioAnalysisLogger from "@/lib/web-audio-analysis-logger";
+// Removed WebAudioAnalysisLogger - eliminated Web Audio capture
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
 import { databaseMigrator } from "@/lib/database-migrator";
@@ -95,9 +95,7 @@ const MusicSync = () => {
   const [showResearchLab, setShowResearchLab] = useState(false);
   const [isAnalysisLogging, setIsAnalysisLogging] = useState(false);
   
-  // Web Audio Analysis Logger
-  const [webAudioLogger, setWebAudioLogger] = useState<WebAudioAnalysisLogger | null>(null);
-  const [isWebAudioEnabled, setIsWebAudioEnabled] = useState(false);
+  // Removed Web Audio Analysis Logger - eliminated Web Audio capture
 
   const handleBack = () => {
     navigate(-1);
@@ -329,17 +327,7 @@ const MusicSync = () => {
       await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
       setIsAnalysisLogging(true);
       
-      // Initialize Web Audio Analysis Logger as backup/alternative
-      try {
-        const logger = new WebAudioAnalysisLogger();
-        await logger.initialize();
-        await logger.startWorkoutSession(workoutFormat || 'general');
-        setWebAudioLogger(logger);
-        setIsWebAudioEnabled(true);
-        console.log('🎵 Web Audio Intelligence enabled as backup system');
-      } catch (error) {
-        console.warn('⚠️ Web Audio Intelligence not available:', error);
-      }
+      // Eliminated Web Audio Analysis Logger - no getDisplayMedia calls
       
       console.log('🏋️ [DEBUG] Setting workout as ACTIVE (non-Spotify path)');
       setIsWorkoutActive(true);
@@ -394,17 +382,7 @@ const MusicSync = () => {
           setIsAnalysisLogging(true);
           console.log('✅ Analysis logging session started, isAnalysisLogging set to true');
           
-          // Initialize Web Audio Analysis Logger for real music intelligence
-          try {
-            const logger = new WebAudioAnalysisLogger();
-            await logger.initialize();
-            await logger.startWorkoutSession(workoutFormat || 'spotify');
-            setWebAudioLogger(logger);
-            setIsWebAudioEnabled(true);
-            console.log('🎵 Web Audio Intelligence enabled for Spotify workout');
-          } catch (error) {
-            console.warn('⚠️ Web Audio Intelligence not available:', error);
-          }
+          // Eliminated Web Audio Analysis Logger - no getDisplayMedia calls
           
           setCurrentTrackPhase(plan.phases[0]);
           console.log('🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path)');
@@ -844,32 +822,11 @@ const MusicSync = () => {
           if (playbackState?.item && isSpotifyAuthenticated && isWorkoutActive) {
             console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
-            // Start Web Audio analysis logging (real-time musical intelligence)
-            if (webAudioLogger && isWebAudioEnabled) {
-              (async () => {
-                try {
-                  const webAudioContext = {
-                    trackName: playbackState.item.name,
-                    artistName: playbackState.item.artists.map(a => a.name).join(', '),
-                    trackId: playbackState.item.id,
-                    trackUri: playbackState.item.uri,
-                    positionMs: playbackState.progress_ms,
-                    isPlaying: playbackState.is_playing,
-                    fitnessPhase: currentPhase < 5 ? phases[currentPhase]?.name : 'Unknown',
-                    workoutIntensity: currentPhase + 1 // Simple intensity based on phase
-                  };
-                  
-                  await webAudioLogger.startTrackLogging(webAudioContext);
-                  console.log('🎵 Web Audio Intelligence logging started for:', playbackState.item.name);
-                } catch (error) {
-                  console.warn('⚠️ Web Audio track logging failed:', error);
-                }
-              })();
-            }
+            // Eliminated Web Audio analysis logging - no getDisplayMedia calls
             const startTrackLogging = async () => {
               try {
                 console.log('🎵 📊 Starting FALLBACK Spotify analysis logging for:', playbackState.item.name);
-                console.log('⚠️ SKIPPING Spotify API calls - using Web Audio Intelligence instead');
+                console.log('⚠️ ELIMINATING ALL Spotify API calls - using only RapidAPI');
                 
                 // Get enhanced track data including Rapid Soundnet fallbacks
                 console.log('🔍 Attempting to get audio features with Rapid Soundnet fallback...');
@@ -877,9 +834,8 @@ const MusicSync = () => {
                 let rapidSoundnetMetadata = null;
                 
                 try {
-                  // Try to get audio features from Spotify first, then Rapid Soundnet
-                  const trackIds = [playbackState.item.id];
-                  audioFeatures = await spotifyService.getAudioFeatures(trackIds);
+                  // ELIMINATED: No Spotify API calls - RapidAPI only
+                  audioFeatures = null; // Force null to prevent 403 errors
                   
                   // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
                   console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
@@ -1860,14 +1816,7 @@ const MusicSync = () => {
 
       <BottomNavigation />
       
-      {/* Web Audio Intelligence Status */}
-      {isWebAudioEnabled && (
-        <div className="fixed bottom-32 right-4 z-50">
-          <div className="bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg text-xs">
-            🎵 Web Audio Intelligence Active
-          </div>
-        </div>
-      )}
+      {/* Eliminated Web Audio Intelligence Status */}
       
       {/* Research Lab Toggle */}
       {isAnalysisLogging && (

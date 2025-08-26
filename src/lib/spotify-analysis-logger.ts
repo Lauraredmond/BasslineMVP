@@ -2,6 +2,7 @@
 // Logs all Spotify audio analysis attributes during playback for fitness narrative mapping research
 
 import { supabase } from './supabase';
+import { secureDatabaseService, AnalysisLogData } from './secure-database-service';
 
 export interface SpotifyAnalysisData {
   meta: {
@@ -144,23 +145,16 @@ class SpotifyAnalysisLogger {
   // Start a new logging session
   async startLoggingSession(sessionName?: string, workoutType?: string): Promise<string> {
     try {
-      const { data, error } = await supabase
-        .from('spotify_playback_sessions')
-        .insert({
-          session_name: sessionName || `Session ${new Date().toISOString()}`,
-          workout_type: workoutType || 'general',
-          start_time: new Date().toISOString()
-        })
-        .select('id')
-        .single();
-
-      if (error) throw error;
-
-      this.sessionId = data.id;
-      console.log('Started logging session:', this.sessionId);
+      // Use secure server-side session creation
+      this.sessionId = await secureDatabaseService.createSession({
+        sessionName: sessionName || `Session ${new Date().toISOString()}`,
+        workoutType: workoutType || 'general'
+      });
+      
+      console.log('✅ Started secure logging session:', this.sessionId);
       return this.sessionId;
     } catch (error) {
-      console.error('Error starting logging session:', error);
+      console.error('❌ Error starting secure logging session:', error);
       throw error;
     }
   }
@@ -479,38 +473,46 @@ class SpotifyAnalysisLogger {
         }
       });
 
-      // Try new vendor-agnostic table first, fallback to old table for backward compatibility
-      let { error } = await supabase
-        .from('common_streaming_vendor_analysis_logs')
-        .insert(logEntry);
-      
-      // If new table doesn't exist yet, try old table
-      if (error && error.code === '42P01') {
-        console.warn('⚠️ New vendor table not found, using legacy spotify_analysis_logs table');
-        const legacyEntry = this.convertToLegacyFormat(logEntry);
-        const legacyResult = await supabase
-          .from('spotify_analysis_logs')
-          .insert(legacyEntry);
-        error = legacyResult.error;
-      }
-
-      if (error) {
-        console.error('❌ [DEBUG] Database insert failed:', error);
-        console.error('❌ [DEBUG] Error details:', {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint
-        });
-        console.error('❌ [DEBUG] Failed log entry keys:', Object.keys(logEntry));
-      } else {
-        console.log('✅ [DEBUG] Successfully logged analysis data to database');
-        console.log('✅ [DEBUG] Logged entry included RapidAPI data:', {
-          hasRapidApiData: !!(logEntry.rs_happiness || logEntry.rs_popularity),
-          dataSource: logEntry.data_source,
-          happiness: logEntry.rs_happiness,
-          popularity: logEntry.rs_popularity
-        });
+      // Use secure server-side database logging with column validation
+      try {
+        const secureLogData: AnalysisLogData = {
+          session_id: this.sessionId,
+          vendor_source: 'RapidAPI Soundnet',
+          track_name: context.trackName || 'Unknown',
+          artist_name: context.artistName || 'Unknown',
+          data_source: context.dataSource || 'rapidapi',
+          from_cache: context.fromCache || false,
+          fallback_type: context.fallbackType || 'api',
+          playback_position_ms: currentPositionMs,
+          is_playing: true,
+          
+          // Include RapidAPI data for proper mapping
+          rapidSoundnetData: context.rapidSoundnetData
+        };
+        
+        const logId = await secureDatabaseService.logAnalysis(secureLogData);
+        console.log('✅ [DEBUG] Successfully logged via secure service:', logId);
+        console.log('✅ [DEBUG] RapidAPI data properly mapped and inserted');
+        
+      } catch (secureError) {
+        console.error('❌ [DEBUG] Secure database logging failed:', secureError);
+        
+        // Fallback to direct Supabase (for development/debugging only)
+        console.log('⚠️ [DEBUG] Attempting direct database fallback...');
+        const { error: fallbackError } = await supabase
+          .from('common_streaming_vendor_analysis_logs')
+          .insert({
+            session_id: this.sessionId,
+            vendor_source: 'RapidAPI Soundnet',
+            track_name: context.trackName || 'Unknown',
+            artist_name: context.artistName || 'Unknown'
+          });
+          
+        if (fallbackError) {
+          console.error('❌ [DEBUG] Fallback also failed:', fallbackError);
+        } else {
+          console.log('✅ [DEBUG] Fallback database insert succeeded');
+        }
       }
     } catch (error) {
       console.error('Error in logCurrentState:', error);
