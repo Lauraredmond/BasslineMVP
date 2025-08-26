@@ -783,7 +783,7 @@ const MusicSync = () => {
         currentTrack: playbackState?.item?.name || 'None'
       });
       
-      if (playbackState && playbackState.progress_ms && playbackState.item) {
+      if (playbackState && playbackState.item) {
         
         // Reset narrative states when track changes
         console.log('🔍 TRACK ID COMPARISON:', {
