@@ -1,6 +1,8 @@
 // Rapid Soundnet API Client for Track Analysis
 // Provides audio analysis attributes as replacement for deprecated Spotify endpoints
 
+import { SpotifyAnalysisLogger } from './spotify-analysis-logger';
+
 export interface RapidSoundnetTrackAnalysis {
   key: string;               // Musical key (e.g., "C", "F#", "Ab")
   mode: string;              // "major" or "minor"
@@ -90,6 +92,10 @@ class RapidSoundnetService {
     const cached = this.cache.get(trackTitle, artistName || '');
     if (cached) {
       console.log('✅ Using cached RapidAPI data for:', trackTitle);
+      
+      // 🌉 BRIDGE: Even cached data should trigger database logging
+      await this.triggerDatabaseLogging(trackTitle, artistName || '', cached);
+      
       return cached;
     }
     
@@ -187,6 +193,9 @@ class RapidSoundnetService {
       if (result) {
         this.cache.store(trackTitle, artistName || '', result);
         console.log('✅ Cached RapidAPI result for:', trackTitle);
+        
+        // 🌉 BRIDGE: Automatically trigger database logging with RapidAPI data
+        await this.triggerDatabaseLogging(trackTitle, artistName || '', result);
         
         // Add rate limiting to prevent API spam
         await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 second delay
@@ -389,6 +398,51 @@ class RapidSoundnetService {
   }
 
   // Normalize API response to expected interface
+  // 🌉 BRIDGE METHOD: Connect RapidAPI results to database logging
+  private async triggerDatabaseLogging(trackTitle: string, artistName: string, rapidApiData: RapidSoundnetTrackAnalysis): Promise<void> {
+    try {
+      console.log('🌉 [BRIDGE] Triggering database logging for RapidAPI data:', {
+        track: trackTitle,
+        artist: artistName,
+        hasData: !!rapidApiData
+      });
+      
+      const spotifyAnalysisLogger = SpotifyAnalysisLogger.getInstance();
+      
+      // Check if there's an active session for logging
+      if (!spotifyAnalysisLogger.getCurrentSessionId()) {
+        console.log('🌉 [BRIDGE] No active session - starting automatic session for RapidAPI data');
+        await spotifyAnalysisLogger.startWorkoutSession('rapidapi-auto');
+      }
+      
+      // Create context for database logging
+      const context = {
+        trackId: `rapid_${trackTitle.replace(/\s+/g, '_')}_${Date.now()}`, // Generate unique ID
+        trackName: trackTitle,
+        artistName: artistName,
+        positionMs: 0, // Not available from RapidAPI
+        fitnessPhase: 'unknown',
+        workoutIntensity: 5,
+        audioFeatures: null, // We have RapidAPI data instead
+        
+        // RapidAPI data source tracking
+        dataSource: 'rapidapi',
+        fromCache: false,
+        fallbackType: null,
+        
+        // Include all RapidAPI data
+        rapidSoundnetData: rapidApiData
+      };
+      
+      console.log('🌉 [BRIDGE] Calling spotifyAnalysisLogger.startTrackLogging with RapidAPI context');
+      spotifyAnalysisLogger.startTrackLogging(context);
+      console.log('🌉 [BRIDGE] Database logging triggered successfully');
+      
+    } catch (error) {
+      console.error('🌉 [BRIDGE] Failed to trigger database logging:', error);
+    }
+  }
+
   private normalizeApiResponse(data: any): RapidSoundnetTrackAnalysis {
     return {
       key: data.key || 'C',
