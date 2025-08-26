@@ -19,6 +19,12 @@ exports.handler = async (event, context) => {
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
+    console.log('Environment check:', {
+      hasUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      urlPrefix: supabaseUrl ? supabaseUrl.substring(0, 20) + '...' : 'missing'
+    });
+    
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase configuration:', {
         hasUrl: !!supabaseUrl,
@@ -33,6 +39,8 @@ exports.handler = async (event, context) => {
         })
       };
     }
+    
+    console.log('Creating Supabase client with service role key...');
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -87,13 +95,26 @@ async function introspectTable(supabase, headers) {
       .eq('table_name', 'common_streaming_vendor_analysis_logs')
       .eq('table_schema', 'public');
 
-    if (error) throw error;
+    if (error) {
+      console.error('Schema introspection error:', error);
+      throw error;
+    }
+
+    if (!columns || !Array.isArray(columns)) {
+      console.error('No columns returned from schema query');
+      throw new Error('Table schema not found');
+    }
 
     const validColumns = columns.map(col => ({
       name: col.column_name,
       type: col.data_type,
       nullable: col.is_nullable === 'YES'
     }));
+
+    console.log('Schema introspection success:', {
+      columnCount: validColumns.length,
+      sampleColumns: validColumns.slice(0, 5).map(c => c.name)
+    });
 
     return {
       statusCode: 200,
@@ -153,13 +174,24 @@ async function createSession(supabase, headers, data) {
 async function logAnalysis(supabase, headers, data) {
   try {
     // First get valid columns
-    const { data: columns } = await supabase
+    const { data: columns, error: schemaError } = await supabase
       .from('information_schema.columns')
       .select('column_name')
       .eq('table_name', 'common_streaming_vendor_analysis_logs')
       .eq('table_schema', 'public');
 
+    if (schemaError) {
+      console.error('Schema query error:', schemaError);
+      throw schemaError;
+    }
+
+    if (!columns || !Array.isArray(columns)) {
+      console.error('No columns returned for filtering');
+      throw new Error('Could not retrieve table schema for column filtering');
+    }
+
     const validColumnNames = new Set(columns.map(col => col.column_name));
+    console.log('Valid columns for filtering:', Array.from(validColumnNames).slice(0, 10));
     
     // Filter payload to only valid columns
     const filteredPayload = {};
