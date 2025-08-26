@@ -187,6 +187,9 @@ class RapidSoundnetService {
       if (result) {
         this.cache.store(trackTitle, artistName || '', result);
         console.log('✅ Cached RapidAPI result for:', trackTitle);
+        
+        // Add rate limiting to prevent API spam
+        await new Promise(resolve => setTimeout(resolve, 500)); // 0.5 second delay
       }
       
       return result;
