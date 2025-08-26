@@ -127,6 +127,11 @@ class RapidSoundnetService {
 
     try {
       console.log('🎯 Making Rapid Soundnet API request:', { trackTitle, artistName });
+      console.log('🔍 [DEBUG] EXACT API PARAMS:', {
+        originalTrackTitle: trackTitle,
+        originalArtistName: artistName,
+        urlEncoded: `song=${encodeURIComponent(trackTitle)}&artist=${encodeURIComponent(artistName || '')}`
+      });
       
       // Prepare request parameters
       const params = new URLSearchParams({
@@ -163,8 +168,18 @@ class RapidSoundnetService {
         return null;
       }
 
-      const data = await response.json();
-      console.log('📊 Rapid Soundnet analysis received:', data);
+      const text = await response.text();
+      console.log('📊 Raw API Response Text (first 500 chars):', text.substring(0, 500));
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+        console.log('📊 Parsed Rapid Soundnet analysis:', data);
+      } catch (parseError) {
+        console.error('❌ Failed to parse API response as JSON:', parseError);
+        console.error('❌ Raw response:', text.substring(0, 200));
+        return null;
+      }
       
       const result = this.normalizeApiResponse(data);
       
