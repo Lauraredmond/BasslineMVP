@@ -17,14 +17,13 @@ echo "✅ Files staged"
 git commit -m "Deploy Bassline MVP - $(date)"
 echo "✅ Changes committed"
 
-# Ask for repo name if not set
+# Set defaults for your repository
 if [ -z "$REPO_NAME" ]; then
-    read -p "Enter your GitHub repository name (e.g., BasslineMVP): " REPO_NAME
+    REPO_NAME="BasslineMVP"
 fi
 
-# Ask for GitHub username if not set
 if [ -z "$GITHUB_USER" ]; then
-    read -p "Enter your GitHub username: " GITHUB_USER
+    GITHUB_USER="Lauraredmond"
 fi
 
 # Set remote origin
