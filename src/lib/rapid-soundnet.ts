@@ -130,14 +130,14 @@ class RapidSoundnetService {
       
       // Prepare request parameters
       const params = new URLSearchParams({
-        title: trackTitle
+        song: trackTitle
       });
       
       if (artistName) {
         params.append('artist', artistName);
       }
 
-      const url = `https://${this.API_HOST}/pktx/spotify/analyze?${params}`;
+      const url = `https://${this.API_HOST}/pktx/analysis?${params}`;
       
       const response = await fetch(url, {
         method: 'GET',
