@@ -801,13 +801,7 @@ const MusicSync = () => {
           console.log('  - Is workout active?:', isWorkoutActive);
           console.log('  - Is Spotify authenticated?:', isSpotifyAuthenticated);
           
-          setCurrentTrackId(playbackState.item.id);
-          setNarrativeStates({
-            first_shown: false,
-            second_shown: false
-          });
-          
-          // Start analysis logging for the new track
+          // CRITICAL: Start API call BEFORE state updates to prevent re-render interruption
           console.log('🔍 [DEBUG] WORKOUT DETECTION DEBUG:', {
             isWorkoutActive,
             isSpotifyAuthenticated,
