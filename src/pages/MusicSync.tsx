@@ -795,9 +795,8 @@ const MusicSync = () => {
           willTriggerChange: currentTrackId !== playbackState.item.id
         });
         
-        // FORCE TRACK CHANGE: Always trigger for testing
-        console.log('🚨 FORCING TRACK CHANGE FOR TESTING');
-        if (true) { // Temporarily force track change
+        // NORMAL TRACK CHANGE: Only trigger on actual track changes
+        if (currentTrackId !== playbackState.item.id) {
           console.log('🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration...');
           console.log('  - Previous track ID:', currentTrackId);
           console.log('  - New track ID:', playbackState.item.id);
@@ -825,8 +824,15 @@ const MusicSync = () => {
             console.error('❌ [DEBUG] Check Spotify connection status');
           }
           
-          // FORCE API CALL: Bypass all state checks for testing
-          if (playbackState?.item) {
+          // Update state after API call to prevent interruption
+          setCurrentTrackId(playbackState.item.id);
+          setNarrativeStates({
+            first_shown: false,
+            second_shown: false
+          });
+          
+          // Start API call with proper conditions
+          if (playbackState?.item && isSpotifyAuthenticated && isWorkoutActive) {
             console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
             // Start Web Audio analysis logging (real-time musical intelligence)
