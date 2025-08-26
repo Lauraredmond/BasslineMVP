@@ -831,7 +831,15 @@ const MusicSync = () => {
             second_shown: false
           });
           
-          // Start API call with proper conditions
+          // Debug all conditions before checking
+          console.log('🔍 [DEBUG] CHECKING CONDITIONS:', {
+            hasPlaybackItem: !!playbackState?.item,
+            isSpotifyAuthenticated: isSpotifyAuthenticated,
+            isWorkoutActive: isWorkoutActive,
+            allConditionsMet: !!(playbackState?.item && isSpotifyAuthenticated && isWorkoutActive)
+          });
+          
+          // Start API call with proper conditions  
           if (playbackState?.item && isSpotifyAuthenticated && isWorkoutActive) {
             console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
