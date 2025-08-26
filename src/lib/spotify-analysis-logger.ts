@@ -387,11 +387,8 @@ class SpotifyAnalysisLogger {
         liveness: context.audioFeatures?.liveness,
         valence: context.audioFeatures?.valence,
         
-        // Data source tracking
-        data_source: context.dataSource || (context.audioFeatures ? 'spotify' : 'fallback'),
+        // Additional data source tracking (not duplicated)
         has_real_audio_features: !!(context.audioFeatures),
-        from_cache: context.fromCache || false,
-        fallback_type: context.fallbackType,
         detected_genre: context.detectedGenre,
         api_requests_used: context.apiRequestsUsed,
         

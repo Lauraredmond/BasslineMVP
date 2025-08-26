@@ -17,8 +17,9 @@ import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 import WebAudioAnalysisLogger from "@/lib/web-audio-analysis-logger";
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
-import { rapidSoundnetService } from "@/lib/rapid-soundnet";
+import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
 import { databaseMigrator } from "@/lib/database-migrator";
+import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
@@ -883,10 +884,10 @@ const MusicSync = () => {
                   // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
                   console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
                   
-                  console.log('🔍 Testing Rapid Soundnet service availability:', !!rapidSoundnetService);
+                  console.log('🔍 Testing Secure Rapid Soundnet service availability:', !!secureRapidSoundnetService);
                   
                   // FORCE FRESH API CALL - bypass cache for testing
-                  const rapidResult = await rapidSoundnetService.getTrackAnalysis(
+                  const rapidResult = await secureRapidSoundnetService.getTrackAnalysis(
                     playbackState.item.name, 
                     playbackState.item.artists.map(a => a.name).join(', '),
                     true // allowFallback = true to enable intelligent fallbacks when API fails
@@ -1906,6 +1907,12 @@ const MusicSync = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Debug Components (only show in development or when ?debug=true) */}
+      <QuickTestButton />
+      {(process.env.NODE_ENV === 'development' || new URLSearchParams(window.location.search).get('debug') === 'true') && (
+        <DebugPanel />
       )}
     </div>
   );
