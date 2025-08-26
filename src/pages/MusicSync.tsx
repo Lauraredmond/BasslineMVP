@@ -827,8 +827,8 @@ const MusicSync = () => {
             console.error('❌ [DEBUG] Check Spotify connection status');
           }
           
-          // CRITICAL FIX: Always proceed if music is playing - bypass state check entirely
-          if (playbackState?.is_playing && isSpotifyAuthenticated) {
+          // CRITICAL FIX: Always proceed if track is loaded - bypass state check entirely
+          if (playbackState?.item && isSpotifyAuthenticated) {
             console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
             
             // Start Web Audio analysis logging (real-time musical intelligence)
