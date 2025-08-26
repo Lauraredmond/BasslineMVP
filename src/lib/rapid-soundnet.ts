@@ -1,7 +1,7 @@
 // Rapid Soundnet API Client for Track Analysis
 // Provides audio analysis attributes as replacement for deprecated Spotify endpoints
 
-import { SpotifyAnalysisLogger } from './spotify-analysis-logger';
+import { spotifyAnalysisLogger } from './spotify-analysis-logger';
 
 export interface RapidSoundnetTrackAnalysis {
   key: string;               // Musical key (e.g., "C", "F#", "Ab")
@@ -406,8 +406,6 @@ class RapidSoundnetService {
         artist: artistName,
         hasData: !!rapidApiData
       });
-      
-      const spotifyAnalysisLogger = SpotifyAnalysisLogger.getInstance();
       
       // Check if there's an active session for logging
       if (!spotifyAnalysisLogger.getCurrentSessionId()) {
