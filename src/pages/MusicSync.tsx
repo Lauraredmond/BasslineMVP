@@ -790,10 +790,14 @@ const MusicSync = () => {
           currentTrackId,
           playbackStateId: playbackState.item.id,
           areEqual: currentTrackId === playbackState.item.id,
-          trackName: playbackState.item.name
+          trackName: playbackState.item.name,
+          comparison: `"${currentTrackId}" !== "${playbackState.item.id}"`,
+          willTriggerChange: currentTrackId !== playbackState.item.id
         });
         
-        if (currentTrackId !== playbackState.item.id) {
+        // FORCE TRACK CHANGE: Always trigger for testing
+        console.log('🚨 FORCING TRACK CHANGE FOR TESTING');
+        if (true) { // Temporarily force track change
           console.log('🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration...');
           console.log('  - Previous track ID:', currentTrackId);
           console.log('  - New track ID:', playbackState.item.id);
