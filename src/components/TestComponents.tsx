@@ -122,36 +122,52 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
-  const addSectionIndicatorColumn = async () => {
+  const addSectionColumnsToVendorTable = async () => {
     try {
-      console.log('🧪 Adding section indicator column to database...');
+      console.log('🧪 Adding section columns to vendor analysis table...');
       
       // Import the migration function
-      const { addSectionIndicatorColumn, checkSectionIndicatorColumn } = await import('@/lib/add-section-indicator-column');
+      const { addSectionColumnsToVendorTable, checkSectionColumnsExist, getSampleSectionData } = await import('@/lib/add-section-columns-to-vendor-table');
       
-      // Check if column already exists
-      const checkResult = await checkSectionIndicatorColumn();
+      // Check if columns already exist
+      const checkResult = await checkSectionColumnsExist();
       
       if (checkResult.exists) {
-        console.log('✅ Section indicator column already exists');
-        alert('✅ Section indicator column already exists!\n\nNo migration needed.');
+        console.log('✅ Section columns already exist');
+        
+        // Show sample data
+        const sampleResult = await getSampleSectionData();
+        if (sampleResult.success && sampleResult.data.length > 0) {
+          console.log('📊 Sample section data:', sampleResult.data);
+          alert(`✅ Section columns already exist!\n\nFound ${sampleResult.data.length} records with section data.\n\nCheck console for sample data.`);
+        } else {
+          alert('✅ Section columns exist but no section data found.\n\nUse "Real-time Sections" to create sectional data.');
+        }
         return;
       }
       
-      // Add the column
-      console.log('🗄️ Adding section_indicator column...');
-      const result = await addSectionIndicatorColumn();
+      // Add the columns
+      console.log('🗄️ Adding section columns to vendor table...');
+      const result = await addSectionColumnsToVendorTable();
       
       if (result.success) {
-        console.log('✅ Section indicator column added successfully');
-        alert(`✅ Section indicator column added successfully!\n\n${result.message}\n\nExisting records: ${result.existingRecords || 0}`);
+        console.log('✅ Section columns added successfully');
+        console.log('Added columns:', result.columnsAdded);
+        
+        alert(`✅ Section columns added successfully!\n\nColumns added:\n${result.columnsAdded.join('\n')}\n\nRecords with section info: ${result.recordsWithSectionInfo}`);
+        
+        // Show sample data if available
+        const sampleResult = await getSampleSectionData();
+        if (sampleResult.success && sampleResult.data.length > 0) {
+          console.log('📊 Sample updated data:', sampleResult.data);
+        }
       } else {
-        console.error('❌ Failed to add section indicator column:', result.error);
-        alert(`❌ Failed to add column: ${result.error?.message || 'Unknown error'}`);
+        console.error('❌ Failed to add section columns:', result.error);
+        alert(`❌ Failed to add columns: ${result.error?.message || 'Unknown error'}`);
       }
       
     } catch (error) {
-      console.error('💥 Section column migration error:', error);
+      console.error('💥 Section columns migration error:', error);
       alert(`💥 Migration error: ${error.message}`);
     }
   };
@@ -280,7 +296,7 @@ export const DebugPanel: React.FC = () => {
         </button>
         
         <button 
-          onClick={addSectionIndicatorColumn}
+          onClick={addSectionColumnsToVendorTable}
           style={{
             padding: '6px 10px',
             background: '#28a745',
@@ -291,7 +307,7 @@ export const DebugPanel: React.FC = () => {
             fontSize: '12px'
           }}
         >
-          ➕ Add Section Column
+          ➕ Add Section Columns
         </button>
         
         <button 

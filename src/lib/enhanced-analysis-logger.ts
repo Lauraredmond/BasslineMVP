@@ -179,7 +179,7 @@ class EnhancedAnalysisLogger {
           duration_ms: entry.sectionDuration * 1000
         },
         
-        // Enhanced section data
+        // Enhanced section data - populate the new vendor table columns
         sectionData: {
           sectionIndex: entry.sectionIndex,
           sectionType: entry.sectionType,
@@ -190,6 +190,12 @@ class EnhancedAnalysisLogger {
           // SECTION INDICATOR COLUMN as requested
           sectionIndicator: `Section ${entry.sectionIndex}: ${entry.sectionType} (${entry.sectionStartTime}s-${(entry.sectionStartTime + entry.sectionDuration).toFixed(1)}s)`
         },
+        
+        // Map to new vendor table section columns
+        section_indicator: `Section ${entry.sectionIndex}: ${entry.sectionType} (${entry.sectionStartTime}s-${(entry.sectionStartTime + entry.sectionDuration).toFixed(1)}s)`,
+        section_index: entry.sectionIndex,
+        section_type: entry.sectionType,
+        section_narrative: entry.workoutNarrative,
         
         // Data source tracking
         dataSource: entry.dataSource,
