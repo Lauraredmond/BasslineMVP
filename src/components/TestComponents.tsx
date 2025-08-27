@@ -79,6 +79,49 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const testRealtimeSectionalAnalysis = async () => {
+    try {
+      console.log('🧪 Testing Real-time Sectional Analysis...');
+      
+      // Import the realtime analyzer
+      const { realtimeSectionalAnalyzer } = await import('@/lib/realtime-sectional-analyzer');
+      
+      // Test with "The Pretender" - the song that had static values
+      const testTrack = 'The Pretender';
+      const testArtist = 'Foo Fighters';
+      
+      console.log(`🎯 Starting real-time sectional analysis for: ${testTrack} by ${testArtist}`);
+      
+      // Start real-time analysis
+      const success = await realtimeSectionalAnalyzer.startRealtimeAnalysis(testTrack, testArtist);
+      
+      if (success) {
+        console.log('✅ Real-time sectional analysis started!');
+        
+        // Simulate some time passing
+        setTimeout(() => {
+          const status = realtimeSectionalAnalyzer.getAnalysisStatus();
+          console.log('📊 Analysis status:', status);
+          
+          // Stop after demo
+          setTimeout(() => {
+            realtimeSectionalAnalyzer.stopRealtimeAnalysis();
+            console.log('⏹️ Real-time analysis stopped');
+          }, 5000);
+        }, 2000);
+        
+        alert(`✅ Real-time sectional analysis started!\n\nThis will log different attribute values for each section during playback.\n\nCheck console and database for CHANGING values per section.`);
+      } else {
+        console.error('❌ Real-time analysis failed to start');
+        alert('❌ Real-time sectional analysis test failed - check console for details');
+      }
+      
+    } catch (error) {
+      console.error('💥 Real-time sectional analysis test error:', error);
+      alert(`💥 Real-time analysis test error: ${error.message}`);
+    }
+  };
+
   const testSecureRapidApi = async () => {
     try {
       console.log('🧪 Testing Secure RapidAPI Integration...');
@@ -185,6 +228,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🎵 Enhanced Analysis
+        </button>
+        
+        <button 
+          onClick={testRealtimeSectionalAnalysis}
+          style={{
+            padding: '6px 10px',
+            background: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🎯 Real-time Sections
         </button>
         
         <button 

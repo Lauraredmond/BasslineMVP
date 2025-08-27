@@ -186,7 +186,9 @@ class EnhancedAnalysisLogger {
           sectionStartTime: entry.sectionStartTime,
           sectionDuration: entry.sectionDuration,
           confidence: entry.confidence,
-          narrative: entry.workoutNarrative
+          narrative: entry.workoutNarrative,
+          // SECTION INDICATOR COLUMN as requested
+          sectionIndicator: `Section ${entry.sectionIndex}: ${entry.sectionType} (${entry.sectionStartTime}s-${(entry.sectionStartTime + entry.sectionDuration).toFixed(1)}s)`
         },
         
         // Data source tracking
