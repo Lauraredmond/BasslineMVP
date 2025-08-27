@@ -122,6 +122,40 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const addSectionIndicatorColumn = async () => {
+    try {
+      console.log('🧪 Adding section indicator column to database...');
+      
+      // Import the migration function
+      const { addSectionIndicatorColumn, checkSectionIndicatorColumn } = await import('@/lib/add-section-indicator-column');
+      
+      // Check if column already exists
+      const checkResult = await checkSectionIndicatorColumn();
+      
+      if (checkResult.exists) {
+        console.log('✅ Section indicator column already exists');
+        alert('✅ Section indicator column already exists!\n\nNo migration needed.');
+        return;
+      }
+      
+      // Add the column
+      console.log('🗄️ Adding section_indicator column...');
+      const result = await addSectionIndicatorColumn();
+      
+      if (result.success) {
+        console.log('✅ Section indicator column added successfully');
+        alert(`✅ Section indicator column added successfully!\n\n${result.message}\n\nExisting records: ${result.existingRecords || 0}`);
+      } else {
+        console.error('❌ Failed to add section indicator column:', result.error);
+        alert(`❌ Failed to add column: ${result.error?.message || 'Unknown error'}`);
+      }
+      
+    } catch (error) {
+      console.error('💥 Section column migration error:', error);
+      alert(`💥 Migration error: ${error.message}`);
+    }
+  };
+
   const testSecureRapidApi = async () => {
     try {
       console.log('🧪 Testing Secure RapidAPI Integration...');
@@ -243,6 +277,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🎯 Real-time Sections
+        </button>
+        
+        <button 
+          onClick={addSectionIndicatorColumn}
+          style={{
+            padding: '6px 10px',
+            background: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          ➕ Add Section Column
         </button>
         
         <button 
