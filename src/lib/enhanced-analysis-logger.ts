@@ -162,7 +162,7 @@ class EnhancedAnalysisLogger {
         data_source: entry.dataSource,
         from_cache: false,
         fallback_type: null,
-        playback_position_ms: entry.sectionStartTime * 1000,
+        playback_position_ms: Math.round(entry.sectionStartTime * 1000), // FIXED: Convert to integer
         is_playing: true,
         
         // SECTION COLUMNS - Now properly populated
@@ -204,7 +204,7 @@ class EnhancedAnalysisLogger {
         
         // Fitness context
         fitness_phase: entry.workoutPhase,
-        workout_intensity: entry.workoutIntensity / 10, // 1-10 scale
+        workout_intensity: Math.round(entry.workoutIntensity / 10), // FIXED: Convert to integer (1-10 scale)
         
         // Metadata
         timestamp: entry.timestamp
