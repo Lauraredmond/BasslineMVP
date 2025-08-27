@@ -19,7 +19,7 @@ export interface AnalysisLogData {
   artist_name: string;
   
   // RapidAPI/Soundnet data (properly mapped)
-  soundnet_tempo?: string;
+  soundnet_tempo?: string | number;
   soundnet_key?: string;
   soundnet_mode?: string;
   soundnet_camelot?: string;
@@ -34,6 +34,31 @@ export interface AnalysisLogData {
   soundnet_loudness?: string;
   soundnet_duration?: string;
   
+  // RapidAPI raw values (0-100 scale)
+  rs_energy_raw?: number;
+  rs_danceability_raw?: number;
+  rs_acousticness_raw?: number;
+  rs_instrumentalness_raw?: number;
+  rs_speechiness_raw?: number;
+  rs_liveness_raw?: number;
+  rs_happiness?: number;
+  rs_popularity?: number;
+  rs_duration?: string;
+  rs_loudness?: string;
+  rs_key?: string;
+  rs_mode?: string;
+  rs_camelot?: string;
+  
+  // SECTION COLUMNS - Added support for sectional analysis
+  section_indicator?: string;
+  section_index?: number;
+  section_type?: string;
+  section_narrative?: string;
+  
+  // Fitness context
+  fitness_phase?: string;
+  workout_intensity?: number;
+  
   // Playback context
   playback_position_ms?: number;
   is_playing?: boolean;
@@ -42,6 +67,9 @@ export interface AnalysisLogData {
   data_source?: string;
   from_cache?: boolean;
   fallback_type?: string;
+  
+  // Timestamp
+  timestamp?: string;
   
   // Any other fields will be filtered server-side
   [key: string]: any;

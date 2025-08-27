@@ -153,81 +153,74 @@ class EnhancedAnalysisLogger {
     try {
       console.log(`🗄️ Logging section ${entry.sectionIndex} (${entry.sectionType}) at ${entry.sectionStartTime}s`);
       
-      // Create enhanced context for existing logger
-      const enhancedContext = {
-        trackId: entry.trackId,
-        trackName: entry.trackName,
-        artistName: entry.artistName,
-        positionMs: entry.sectionStartTime * 1000, // Convert to ms
-        fitnessPhase: entry.workoutPhase,
-        workoutIntensity: entry.workoutIntensity / 10, // Convert to 1-10 scale
+      // FIXED: Direct database insertion instead of using interval-based logger
+      const sectionLogData = {
+        session_id: entry.sessionId,
+        vendor_source: 'Enhanced RapidAPI Sectional',
+        track_name: entry.trackName,
+        artist_name: entry.artistName,
+        data_source: entry.dataSource,
+        from_cache: false,
+        fallback_type: null,
+        playback_position_ms: entry.sectionStartTime * 1000,
+        is_playing: true,
         
-        // Audio features in Spotify format for compatibility
-        audioFeatures: {
-          tempo: entry.tempo,
-          key: entry.key,
-          mode: entry.mode,
-          time_signature: entry.timeSignature,
-          loudness: entry.loudness,
-          energy: entry.energy / 100, // Convert to 0-1 scale
-          danceability: entry.danceability / 100,
-          valence: entry.valence / 100,
-          acousticness: 0.5, // Default for sections
-          instrumentalness: 0.3,
-          liveness: 0.1,
-          speechiness: 0.05,
-          duration_ms: entry.sectionDuration * 1000
-        },
-        
-        // Enhanced section data - populate the new vendor table columns
-        sectionData: {
-          sectionIndex: entry.sectionIndex,
-          sectionType: entry.sectionType,
-          sectionStartTime: entry.sectionStartTime,
-          sectionDuration: entry.sectionDuration,
-          confidence: entry.confidence,
-          narrative: entry.workoutNarrative,
-          // SECTION INDICATOR COLUMN as requested
-          sectionIndicator: `Section ${entry.sectionIndex}: ${entry.sectionType} (${entry.sectionStartTime}s-${(entry.sectionStartTime + entry.sectionDuration).toFixed(1)}s)`
-        },
-        
-        // Map to new vendor table section columns
+        // SECTION COLUMNS - Now properly populated
         section_indicator: `Section ${entry.sectionIndex}: ${entry.sectionType} (${entry.sectionStartTime}s-${(entry.sectionStartTime + entry.sectionDuration).toFixed(1)}s)`,
         section_index: entry.sectionIndex,
         section_type: entry.sectionType,
         section_narrative: entry.workoutNarrative,
         
-        // Data source tracking
-        dataSource: entry.dataSource,
-        fromCache: false,
-        fallbackType: null,
-        analysisVersion: entry.analysisVersion,
+        // CHANGING MUSICAL ATTRIBUTES PER SECTION (not static!)
+        soundnet_tempo: entry.tempo,
+        soundnet_key: this.convertKeyToString(entry.key),
+        soundnet_mode: entry.mode === 1 ? 'major' : 'minor',
+        soundnet_loudness: `${entry.loudness} dB`,
+        soundnet_energy: entry.energy,
+        soundnet_danceability: entry.danceability,
+        soundnet_happiness: entry.valence,
+        soundnet_acousticness: 50,  // Could be varied per section
+        soundnet_instrumentalness: 30,
+        soundnet_speechiness: 5,
+        soundnet_liveness: 10,
+        soundnet_duration: this.formatDuration(entry.sectionDuration),
+        soundnet_popularity: 50,
+        soundnet_camelot: '1A',
         
-        // RapidAPI compatibility
-        rapidSoundnetData: {
-          key: this.convertKeyToString(entry.key),
-          mode: entry.mode === 1 ? 'major' : 'minor',
-          tempo: entry.tempo,
-          camelot: '1A', // Default
-          energy: entry.energy,
-          danceability: entry.danceability,
-          happiness: entry.valence,
-          acousticness: 50,
-          instrumentalness: 30,
-          loudness: `${entry.loudness} dB`,
-          speechiness: 5,
-          liveness: 10,
-          duration: this.formatDuration(entry.sectionDuration),
-          popularity: 50
-        }
+        // RapidAPI raw values (0-100 scale) 
+        rs_energy_raw: entry.energy,
+        rs_danceability_raw: entry.danceability,
+        rs_acousticness_raw: 50,
+        rs_instrumentalness_raw: 30,
+        rs_speechiness_raw: 5,
+        rs_liveness_raw: 10,
+        rs_happiness: entry.valence,
+        rs_popularity: 50,
+        rs_duration: this.formatDuration(entry.sectionDuration),
+        rs_loudness: `${entry.loudness} dB`,
+        rs_key: this.convertKeyToString(entry.key),
+        rs_mode: entry.mode === 1 ? 'major' : 'minor',
+        rs_camelot: '1A',
+        
+        // Fitness context
+        fitness_phase: entry.workoutPhase,
+        workout_intensity: entry.workoutIntensity / 10, // 1-10 scale
+        
+        // Metadata
+        timestamp: entry.timestamp
       };
-      
-      // Log using existing infrastructure
-      spotifyAnalysisLogger.startTrackLogging(enhancedContext);
-      
-      // Simulate some playback time for this section
-      await new Promise(resolve => setTimeout(resolve, 50));
-      spotifyAnalysisLogger.stopTrackLogging();
+
+      console.log('📝 DIRECT section database insert:', {
+        section: `${entry.sectionIndex}: ${entry.sectionType}`,
+        tempo: entry.tempo,
+        loudness: entry.loudness,
+        energy: entry.energy,
+        sectionIndicator: sectionLogData.section_indicator
+      });
+
+      // Direct database insertion using secure service
+      const logId = await secureDatabaseService.logAnalysis(sectionLogData);
+      console.log('✅ Successfully logged section', entry.sectionIndex, 'with ID:', logId);
       
     } catch (error) {
       console.error('💥 Failed to log section entry:', error);

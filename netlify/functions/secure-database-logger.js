@@ -155,7 +155,17 @@ async function introspectTable(supabase, headers) {
       // Advanced analysis columns
       { name: 'current_section_start', type: 'real', nullable: true },
       { name: 'current_beat_start', type: 'real', nullable: true },
-      { name: 'current_segment_loudness_max', type: 'real', nullable: true }
+      { name: 'current_segment_loudness_max', type: 'real', nullable: true },
+      
+      // SECTION COLUMNS - Added support for sectional analysis
+      { name: 'section_indicator', type: 'text', nullable: true },
+      { name: 'section_index', type: 'integer', nullable: true },
+      { name: 'section_type', type: 'text', nullable: true },
+      { name: 'section_narrative', type: 'text', nullable: true },
+      
+      // FITNESS CONTEXT COLUMNS 
+      { name: 'fitness_phase', type: 'text', nullable: true },
+      { name: 'workout_intensity', type: 'real', nullable: true }
     ];
 
     console.log('Using hardcoded schema:', {
@@ -238,7 +248,11 @@ async function logAnalysis(supabase, headers, data) {
       'spotify_instrumentalness', 'spotify_liveness', 'spotify_speechiness', 'spotify_loudness',
       'spotify_tempo', 'spotify_key', 'spotify_mode', 'spotify_time_signature',
       // Advanced analysis
-      'current_section_start', 'current_beat_start', 'current_segment_loudness_max'
+      'current_section_start', 'current_beat_start', 'current_segment_loudness_max',
+      // SECTION COLUMNS - Added support for sectional analysis
+      'section_indicator', 'section_index', 'section_type', 'section_narrative',
+      // FITNESS CONTEXT
+      'fitness_phase', 'workout_intensity'
     ]);
     
     console.log('Using hardcoded valid columns for filtering:', Array.from(validColumnNames).slice(0, 10));
