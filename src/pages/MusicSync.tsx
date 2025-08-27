@@ -923,25 +923,46 @@ const MusicSync = () => {
                   timestamp: new Date().toISOString()
                 });
                 
-                console.log('🔥 [DEBUG] ABOUT TO CALL spotifyAnalysisLogger.startTrackLogging with context:', context);
-                spotifyAnalysisLogger.startTrackLogging(context);
-                console.log('🔥 [DEBUG] spotifyAnalysisLogger.startTrackLogging CALLED');
+                // 🚨 REPLACED: Use enhanced sectional analysis instead of interval-based logging
+                console.log('🚨 TRIGGERING ENHANCED SECTIONAL ANALYSIS - Creating section-based rows with different attribute values! 🚨');
                 
-                // Verify session state after calling startTrackLogging
-                setTimeout(() => {
-                  console.log('🔥 [DEBUG] Session state after startTrackLogging:', {
-                    sessionId: spotifyAnalysisLogger.getCurrentSessionId(),
-                    isLogging: spotifyAnalysisLogger.isCurrentlyLogging()
-                  });
-                }, 1000);
-                
-                if (rapidSoundnetMetadata) {
-                  console.log('✅ 🚀 Enhanced track logging started with Rapid Soundnet data');
-                } else if (audioFeatures?.[0]) {
-                  console.log('✅ 🎵 Enhanced track logging started with Spotify audio features');
+                if (rapidSoundnetMetadata?.rapidSoundnetData) {
+                  try {
+                    // Import enhanced sectional analysis service
+                    const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
+                    
+                    console.log(`🎯 Starting SECTIONAL ANALYSIS for workout: ${context.trackName} by ${context.artistName}`);
+                    
+                    // Create sectional analysis directly from RapidAPI data during workout
+                    const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(
+                      context.trackName, 
+                      context.artistName
+                    );
+                    
+                    if (analysis) {
+                      console.log('✅ 🎵 Enhanced sectional analysis completed during workout:', {
+                        sectionsCreated: analysis.sections.length,
+                        expectedDatabaseRows: analysis.sections.length + 1,
+                        sectionPreview: analysis.sections.slice(0, 2)
+                      });
+                    } else {
+                      console.warn('⚠️ Enhanced sectional analysis failed, falling back to basic logging');
+                      // Fallback to basic logging if sectional analysis fails
+                      spotifyAnalysisLogger.startTrackLogging(context);
+                    }
+                    
+                  } catch (enhancedError) {
+                    console.error('❌ Enhanced sectional analysis error:', enhancedError);
+                    console.log('⚠️ Falling back to basic interval logging');
+                    // Fallback to basic logging if enhanced analysis fails
+                    spotifyAnalysisLogger.startTrackLogging(context);
+                  }
                 } else {
-                  console.log('✅ ⚠️ Basic track logging started (no audio features available)');
+                  console.log('⚠️ No RapidAPI data available, using basic interval logging');
+                  spotifyAnalysisLogger.startTrackLogging(context);
                 }
+                
+                console.log('✅ 🚀 Workout logging setup completed with sectional analysis priority');
                 
               } catch (error) {
                 console.error('❌ Error in track logging setup:', error);
@@ -965,22 +986,10 @@ const MusicSync = () => {
         let chorusStartTime;
         let chorusApproachTime;
         
-        // Method 1: Use advanced Spotify audio analysis if available (PRECISE!)
-        if (track?.id && isSpotifyAuthenticated) {
-          const cachedAnalysis = trackAnalysisCache.get(track.id);
-          if (cachedAnalysis) {
-            if (cachedAnalysis.chorusStart !== null) {
-              chorusStartTime = cachedAnalysis.chorusStart;
-              chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
-            }
-          } else {
-            // Trigger background analysis for future use
-            advancedMusicAnalysis.analyzeTrackStructure(track.id).then(analysis => {
-              if (analysis) {
-                setTrackAnalysisCache(prev => new Map(prev.set(track.id, analysis)));
-              }
-            }).catch(err => {});
-          }
+        // Method 1: DISABLED - Spotify advanced audio analysis not available (403 errors)
+        // Using RapidAPI sectional analysis instead during workout logging
+        if (false) {
+          // This code path disabled to prevent 403 errors from Spotify advanced analysis API
         }
         
         // Method 2: Improved estimation (only if precise analysis not available)
