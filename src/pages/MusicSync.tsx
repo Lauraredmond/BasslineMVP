@@ -926,39 +926,44 @@ const MusicSync = () => {
                 // 🚨 REPLACED: Use enhanced sectional analysis instead of interval-based logging
                 console.log('🚨 TRIGGERING ENHANCED SECTIONAL ANALYSIS - Creating section-based rows with different attribute values! 🚨');
                 
-                if (rapidSoundnetMetadata?.rapidSoundnetData) {
-                  try {
-                    // Import enhanced sectional analysis service
-                    const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
-                    
-                    console.log(`🎯 Starting SECTIONAL ANALYSIS for workout: ${context.trackName} by ${context.artistName}`);
-                    
-                    // Create sectional analysis directly from RapidAPI data during workout
-                    const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(
-                      context.trackName, 
-                      context.artistName
-                    );
-                    
-                    if (analysis) {
-                      console.log('✅ 🎵 Enhanced sectional analysis completed during workout:', {
-                        sectionsCreated: analysis.sections.length,
-                        expectedDatabaseRows: analysis.sections.length + 1,
-                        sectionPreview: analysis.sections.slice(0, 2)
-                      });
-                    } else {
-                      console.warn('⚠️ Enhanced sectional analysis failed, falling back to basic logging');
-                      // Fallback to basic logging if sectional analysis fails
-                      spotifyAnalysisLogger.startTrackLogging(context);
-                    }
-                    
-                  } catch (enhancedError) {
-                    console.error('❌ Enhanced sectional analysis error:', enhancedError);
-                    console.log('⚠️ Falling back to basic interval logging');
-                    // Fallback to basic logging if enhanced analysis fails
+                // 🔍 DEBUG: Check what RapidAPI data we actually have
+                console.log('🔍 [DEBUG] RapidAPI metadata check:', {
+                  hasRapidSoundnetMetadata: !!rapidSoundnetMetadata,
+                  hasRapidSoundnetData: !!rapidSoundnetMetadata?.rapidSoundnetData,
+                  rapidSoundnetMetadataKeys: rapidSoundnetMetadata ? Object.keys(rapidSoundnetMetadata) : 'none',
+                  rapidSoundnetDataKeys: rapidSoundnetMetadata?.rapidSoundnetData ? Object.keys(rapidSoundnetMetadata.rapidSoundnetData) : 'none'
+                });
+                
+                // 🚨 ALWAYS try enhanced sectional analysis first, regardless of existing metadata
+                try {
+                  console.log('🚨 [FORCED] Attempting enhanced sectional analysis...');
+                  
+                  // Import enhanced sectional analysis service
+                  const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
+                  
+                  console.log(`🎯 Starting SECTIONAL ANALYSIS for workout: ${context.trackName} by ${context.artistName}`);
+                  
+                  // Create sectional analysis directly from RapidAPI data during workout
+                  const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(
+                    context.trackName, 
+                    context.artistName
+                  );
+                  
+                  if (analysis) {
+                    console.log('✅ 🎵 Enhanced sectional analysis completed during workout:', {
+                      sectionsCreated: analysis.sections.length,
+                      expectedDatabaseRows: analysis.sections.length + 1,
+                      sectionPreview: analysis.sections.slice(0, 2)
+                    });
+                    console.log('✅ 🚨 SECTIONAL ANALYSIS SUCCESS - Database should now have section-based rows!');
+                  } else {
+                    console.warn('⚠️ Enhanced sectional analysis returned null, falling back to basic logging');
                     spotifyAnalysisLogger.startTrackLogging(context);
                   }
-                } else {
-                  console.log('⚠️ No RapidAPI data available, using basic interval logging');
+                  
+                } catch (enhancedError) {
+                  console.error('❌ Enhanced sectional analysis error:', enhancedError);
+                  console.log('⚠️ Falling back to basic interval logging due to error');
                   spotifyAnalysisLogger.startTrackLogging(context);
                 }
                 
