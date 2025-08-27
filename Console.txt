@@ -1,153 +1,134 @@
-[Warning] 1360 console messages are not shown.
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "10:40:56" (index-D_1aYHJ3.js, line 519)
-[Log] 🔍 PLAYBACK STATE CHECK: – Object (index-D_1aYHJ3.js, line 519)
+[Warning] 3560 console messages are not shown.
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-D2tw-TdP.js, line 519)
 Object
-[Log] 🔍 TRACK ID COMPARISON: – Object (index-D_1aYHJ3.js, line 519)
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-D2tw-TdP.js, line 519)
+[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "11:05:52" (index-D2tw-TdP.js, line 519)
+[Log] 🔍 PLAYBACK STATE CHECK: – Object (index-D2tw-TdP.js, line 519)
 Object
-[Log] 🎵 Fetching advanced audio analysis for track: – "7x8dCjCr0x6x2lXKujYD34" (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273)
+[Log] 🔍 TRACK ID COMPARISON: – Object (index-D2tw-TdP.js, line 519)
+Object
+[Log] 🎵 Fetching advanced audio analysis for track: – "7x8dCjCr0x6x2lXKujYD34" (index-D2tw-TdP.js, line 273)
 [Error] Failed to load resource: the server responded with a status of 403 () (7x8dCjCr0x6x2lXKujYD34, line 0)
 [Error] Audio analysis request failed: – 403 – ""
-	(anonymous function) (index-D_1aYHJ3.js:273:37128)
+	(anonymous function) (index-D2tw-TdP.js:273:37146)
 [Error] ❌ Failed to get audio analysis
-	(anonymous function) (index-D_1aYHJ3.js:273:45655)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273, x2)
-[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D_1aYHJ3.js, line 273)
+	(anonymous function) (index-D2tw-TdP.js:273:45673)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📝 Logging analysis entry for: – "Slide Away" – "at position" – 43713 – "ms" (index-D_1aYHJ3.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D_1aYHJ3.js, line 273)
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "72f17f0a-40d4-4bd3-a8f5-4e53c805e51e" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "11:05:52" (index-D2tw-TdP.js, line 519)
+[Log] 🔍 PLAYBACK STATE CHECK: – Object (index-D2tw-TdP.js, line 519)
 Object
-[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔍 TRACK ID COMPARISON: – Object (index-D2tw-TdP.js, line 519)
 Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🎵 Fetching advanced audio analysis for track: – "7x8dCjCr0x6x2lXKujYD34" (index-D2tw-TdP.js, line 273)
+[Warning] Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}. (index-D2tw-TdP.js, line 360)
+[Error] Failed to load resource: the server responded with a status of 403 () (7x8dCjCr0x6x2lXKujYD34, line 0)
+[Error] Audio analysis request failed: – 403 – ""
+	(anonymous function) (index-D2tw-TdP.js:273:37146)
+[Error] ❌ Failed to get audio analysis
+	(anonymous function) (index-D2tw-TdP.js:273:45673)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📊 Logging analysis data server-side... (index-D_1aYHJ3.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-D_1aYHJ3.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D_1aYHJ3.js, line 273)
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "fdf2c544-d48c-4a0a-adf7-7585ac8a6059" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D_1aYHJ3.js, line 273)
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "9c643edc-788f-4a79-a14c-b635924df764" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 43713 – "ms" (index-D_1aYHJ3.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D_1aYHJ3.js, line 273)
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "9ddcd2e8-b742-4ee4-af01-dee40cb6b677" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 📝 Logging analysis entry for: – "Slide Away" – "at position" – 110039 – "ms" (index-D2tw-TdP.js, line 273)
+[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📊 Logging analysis data server-side... (index-D_1aYHJ3.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-D_1aYHJ3.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 📊 Logging analysis data server-side... (index-D2tw-TdP.js, line 273)
+[Log] 📝 Original payload keys: – 10 (index-D2tw-TdP.js, line 273)
+[Log] 🔀 Mapping RapidAPI data to database columns... (index-D2tw-TdP.js, line 273)
+[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 43713 – "ms" (index-D_1aYHJ3.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 110039 – "ms" (index-D2tw-TdP.js, line 273)
+[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📊 Logging analysis data server-side... (index-D_1aYHJ3.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-D_1aYHJ3.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 📊 Logging analysis data server-side... (index-D2tw-TdP.js, line 273)
+[Log] 📝 Original payload keys: – 10 (index-D2tw-TdP.js, line 273)
+[Log] 🔀 Mapping RapidAPI data to database columns... (index-D2tw-TdP.js, line 273)
+[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 43713 – "ms" (index-D_1aYHJ3.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 110039 – "ms" (index-D2tw-TdP.js, line 273)
+[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] 📊 Logging analysis data server-side... (index-D_1aYHJ3.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-D_1aYHJ3.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D_1aYHJ3.js, line 273)
+[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Log] Stopped logging (index-D_1aYHJ3.js, line 273)
-[Log] Stopped logging (index-D_1aYHJ3.js, line 273)
-[Log] Ended logging session: – "1e73da5a-2659-4809-acf4-f4f13ce00917" (index-D_1aYHJ3.js, line 273)
-[Log] Auto-ended workout logging session (index-D_1aYHJ3.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "10:40:56" (index-D_1aYHJ3.js, line 519)
-[Log] 🏋️ [DEBUG] Workout state changed: – Object (index-D_1aYHJ3.js, line 519)
+[Log] 📊 Logging analysis data server-side... (index-D2tw-TdP.js, line 273)
+[Log] 📝 Original payload keys: – 10 (index-D2tw-TdP.js, line 273)
+[Log] 🔀 Mapping RapidAPI data to database columns... (index-D2tw-TdP.js, line 273)
+[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D2tw-TdP.js, line 273)
 Object
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed:
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-(anonymous function) — index-D_1aYHJ3.js:273:3514
-	(anonymous function) (index-D_1aYHJ3.js:273:3601)
-[Error] ❌ [DEBUG] Secure database logging failed: – Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-Error: Could not find the 'rs_tempo' column of 'common_streaming_vendor_analysis_logs' in the schema cache
-	(anonymous function) (index-D_1aYHJ3.js:273:14449)
-[Log] ⚠️ [DEBUG] Attempting direct database fallback... (index-D_1aYHJ3.js, line 273)
-[Log] ✅ [DEBUG] Fallback database insert succeeded (index-D_1aYHJ3.js, line 273, x2)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "10:41:04" (index-D_1aYHJ3.js, line 519)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "10:41:14" (index-D_1aYHJ3.js, line 519)
+[Log] 🔥 [DEBUG] logCurrentState called with: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 110039 – "ms" (index-D2tw-TdP.js, line 273)
+[Log] 📊 CAPTURED ATTRIBUTES: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] 🗄️ DATABASE LOG ENTRY: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] 📊 Logging analysis data server-side... (index-D2tw-TdP.js, line 273)
+[Log] 📝 Original payload keys: – 10 (index-D2tw-TdP.js, line 273)
+[Log] 🔀 Mapping RapidAPI data to database columns... (index-D2tw-TdP.js, line 273)
+[Log] ✅ RapidAPI data mapped to database columns: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] Stopped logging (index-D2tw-TdP.js, line 273)
+[Log] Stopped logging (index-D2tw-TdP.js, line 273)
+[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "11:05:53" (index-D2tw-TdP.js, line 519)
+[Log] 🔍 PLAYBACK STATE CHECK: – Object (index-D2tw-TdP.js, line 519)
+Object
+[Log] 🔍 TRACK ID COMPARISON: – Object (index-D2tw-TdP.js, line 519)
+Object
+[Log] 🎵 Fetching advanced audio analysis for track: – "7x8dCjCr0x6x2lXKujYD34" (index-D2tw-TdP.js, line 273)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "646d4623-6051-47ac-86bc-ca616d94e3ee" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Error] Failed to load resource: the server responded with a status of 403 () (7x8dCjCr0x6x2lXKujYD34, line 0)
+[Error] Audio analysis request failed: – 403 – ""
+	(anonymous function) (index-D2tw-TdP.js:273:37146)
+[Error] ❌ Failed to get audio analysis
+	(anonymous function) (index-D2tw-TdP.js:273:45673)
+[Log] Ended logging session: – "6d436f47-7550-4ba4-ad81-a03c2d527aba" (index-D2tw-TdP.js, line 273)
+[Log] Auto-ended workout logging session (index-D2tw-TdP.js, line 273)
+[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "11:05:53" (index-D2tw-TdP.js, line 519)
+[Log] 🏋️ [DEBUG] Workout state changed: – Object (index-D2tw-TdP.js, line 519)
+Object
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "120fef71-1e30-4b20-bc53-ae9d2ead08d3" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "337c877f-1562-4894-986a-2939e9176469" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] ✅ Analysis logged successfully: – Object (index-D2tw-TdP.js, line 273)
+Object
+[Log] ✅ [DEBUG] Successfully logged via secure service: – "609b7584-eee4-452b-9f58-44adeaac91e3" (index-D2tw-TdP.js, line 273)
+[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-D2tw-TdP.js, line 273)
+[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "11:05:54" (index-D2tw-TdP.js, line 519)

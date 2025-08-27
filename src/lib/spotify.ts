@@ -3,6 +3,7 @@
 
 import { rapidSoundnetService } from './rapid-soundnet';
 import { trackAnalysisCache } from './track-analysis-cache';
+import { enhancedRapidSoundnetService } from './enhanced-rapid-soundnet';
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
@@ -493,9 +494,9 @@ class SpotifyService {
       let audio_features = audioFeatures[index];
       let rapidSoundnetMetadata = null;
       
-      // Always try to get Rapid Soundnet data for enhanced analysis (regardless of Spotify audio features)
-      console.log(`🚀 Getting Rapid Soundnet enhanced analysis for: ${track.name} by ${track.artists?.[0]?.name}`);
-      const rapidResult = await this.getRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+      // Always try to get ENHANCED Rapid Soundnet data with sectional analysis
+      console.log(`🚀 Getting ENHANCED Rapid Soundnet analysis for: ${track.name} by ${track.artists?.[0]?.name}`);
+      const rapidResult = await this.getEnhancedRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
       
       // Use Spotify audio features if available, otherwise use RapidAPI fallback
       if (!audio_features && rapidResult.audioFeatures) {
@@ -536,6 +537,83 @@ class SpotifyService {
     }));
     
     return enhancedTracks;
+  }
+
+  // Get ENHANCED audio features from Rapid Soundnet API with sectional analysis and database logging
+  private async getEnhancedRapidSoundnetAudioFeatures(trackName: string, artistName?: string): Promise<{
+    audioFeatures: SpotifyAudioFeatures | null;
+    rapidSoundnetData?: any;
+    dataSource?: string;
+    fromCache?: boolean;
+    fallbackType?: string;
+    detectedGenre?: string;
+    apiRequestsUsed?: number;
+    sectionalAnalysis?: any;
+    workoutMoments?: any[];
+  }> {
+    try {
+      const usage = rapidSoundnetService.getRequestUsage();
+      
+      console.log('🎯 Starting ENHANCED analysis for:', trackName, 'by', artistName);
+      
+      // Try to get detailed sectional analysis (this will automatically log to database)
+      const detailedAnalysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(trackName, artistName);
+      
+      if (detailedAnalysis) {
+        console.log('✅ Got detailed sectional analysis with', detailedAnalysis.sections.length, 'sections');
+        
+        // Convert basic attributes to Spotify format for compatibility
+        const audioFeatures: SpotifyAudioFeatures = {
+          tempo: detailedAnalysis.tempo,
+          key: this.convertKeyStringToNumber(detailedAnalysis.key),
+          mode: detailedAnalysis.mode === 'major' ? 1 : 0,
+          energy: detailedAnalysis.energy / 100,
+          danceability: detailedAnalysis.danceability / 100,
+          valence: detailedAnalysis.happiness / 100,
+          acousticness: detailedAnalysis.acousticness / 100,
+          instrumentalness: detailedAnalysis.instrumentalness / 100,
+          liveness: detailedAnalysis.liveness / 100,
+          speechiness: detailedAnalysis.speechiness / 100,
+          loudness: this.parseLoudnessValue(detailedAnalysis.loudness),
+          time_signature: 4 // Default for enhanced analysis
+        };
+        
+        // Generate workout moments for additional metadata
+        const workoutMoments = await enhancedRapidSoundnetService.generateWorkoutMoments(
+          trackName, 
+          artistName, 
+          detailedAnalysis.meta?.trackDuration
+        );
+        
+        console.log('✅ Generated', workoutMoments.length, 'workout moments for enhanced analysis');
+        
+        const newUsage = rapidSoundnetService.getRequestUsage();
+        return {
+          audioFeatures,
+          rapidSoundnetData: detailedAnalysis,
+          dataSource: 'enhanced-rapidapi',
+          fromCache: false,
+          fallbackType: 'sectional-analysis',
+          apiRequestsUsed: newUsage.used,
+          sectionalAnalysis: {
+            totalSections: detailedAnalysis.sections.length,
+            sections: detailedAnalysis.sections,
+            hasRhythmicData: detailedAnalysis.rhythmic?.bars.length > 0,
+            analysisVersion: detailedAnalysis.meta?.analysisVersion
+          },
+          workoutMoments: workoutMoments
+        };
+      }
+      
+      // Fallback to original method if enhanced analysis fails
+      console.log('⚠️ Enhanced analysis failed, falling back to basic analysis');
+      return this.getRapidSoundnetAudioFeatures(trackName, artistName);
+      
+    } catch (error) {
+      console.error('💥 Error getting enhanced Rapid Soundnet audio features:', error);
+      // Fallback to original method
+      return this.getRapidSoundnetAudioFeatures(trackName, artistName);
+    }
   }
 
   // Get audio features from Rapid Soundnet API (with caching) - returns both Spotify format and metadata
@@ -622,6 +700,25 @@ class SpotifyService {
       console.error('💥 Error getting Rapid Soundnet audio features:', error);
       return { audioFeatures: null };
     }
+  }
+
+  // Helper methods for enhanced analysis
+  private convertKeyStringToNumber(key: string): number {
+    const keyMap: { [key: string]: number } = {
+      'C': 0, 'C#': 1, 'Db': 1,
+      'D': 2, 'D#': 3, 'Eb': 3,
+      'E': 4,
+      'F': 5, 'F#': 6, 'Gb': 6,
+      'G': 7, 'G#': 8, 'Ab': 8,
+      'A': 9, 'A#': 10, 'Bb': 10,
+      'B': 11
+    };
+    return keyMap[key] || 0;
+  }
+
+  private parseLoudnessValue(loudness: string): number {
+    const match = loudness.match(/-?\d+(\.\d+)?/);
+    return match ? parseFloat(match[0]) : -10;
   }
 
   // Simple genre detection helper

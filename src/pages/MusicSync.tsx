@@ -94,6 +94,7 @@ const MusicSync = () => {
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
   const [isAnalysisLogging, setIsAnalysisLogging] = useState(false);
+  const [enhancedAnalysisEnabled, setEnhancedAnalysisEnabled] = useState(true);
   
   // Removed Web Audio Analysis Logger - eliminated Web Audio capture
 
@@ -1040,6 +1041,37 @@ const MusicSync = () => {
       <Header title="Music Sync" />
       
       <div className="flex-1 px-4">
+
+        {/* Enhanced Analysis Notification */}
+        {enhancedAnalysisEnabled && (
+          <div className="mx-auto max-w-4xl mb-6">
+            <Card className="border-blue-200 bg-blue-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div>
+                      <p className="text-blue-800 font-medium text-sm">
+                        🎵 Enhanced Analysis Active
+                      </p>
+                      <p className="text-blue-600 text-xs">
+                        Creating detailed sectional analysis with multiple database entries per track
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => setEnhancedAnalysisEnabled(false)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    ×
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="relative text-center mb-8">
           <div className="relative w-full h-48 rounded-xl overflow-hidden mb-6 shadow-glow">

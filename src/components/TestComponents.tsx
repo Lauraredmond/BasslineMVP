@@ -43,6 +43,42 @@ export const DebugPanel: React.FC = () => {
     a.click();
   };
 
+  const testEnhancedAnalysis = async () => {
+    try {
+      console.log('🧪 Testing Enhanced Analysis with Database Logging...');
+      
+      // Import the enhanced service
+      const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
+      
+      // Test with a popular song
+      const testTrack = 'Blinding Lights';
+      const testArtist = 'The Weeknd';
+      
+      console.log(`🎯 Starting enhanced analysis for: ${testTrack} by ${testArtist}`);
+      
+      // This should create multiple database entries
+      const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(testTrack, testArtist);
+      
+      if (analysis) {
+        console.log('✅ Enhanced analysis successful:', {
+          totalSections: analysis.sections.length,
+          hasSegments: !!analysis.segments?.length,
+          hasRhythmic: !!analysis.rhythmic?.bars.length,
+          expectedDbRows: analysis.sections.length + 1
+        });
+        
+        alert(`✅ Enhanced analysis completed!\n\nSections found: ${analysis.sections.length}\nDatabase rows created: ${analysis.sections.length + 1}\n\nCheck console for details and verify database entries.`);
+      } else {
+        console.error('❌ Enhanced analysis failed - no data returned');
+        alert('❌ Enhanced analysis test failed - check console for details');
+      }
+      
+    } catch (error) {
+      console.error('💥 Enhanced analysis test error:', error);
+      alert(`💥 Enhanced analysis test error: ${error.message}`);
+    }
+  };
+
   const testSecureRapidApi = async () => {
     try {
       console.log('🧪 Testing Secure RapidAPI Integration...');
@@ -134,6 +170,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🔐 Test Secure API
+        </button>
+        
+        <button 
+          onClick={testEnhancedAnalysis}
+          style={{
+            padding: '6px 10px',
+            background: '#6f42c1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🎵 Enhanced Analysis
         </button>
         
         <button 
