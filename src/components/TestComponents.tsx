@@ -45,37 +45,39 @@ export const DebugPanel: React.FC = () => {
 
   const testEnhancedAnalysis = async () => {
     try {
-      console.log('🧪 Testing Enhanced Analysis with Database Logging...');
+      console.log('🧪 🚨 TESTING ENHANCED SECTIONAL ANALYSIS - This should create section-based rows, not interval-based! 🚨');
       
       // Import the enhanced service
       const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
       
-      // Test with a popular song
-      const testTrack = 'Blinding Lights';
-      const testArtist = 'The Weeknd';
+      // Test with THE PRETENDER specifically (the song user is testing)
+      const testTrack = 'The Pretender';
+      const testArtist = 'Foo Fighters';
       
-      console.log(`🎯 Starting enhanced analysis for: ${testTrack} by ${testArtist}`);
+      console.log(`🎯 🚨 STARTING ENHANCED SECTIONAL ANALYSIS for: ${testTrack} by ${testArtist} 🚨`);
+      console.log('🚨 This should create 5-8 database rows (one per section) with DIFFERENT attribute values per section! 🚨');
       
-      // This should create multiple database entries
+      // This should create multiple database entries with SECTIONAL data
       const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(testTrack, testArtist);
       
       if (analysis) {
-        console.log('✅ Enhanced analysis successful:', {
+        console.log('✅ Enhanced sectional analysis successful:', {
           totalSections: analysis.sections.length,
           hasSegments: !!analysis.segments?.length,
           hasRhythmic: !!analysis.rhythmic?.bars.length,
-          expectedDbRows: analysis.sections.length + 1
+          expectedDbRows: analysis.sections.length + 1,
+          sectionalData: analysis.sections.slice(0, 3) // Show first 3 sections
         });
         
-        alert(`✅ Enhanced analysis completed!\n\nSections found: ${analysis.sections.length}\nDatabase rows created: ${analysis.sections.length + 1}\n\nCheck console for details and verify database entries.`);
+        alert(`✅ Enhanced sectional analysis completed for "${testTrack}"!\n\nSections found: ${analysis.sections.length}\nDatabase rows created: ${analysis.sections.length + 1}\n\nEach row should have DIFFERENT tempo/loudness/energy values.\nSection columns should be populated.\n\nCheck database now!`);
       } else {
-        console.error('❌ Enhanced analysis failed - no data returned');
-        alert('❌ Enhanced analysis test failed - check console for details');
+        console.error('❌ Enhanced sectional analysis failed - no data returned');
+        alert('❌ Enhanced sectional analysis test failed - check console for details');
       }
       
     } catch (error) {
-      console.error('💥 Enhanced analysis test error:', error);
-      alert(`💥 Enhanced analysis test error: ${error.message}`);
+      console.error('💥 Enhanced sectional analysis test error:', error);
+      alert(`💥 Enhanced sectional analysis test error: ${error.message}`);
     }
   };
 
