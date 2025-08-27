@@ -56,10 +56,66 @@ export interface WorkoutMoment {
 
 class EnhancedRapidSoundnetService {
   
+  // 🚨 NEW: Create sectional analysis from existing cached RapidAPI data (no fresh API calls)
+  async getDetailedTrackAnalysisFromCachedData(trackTitle: string, artistName?: string, cachedRapidApiData?: any): Promise<DetailedTrackAnalysis | null> {
+    try {
+      console.log('🚨 Creating sectional analysis from cached RapidAPI data (avoiding 429 rate limits)');
+      
+      // Try to get existing cached data first
+      let basicData = cachedRapidApiData;
+      if (!basicData) {
+        console.log('🔍 Looking for cached RapidAPI data...');
+        basicData = await rapidSoundnetService.getTrackAnalysis(trackTitle, artistName, false); // Don't allow fresh API calls
+      }
+      
+      if (!basicData) {
+        console.warn('❌ No cached data available for sectional analysis');
+        return null;
+      }
+      
+      console.log('✅ Using cached RapidAPI data to generate sections:', {
+        track: trackTitle,
+        hasTempo: !!basicData.tempo,
+        hasLoudness: !!basicData.loudness,
+        hasEnergy: !!basicData.energy
+      });
+      
+      // Generate detailed analysis from cached basic data
+      const analysis = this.convertBasicToDetailed(basicData, trackTitle);
+      
+      if (analysis) {
+        console.log('🎯 Generated sectional analysis from cached data:', {
+          sectionsCreated: analysis.sections.length,
+          sectionsPreview: analysis.sections.slice(0, 2)
+        });
+        
+        // Generate workout moments and log to database
+        const workoutMoments = this.generateWorkoutMomentsFromAnalysis(analysis);
+        await enhancedAnalysisLogger.logDetailedTrackAnalysis(trackTitle, artistName || '', analysis, workoutMoments);
+        
+        console.log('✅ Enhanced sectional analysis completed from cached data - database should now have section-based rows!');
+        return analysis;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ Failed to create sectional analysis from cached data:', error);
+      return null;
+    }
+  }
+
   // Get detailed time-based analysis (this is what the API actually returns)
   async getDetailedTrackAnalysis(trackTitle: string, artistName?: string, enableDatabaseLogging: boolean = true): Promise<DetailedTrackAnalysis | null> {
     try {
       console.log('🎯 Starting detailed track analysis for:', trackTitle);
+      
+      // 🚨 FIRST: Try to use cached data to avoid 429 rate limits
+      console.log('🚨 PRIORITIZING cached data approach to avoid 429 errors...');
+      const cachedAnalysis = await this.getDetailedTrackAnalysisFromCachedData(trackTitle, artistName);
+      if (cachedAnalysis) {
+        console.log('✅ Successfully created sectional analysis from cached data!');
+        return cachedAnalysis;
+      }
       
       // Check rate limits immediately
       if (!rapidSoundnetService.canMakeRequest()) {

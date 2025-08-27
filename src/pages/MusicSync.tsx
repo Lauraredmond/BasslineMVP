@@ -943,10 +943,12 @@ const MusicSync = () => {
                   
                   console.log(`🎯 Starting SECTIONAL ANALYSIS for workout: ${context.trackName} by ${context.artistName}`);
                   
-                  // Create sectional analysis directly from RapidAPI data during workout
-                  const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(
+                  // 🚨 FIXED: Use cached RapidAPI data to avoid 429 rate limits
+                  console.log('🚨 Using cached RapidAPI data for sectional analysis (avoiding fresh API calls)');
+                  const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysisFromCachedData(
                     context.trackName, 
-                    context.artistName
+                    context.artistName,
+                    rapidSoundnetMetadata?.rapidSoundnetData // Pass existing cached data
                   );
                   
                   if (analysis) {
