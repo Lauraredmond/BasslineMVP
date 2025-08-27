@@ -123,8 +123,8 @@ class SecureDatabaseService {
     if (data.rapidSoundnetData) {
       const rapid = data.rapidSoundnetData as any;
       
-      // Map RapidAPI fields to correct database columns (rs_* prefix)
-      if (rapid.tempo) mapped.rs_tempo = String(rapid.tempo);
+      // Map RapidAPI fields to correct existing database columns
+      if (rapid.tempo) mapped.soundnet_tempo = String(rapid.tempo);
       if (rapid.key) mapped.rs_key = String(rapid.key);
       if (rapid.mode) mapped.rs_mode = String(rapid.mode);
       if (rapid.camelot) mapped.rs_camelot = String(rapid.camelot);
@@ -143,7 +143,7 @@ class SecureDatabaseService {
       delete mapped.rapidSoundnetData;
       
       console.log('✅ RapidAPI data mapped to database columns:', {
-        rs_tempo: mapped.rs_tempo,
+        soundnet_tempo: mapped.soundnet_tempo,
         rs_key: mapped.rs_key,
         rs_energy_raw: mapped.rs_energy_raw,
         rs_camelot: mapped.rs_camelot

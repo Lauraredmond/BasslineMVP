@@ -107,7 +107,23 @@ async function introspectTable(supabase, headers) {
       { name: 'playback_position_ms', type: 'integer', nullable: true },
       { name: 'is_playing', type: 'boolean', nullable: true },
       
-      // RapidAPI/Soundnet columns (rs_* prefix)
+      // Soundnet columns (existing in database)
+      { name: 'soundnet_camelot', type: 'text', nullable: true },
+      { name: 'soundnet_duration', type: 'text', nullable: true },
+      { name: 'soundnet_popularity', type: 'integer', nullable: true },
+      { name: 'soundnet_energy', type: 'integer', nullable: true },
+      { name: 'soundnet_danceability', type: 'integer', nullable: true },
+      { name: 'soundnet_happiness', type: 'integer', nullable: true },
+      { name: 'soundnet_acousticness', type: 'integer', nullable: true },
+      { name: 'soundnet_instrumentalness', type: 'integer', nullable: true },
+      { name: 'soundnet_liveness', type: 'integer', nullable: true },
+      { name: 'soundnet_speechiness', type: 'integer', nullable: true },
+      { name: 'soundnet_loudness', type: 'text', nullable: true },
+      { name: 'soundnet_key', type: 'text', nullable: true },
+      { name: 'soundnet_mode', type: 'text', nullable: true },
+      { name: 'soundnet_tempo', type: 'text', nullable: true },
+      
+      // RapidAPI/RS columns (existing in database) 
       { name: 'rs_key', type: 'text', nullable: true },
       { name: 'rs_mode', type: 'text', nullable: true },
       { name: 'rs_camelot', type: 'text', nullable: true },
@@ -121,7 +137,6 @@ async function introspectTable(supabase, headers) {
       { name: 'rs_instrumentalness_raw', type: 'integer', nullable: true },
       { name: 'rs_speechiness_raw', type: 'integer', nullable: true },
       { name: 'rs_liveness_raw', type: 'integer', nullable: true },
-      { name: 'rs_tempo', type: 'text', nullable: true },
       
       // Spotify columns
       { name: 'spotify_danceability', type: 'real', nullable: true },
@@ -210,10 +225,14 @@ async function logAnalysis(supabase, headers, data) {
       'id', 'session_id', 'created_at', 'timestamp', 'vendor_source', 'data_source', 
       'from_cache', 'fallback_type', 'track_id', 'track_name', 'artist_name', 'track_uri', 
       'playback_position_ms', 'is_playing',
-      // RapidAPI/Soundnet columns (rs_* prefix)
+      // Soundnet columns (existing in database)
+      'soundnet_camelot', 'soundnet_duration', 'soundnet_popularity', 'soundnet_energy',
+      'soundnet_danceability', 'soundnet_happiness', 'soundnet_acousticness', 'soundnet_instrumentalness',
+      'soundnet_liveness', 'soundnet_speechiness', 'soundnet_loudness', 'soundnet_key', 'soundnet_mode', 'soundnet_tempo',
+      // RapidAPI/RS columns (existing in database)
       'rs_key', 'rs_mode', 'rs_camelot', 'rs_happiness', 'rs_popularity', 'rs_duration', 
       'rs_loudness', 'rs_energy_raw', 'rs_danceability_raw', 'rs_acousticness_raw', 
-      'rs_instrumentalness_raw', 'rs_speechiness_raw', 'rs_liveness_raw', 'rs_tempo',
+      'rs_instrumentalness_raw', 'rs_speechiness_raw', 'rs_liveness_raw',
       // Spotify columns
       'spotify_danceability', 'spotify_energy', 'spotify_valence', 'spotify_acousticness',
       'spotify_instrumentalness', 'spotify_liveness', 'spotify_speechiness', 'spotify_loudness',
