@@ -494,9 +494,13 @@ class SpotifyService {
       let audio_features = audioFeatures[index];
       let rapidSoundnetMetadata = null;
       
-      // Always try to get ENHANCED Rapid Soundnet data with sectional analysis
-      console.log(`🚀 Getting ENHANCED Rapid Soundnet analysis for: ${track.name} by ${track.artists?.[0]?.name}`);
-      const rapidResult = await this.getEnhancedRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+      // TEMPORARILY DISABLED: Enhanced analysis to prevent 429 errors during playlist analysis
+      // Re-enable once rate limits are properly handled
+      console.log(`🚀 Getting Rapid Soundnet analysis (basic mode) for: ${track.name} by ${track.artists?.[0]?.name}`);
+      const rapidResult = await this.getRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
+      
+      // TODO: Re-enable enhanced analysis:
+      // const rapidResult = await this.getEnhancedRapidSoundnetAudioFeatures(track.name, track.artists?.[0]?.name);
       
       // Use Spotify audio features if available, otherwise use RapidAPI fallback
       if (!audio_features && rapidResult.audioFeatures) {
@@ -556,62 +560,66 @@ class SpotifyService {
       
       console.log('🎯 Starting ENHANCED analysis for:', trackName, 'by', artistName);
       
-      // Try to get detailed sectional analysis (this will automatically log to database)
-      const detailedAnalysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(trackName, artistName);
+      // RATE LIMIT CHECK: If we've hit the limit, use fallback immediately
+      if (!rapidSoundnetService.canMakeRequest()) {
+        console.warn(`⚠️ API rate limit reached (${usage.used}/${3}), using intelligent fallback for:`, trackName);
+        return this.getRapidSoundnetAudioFeatures(trackName, artistName);
+      }
       
-      if (detailedAnalysis) {
-        console.log('✅ Got detailed sectional analysis with', detailedAnalysis.sections.length, 'sections');
+      try {
+        // Try to get detailed sectional analysis (this will automatically log to database)
+        const detailedAnalysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysis(trackName, artistName);
         
-        // Convert basic attributes to Spotify format for compatibility
-        const audioFeatures: SpotifyAudioFeatures = {
-          tempo: detailedAnalysis.tempo,
-          key: this.convertKeyStringToNumber(detailedAnalysis.key),
-          mode: detailedAnalysis.mode === 'major' ? 1 : 0,
-          energy: detailedAnalysis.energy / 100,
-          danceability: detailedAnalysis.danceability / 100,
-          valence: detailedAnalysis.happiness / 100,
-          acousticness: detailedAnalysis.acousticness / 100,
-          instrumentalness: detailedAnalysis.instrumentalness / 100,
-          liveness: detailedAnalysis.liveness / 100,
-          speechiness: detailedAnalysis.speechiness / 100,
-          loudness: this.parseLoudnessValue(detailedAnalysis.loudness),
-          time_signature: 4 // Default for enhanced analysis
-        };
-        
-        // Generate workout moments for additional metadata
-        const workoutMoments = await enhancedRapidSoundnetService.generateWorkoutMoments(
-          trackName, 
-          artistName, 
-          detailedAnalysis.meta?.trackDuration
-        );
-        
-        console.log('✅ Generated', workoutMoments.length, 'workout moments for enhanced analysis');
-        
-        const newUsage = rapidSoundnetService.getRequestUsage();
-        return {
-          audioFeatures,
-          rapidSoundnetData: detailedAnalysis,
-          dataSource: 'enhanced-rapidapi',
-          fromCache: false,
-          fallbackType: 'sectional-analysis',
-          apiRequestsUsed: newUsage.used,
-          sectionalAnalysis: {
-            totalSections: detailedAnalysis.sections.length,
-            sections: detailedAnalysis.sections,
-            hasRhythmicData: detailedAnalysis.rhythmic?.bars.length > 0,
-            analysisVersion: detailedAnalysis.meta?.analysisVersion
-          },
-          workoutMoments: workoutMoments
-        };
+        if (detailedAnalysis) {
+          console.log('✅ Got detailed sectional analysis with', detailedAnalysis.sections.length, 'sections');
+          
+          // Convert basic attributes to Spotify format for compatibility
+          const audioFeatures: SpotifyAudioFeatures = {
+            tempo: detailedAnalysis.tempo,
+            key: this.convertKeyStringToNumber(detailedAnalysis.key),
+            mode: detailedAnalysis.mode === 'major' ? 1 : 0,
+            energy: detailedAnalysis.energy / 100,
+            danceability: detailedAnalysis.danceability / 100,
+            valence: detailedAnalysis.happiness / 100,
+            acousticness: detailedAnalysis.acousticness / 100,
+            instrumentalness: detailedAnalysis.instrumentalness / 100,
+            liveness: detailedAnalysis.liveness / 100,
+            speechiness: detailedAnalysis.speechiness / 100,
+            loudness: this.parseLoudnessValue(detailedAnalysis.loudness),
+            time_signature: 4 // Default for enhanced analysis
+          };
+          
+          // Skip generating extra workout moments to avoid additional processing time
+          console.log('✅ Enhanced analysis completed successfully');
+          
+          const newUsage = rapidSoundnetService.getRequestUsage();
+          return {
+            audioFeatures,
+            rapidSoundnetData: detailedAnalysis,
+            dataSource: 'enhanced-rapidapi',
+            fromCache: false,
+            fallbackType: 'sectional-analysis',
+            apiRequestsUsed: newUsage.used,
+            sectionalAnalysis: {
+              totalSections: detailedAnalysis.sections.length,
+              sections: detailedAnalysis.sections,
+              hasRhythmicData: detailedAnalysis.rhythmic?.bars.length > 0,
+              analysisVersion: detailedAnalysis.meta?.analysisVersion
+            },
+            workoutMoments: [] // Skip extra processing to prevent hanging
+          };
+        }
+      } catch (enhancedError) {
+        console.warn('⚠️ Enhanced analysis failed, using fallback:', enhancedError.message);
       }
       
       // Fallback to original method if enhanced analysis fails
-      console.log('⚠️ Enhanced analysis failed, falling back to basic analysis');
+      console.log('🔄 Falling back to basic analysis for:', trackName);
       return this.getRapidSoundnetAudioFeatures(trackName, artistName);
       
     } catch (error) {
       console.error('💥 Error getting enhanced Rapid Soundnet audio features:', error);
-      // Fallback to original method
+      // Always fallback to prevent hanging
       return this.getRapidSoundnetAudioFeatures(trackName, artistName);
     }
   }

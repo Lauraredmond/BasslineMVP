@@ -61,13 +61,29 @@ class EnhancedRapidSoundnetService {
     try {
       console.log('🎯 Starting detailed track analysis for:', trackTitle);
       
+      // Check rate limits immediately
+      if (!rapidSoundnetService.canMakeRequest()) {
+        console.warn('⚠️ Rate limit reached, using intelligent fallback for enhanced analysis');
+        // Generate fallback with estimated sections
+        const basic = await rapidSoundnetService.getTrackAnalysis(trackTitle, artistName);
+        const analysis = basic ? this.convertBasicToDetailed(basic, trackTitle) : null;
+        
+        if (analysis && enableDatabaseLogging) {
+          console.log('🗄️ Logging fallback enhanced analysis to database');
+          const workoutMoments = this.generateWorkoutMomentsFromAnalysis(analysis);
+          await enhancedAnalysisLogger.logDetailedTrackAnalysis(trackTitle, artistName || '', analysis, workoutMoments);
+        }
+        
+        return analysis;
+      }
+      
       // Use the enhanced Netlify function that gets full API response
       const response = await this.makeEnhancedApiCall(trackTitle, artistName);
       
       let analysis: DetailedTrackAnalysis | null = null;
       
       if (!response) {
-        console.warn('⚠️ No detailed analysis available, falling back to basic analysis');
+        console.warn('⚠️ Enhanced API call failed, falling back to basic analysis');
         const basic = await rapidSoundnetService.getTrackAnalysis(trackTitle, artistName);
         analysis = basic ? this.convertBasicToDetailed(basic, trackTitle) : null;
       } else {
@@ -102,7 +118,11 @@ class EnhancedRapidSoundnetService {
       
     } catch (error) {
       console.error('💥 Enhanced analysis failed:', error);
-      return null;
+      
+      // Always return fallback analysis to prevent hanging
+      console.log('🔄 Generating emergency fallback analysis');
+      const basic = await rapidSoundnetService.getTrackAnalysis(trackTitle, artistName, true);
+      return basic ? this.convertBasicToDetailed(basic, trackTitle) : null;
     }
   }
 

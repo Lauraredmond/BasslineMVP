@@ -1045,17 +1045,17 @@ const MusicSync = () => {
         {/* Enhanced Analysis Notification */}
         {enhancedAnalysisEnabled && (
           <div className="mx-auto max-w-4xl mb-6">
-            <Card className="border-blue-200 bg-blue-50">
+            <Card className="border-orange-200 bg-orange-50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                     <div>
-                      <p className="text-blue-800 font-medium text-sm">
-                        🎵 Enhanced Analysis Active
+                      <p className="text-orange-800 font-medium text-sm">
+                        ⚠️ Enhanced Analysis Temporarily Disabled
                       </p>
-                      <p className="text-blue-600 text-xs">
-                        Creating detailed sectional analysis with multiple database entries per track
+                      <p className="text-orange-600 text-xs">
+                        Using basic analysis to prevent API rate limit errors. Enhanced analysis available via debug panel.
                       </p>
                     </div>
                   </div>
@@ -1063,7 +1063,7 @@ const MusicSync = () => {
                     onClick={() => setEnhancedAnalysisEnabled(false)}
                     variant="ghost"
                     size="sm"
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-orange-600 hover:text-orange-800"
                   >
                     ×
                   </Button>

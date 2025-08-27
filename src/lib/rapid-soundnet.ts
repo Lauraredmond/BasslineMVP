@@ -35,6 +35,10 @@ class RapidSoundnetService {
   private lastResetTime = Date.now();
   private readonly RESET_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in ms
   
+  // Enhanced rate limiting for 429 protection
+  private lastRequestTime = 0;
+  private readonly MIN_REQUEST_INTERVAL = 2000; // 2 seconds between requests
+  
   // Simple cache implementation
   private cache = {
     store: (trackTitle: string, artistName: string = '', result: RapidSoundnetTrackAnalysis) => {
@@ -83,7 +87,34 @@ class RapidSoundnetService {
   // Check if we can make a request
   canMakeRequest(): boolean {
     const usage = this.getRequestUsage();
-    return usage.remaining > 0;
+    const now = Date.now();
+    
+    // Check quota limit
+    if (usage.remaining <= 0) {
+      return false;
+    }
+    
+    // Check time-based rate limiting to prevent 429s
+    if (now - this.lastRequestTime < this.MIN_REQUEST_INTERVAL) {
+      console.log(`⏱️ Rate limiting: waiting ${this.MIN_REQUEST_INTERVAL}ms between requests`);
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Wait for rate limit if needed
+  private async waitForRateLimit(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.MIN_REQUEST_INTERVAL) {
+      const waitTime = this.MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+      console.log(`⏱️ Waiting ${waitTime}ms to respect rate limits`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    
+    this.lastRequestTime = Date.now();
   }
 
   // Get track analysis from Rapid Soundnet API with fallback strategies
@@ -133,6 +164,10 @@ class RapidSoundnetService {
 
     try {
       console.log('🎯 Making Rapid Soundnet API request:', { trackTitle, artistName });
+      
+      // Wait for rate limit to prevent 429 errors
+      await this.waitForRateLimit();
+      
       console.log('🔍 [DEBUG] EXACT API PARAMS:', {
         originalTrackTitle: trackTitle,
         originalArtistName: artistName,
@@ -158,7 +193,7 @@ class RapidSoundnetService {
         }
       });
 
-      // Increment request count on successful API call
+      // Increment request count on API call attempt
       this.incrementRequestCount();
 
       if (!response.ok) {
