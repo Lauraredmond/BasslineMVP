@@ -17,6 +17,7 @@ import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 // Removed WebAudioAnalysisLogger - eliminated Web Audio capture
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
+import { RealtimeSectionDisplay } from "@/components/RealtimeSectionDisplay";
 import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
 import { databaseMigrator } from "@/lib/database-migrator";
 import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
@@ -1360,6 +1361,15 @@ const MusicSync = () => {
                   <h3 className="text-2xl font-bold text-primary mb-2">
                     {workoutPlan && currentTrackPhase ? currentTrackPhase.phase.name : workoutPhases[currentPhase]?.name}
                   </h3>
+                  
+                  {/* 🎵 Real-time Section Display - Shows current section (intro, verse, chorus, etc.) */}
+                  <RealtimeSectionDisplay
+                    currentTrack={currentTrack}
+                    currentPositionMs={spotifyPlayback?.position}
+                    isPlaying={isPlaying}
+                    className="mb-4"
+                  />
+                  
                   <div className="text-sm text-primary/70 mb-4">
                     <p>Phase {currentPhase + 1} of {workoutPhases.length} • {workoutPhases[currentPhase]?.duration}</p>
                     {workoutPlan && currentTrackPhase && (
