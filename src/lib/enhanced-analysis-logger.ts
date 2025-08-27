@@ -171,14 +171,14 @@ class EnhancedAnalysisLogger {
         section_type: entry.sectionType,
         section_narrative: entry.workoutNarrative,
         
-        // CHANGING MUSICAL ATTRIBUTES PER SECTION (not static!)
-        soundnet_tempo: entry.tempo,
+        // CHANGING MUSICAL ATTRIBUTES PER SECTION (not static!) - FIXED: Round decimals to integers
+        soundnet_tempo: Math.round(entry.tempo),
         soundnet_key: this.convertKeyToString(entry.key),
         soundnet_mode: entry.mode === 1 ? 'major' : 'minor',
         soundnet_loudness: `${entry.loudness} dB`,
-        soundnet_energy: entry.energy,
-        soundnet_danceability: entry.danceability,
-        soundnet_happiness: entry.valence,
+        soundnet_energy: Math.round(entry.energy),
+        soundnet_danceability: Math.round(entry.danceability),
+        soundnet_happiness: Math.round(entry.valence),
         soundnet_acousticness: 50,  // Could be varied per section
         soundnet_instrumentalness: 30,
         soundnet_speechiness: 5,
@@ -187,14 +187,14 @@ class EnhancedAnalysisLogger {
         soundnet_popularity: 50,
         soundnet_camelot: '1A',
         
-        // RapidAPI raw values (0-100 scale) 
-        rs_energy_raw: entry.energy,
-        rs_danceability_raw: entry.danceability,
+        // RapidAPI raw values (0-100 scale) - FIXED: Round decimals to integers
+        rs_energy_raw: Math.round(entry.energy),
+        rs_danceability_raw: Math.round(entry.danceability),
         rs_acousticness_raw: 50,
         rs_instrumentalness_raw: 30,
         rs_speechiness_raw: 5,
         rs_liveness_raw: 10,
-        rs_happiness: entry.valence,
+        rs_happiness: Math.round(entry.valence),
         rs_popularity: 50,
         rs_duration: this.formatDuration(entry.sectionDuration),
         rs_loudness: `${entry.loudness} dB`,
