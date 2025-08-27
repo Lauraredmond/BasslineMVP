@@ -811,20 +811,34 @@ class SpotifyService {
   // Get available devices
   async getAvailableDevices(): Promise<SpotifyDevice[]> {
     if (!this.accessToken) {
+      console.error('🔍 [SPOTIFY DEBUG] No access token available for getAvailableDevices');
       throw new Error('Not authenticated');
     }
 
     try {
+      console.log('🔍 [SPOTIFY DEBUG] Making devices API call...');
       const response = await fetch('https://api.spotify.com/v1/me/player/devices', {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`
         }
       });
 
+      console.log('🔍 [SPOTIFY DEBUG] Devices API response:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        console.error('🔍 [SPOTIFY DEBUG] Devices API error:', response.status, response.statusText);
+        return [];
+      }
+
       const data = await response.json();
-      return data.devices || [];
+      console.log('🔍 [SPOTIFY DEBUG] Devices API data:', data);
+      
+      const devices = data.devices || [];
+      console.log('🔍 [SPOTIFY DEBUG] Returning devices:', devices.length);
+      
+      return devices;
     } catch (error) {
-      console.error('Error fetching devices:', error);
+      console.error('🔍 [SPOTIFY DEBUG] Error fetching devices:', error);
       return [];
     }
   }

@@ -246,21 +246,34 @@ const MusicSync = () => {
   const workoutPhases = getWorkoutPhases(workoutFormat);
 
   const refreshSpotifyDevices = async () => {
-    if (!isSpotifyAuthenticated) return [];
+    if (!isSpotifyAuthenticated) {
+      console.log('🔍 [DEVICE DEBUG] Not authenticated, returning empty devices');
+      return [];
+    }
     
     try {
+      console.log('🔍 [DEVICE DEBUG] Fetching available devices...');
       const devices = await spotifyService.getAvailableDevices();
+      console.log('🔍 [DEVICE DEBUG] Devices fetched:', {
+        totalDevices: devices.length,
+        deviceNames: devices.map(d => d.name),
+        activeDevices: devices.filter(d => d.is_active).map(d => d.name)
+      });
+      
       setSpotifyDevices(devices);
       
       // Auto-select active device if available
       const activeDevice = devices.find(d => d.is_active);
       if (activeDevice && !selectedDevice) {
+        console.log('🔍 [DEVICE DEBUG] Auto-selecting active device:', activeDevice.name);
         setSelectedDevice(activeDevice.id);
+      } else {
+        console.log('🔍 [DEVICE DEBUG] No active device found or device already selected');
       }
       
       return devices;
     } catch (error) {
-      console.error('Error refreshing devices:', error);
+      console.error('🔍 [DEVICE DEBUG] Error refreshing devices:', error);
       return [];
     }
   };
