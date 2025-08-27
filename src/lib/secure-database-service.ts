@@ -123,30 +123,30 @@ class SecureDatabaseService {
     if (data.rapidSoundnetData) {
       const rapid = data.rapidSoundnetData as any;
       
-      // Map RapidAPI fields to Soundnet database columns
-      if (rapid.tempo) mapped.soundnet_tempo = String(rapid.tempo);
-      if (rapid.key) mapped.soundnet_key = String(rapid.key);
-      if (rapid.mode) mapped.soundnet_mode = String(rapid.mode);
-      if (rapid.camelot) mapped.soundnet_camelot = String(rapid.camelot);
-      if (rapid.energy !== undefined) mapped.soundnet_energy = Number(rapid.energy);
-      if (rapid.danceability !== undefined) mapped.soundnet_danceability = Number(rapid.danceability);
-      if (rapid.happiness !== undefined) mapped.soundnet_happiness = Number(rapid.happiness);
-      if (rapid.popularity !== undefined) mapped.soundnet_popularity = Number(rapid.popularity);
-      if (rapid.acousticness !== undefined) mapped.soundnet_acousticness = Number(rapid.acousticness);
-      if (rapid.instrumentalness !== undefined) mapped.soundnet_instrumentalness = Number(rapid.instrumentalness);
-      if (rapid.liveness !== undefined) mapped.soundnet_liveness = Number(rapid.liveness);
-      if (rapid.speechiness !== undefined) mapped.soundnet_speechiness = Number(rapid.speechiness);
-      if (rapid.loudness) mapped.soundnet_loudness = String(rapid.loudness);
-      if (rapid.duration) mapped.soundnet_duration = String(rapid.duration);
+      // Map RapidAPI fields to correct database columns (rs_* prefix)
+      if (rapid.tempo) mapped.rs_tempo = String(rapid.tempo);
+      if (rapid.key) mapped.rs_key = String(rapid.key);
+      if (rapid.mode) mapped.rs_mode = String(rapid.mode);
+      if (rapid.camelot) mapped.rs_camelot = String(rapid.camelot);
+      if (rapid.energy !== undefined) mapped.rs_energy_raw = Number(rapid.energy);
+      if (rapid.danceability !== undefined) mapped.rs_danceability_raw = Number(rapid.danceability);
+      if (rapid.happiness !== undefined) mapped.rs_happiness = Number(rapid.happiness);
+      if (rapid.popularity !== undefined) mapped.rs_popularity = Number(rapid.popularity);
+      if (rapid.acousticness !== undefined) mapped.rs_acousticness_raw = Number(rapid.acousticness);
+      if (rapid.instrumentalness !== undefined) mapped.rs_instrumentalness_raw = Number(rapid.instrumentalness);
+      if (rapid.liveness !== undefined) mapped.rs_liveness_raw = Number(rapid.liveness);
+      if (rapid.speechiness !== undefined) mapped.rs_speechiness_raw = Number(rapid.speechiness);
+      if (rapid.loudness) mapped.rs_loudness = String(rapid.loudness);
+      if (rapid.duration) mapped.rs_duration = String(rapid.duration);
       
       // Remove the raw rapidSoundnetData object
       delete mapped.rapidSoundnetData;
       
-      console.log('✅ RapidAPI data mapped to Soundnet columns:', {
-        tempo: mapped.soundnet_tempo,
-        key: mapped.soundnet_key,
-        energy: mapped.soundnet_energy,
-        camelot: mapped.soundnet_camelot
+      console.log('✅ RapidAPI data mapped to database columns:', {
+        rs_tempo: mapped.rs_tempo,
+        rs_key: mapped.rs_key,
+        rs_energy_raw: mapped.rs_energy_raw,
+        rs_camelot: mapped.rs_camelot
       });
     }
     
