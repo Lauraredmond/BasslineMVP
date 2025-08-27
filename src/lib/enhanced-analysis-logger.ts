@@ -3,7 +3,7 @@
 
 import { spotifyAnalysisLogger } from './spotify-analysis-logger';
 import { DetailedTrackAnalysis, TimeBasedSection, WorkoutMoment } from './enhanced-rapid-soundnet';
-import { secureDbService } from './secure-database-service';
+import { secureDatabaseService } from './secure-database-service';
 
 export interface SectionAnalysisEntry {
   // Track identification
