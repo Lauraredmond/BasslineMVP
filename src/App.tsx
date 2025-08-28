@@ -16,6 +16,7 @@ import Analytics from "./pages/Analytics";
 import CustomerSupport from "./pages/CustomerSupport";
 import Community from "./pages/Community";
 import SpotifyCallback from "./pages/SpotifyCallback";
+import AudioTimestamping from "./pages/AudioTimestamping";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/support" element={<CustomerSupport />} />
           <Route path="/community" element={<Community />} />
           <Route path="/callback" element={<SpotifyCallback />} />
+          <Route path="/audio-timestamping" element={<AudioTimestamping />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
