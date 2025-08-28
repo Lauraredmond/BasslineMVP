@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LocalTimestampStorage } from '@/lib/local-timestamp-storage';
 
 interface TimestampEvent {
   id: string;
@@ -52,9 +53,38 @@ export const AudioTimestampCapture: React.FC = () => {
   // UI state
   const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(0);
+  const [localSessions, setLocalSessions] = useState<any[]>([]);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load local sessions on component mount
+  useEffect(() => {
+    setLocalSessions(LocalTimestampStorage.getAllSessions());
+  }, []);
+
+  // Export functions
+  const exportAsJSON = () => {
+    const data = LocalTimestampStorage.exportToJSON();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bassline-timestamps-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAsCSV = () => {
+    const data = LocalTimestampStorage.exportToCSV();
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bassline-timestamps-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Timer update effect
   useEffect(() => {
@@ -221,7 +251,7 @@ export const AudioTimestampCapture: React.FC = () => {
     });
   };
 
-  // Save session to database
+  // Save session (with fallback to local storage)
   const saveSession = async () => {
     if (!currentSession) {
       setError('No session to save');
@@ -229,7 +259,11 @@ export const AudioTimestampCapture: React.FC = () => {
     }
     
     try {
-      console.log('💾 Saving session to database:', currentSession);
+      console.log('💾 Attempting to save session...');
+      
+      // First, save locally as backup
+      LocalTimestampStorage.saveSession(currentSession);
+      console.log('✅ Session saved locally as backup');
       
       // Prepare data for database
       const sessionData = {
@@ -249,12 +283,9 @@ export const AudioTimestampCapture: React.FC = () => {
         }))
       };
       
-      console.log('🔍 Session data to save:', JSON.stringify(sessionData, null, 2));
-      
-      // Save to database via API
+      // Try to save to database
       const url = '/netlify/functions/save-audio-timestamps';
-      console.log('📡 Making request to:', url);
-      console.log('📦 Request payload:', JSON.stringify(sessionData, null, 2));
+      console.log('📡 Attempting database save to:', url);
       
       const response = await fetch(url, {
         method: 'POST',
@@ -262,22 +293,17 @@ export const AudioTimestampCapture: React.FC = () => {
         body: JSON.stringify(sessionData)
       });
       
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', response.headers);
-      
       if (response.ok) {
         const result = await response.json();
-        console.log('✅ Session saved successfully:', result);
-        alert(`✅ Session saved! ${sessionData.events.length} timestamps recorded.`);
+        console.log('✅ Session saved to database:', result);
+        alert(`✅ Session saved to database! ${sessionData.events.length} timestamps recorded.`);
       } else {
-        const errorText = await response.text();
-        console.error('❌ Server error response:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown server error'}`);
+        throw new Error(`HTTP ${response.status}`);
       }
       
     } catch (err) {
-      setError(`Failed to save session: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      console.error('Save error:', err);
+      console.warn('⚠️ Database save failed, but data is saved locally:', err);
+      alert(`⚠️ Database save failed, but your ${currentSession.events.length} timestamps are saved locally!\n\nYou can export them using the "Export Data" button below.`);
     }
   };
 
@@ -482,6 +508,41 @@ export const AudioTimestampCapture: React.FC = () => {
                   <audio ref={audioRef} controls className="w-full">
                     Your browser does not support the audio element.
                   </audio>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Local Storage Management */}
+            {localSessions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Saved Sessions ({localSessions.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-sm text-gray-600">
+                      You have {LocalTimestampStorage.getStorageInfo().totalEvents} timestamps saved locally.
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button onClick={exportAsJSON} variant="outline">
+                        📥 Export JSON
+                      </Button>
+                      <Button onClick={exportAsCSV} variant="outline">
+                        📊 Export CSV
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {localSessions.slice(-3).map((session) => (
+                        <div key={session.id} className="p-2 bg-gray-50 rounded text-sm">
+                          <strong>{session.trackName}</strong> by {session.artistName}
+                          <br />
+                          {session.events.length} timestamps • {new Date(session.createdAt).toLocaleString()}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
