@@ -1,6 +1,7 @@
 import React from 'react';
 import { testSuite, errorHandler } from '@/lib/integration-test-suite';
 import type { TestSuite, TestResult } from '@/lib/integration-test-suite';
+import { spotifyService } from '@/lib/spotify';
 
 export const DebugPanel: React.FC = () => {
   const [testResults, setTestResults] = React.useState<TestSuite | null>(null);
@@ -203,6 +204,69 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const testSpotifyAudioAnalysis = async () => {
+    try {
+      console.log('🧪 Testing Spotify Audio Analysis API Access...');
+      
+      // Check if user is authenticated
+      const isAuthenticated = spotifyService.isAuthenticated();
+      if (!isAuthenticated) {
+        alert('❌ Not authenticated with Spotify. Please login first.');
+        return;
+      }
+
+      // Get current playback to get a track ID
+      console.log('🔍 Getting current Spotify playback...');
+      const playbackState = await spotifyService.getCurrentPlayback();
+      
+      if (!playbackState || !playbackState.item) {
+        alert('❌ No track currently playing. Please play a song on Spotify first.');
+        return;
+      }
+
+      const trackId = playbackState.item.id;
+      const trackName = playbackState.item.name;
+      
+      console.log(`🎯 Testing Audio Analysis for: "${trackName}" (ID: ${trackId})`);
+      alert(`🧪 Testing Spotify Audio Analysis API...\n\nTrack: ${trackName}\n\nThis will test if we can access detailed sectional data.\n\nCheck console for results!`);
+
+      // Attempt to call the Audio Analysis API
+      const audioAnalysis = await spotifyService.getAudioAnalysis(trackId);
+      
+      if (audioAnalysis) {
+        console.log('✅ SPOTIFY AUDIO ANALYSIS SUCCESS!', {
+          track: trackName,
+          sections: audioAnalysis.sections?.length || 0,
+          segments: audioAnalysis.segments?.length || 0,
+          bars: audioAnalysis.bars?.length || 0,
+          beats: audioAnalysis.beats?.length || 0,
+          duration: audioAnalysis.track?.duration || 0
+        });
+
+        const sectionTypes = audioAnalysis.sections?.map(s => `${s.start?.toFixed(1)}s: confidence ${s.confidence?.toFixed(2)}`).slice(0, 5) || [];
+        
+        alert(`✅ SPOTIFY AUDIO ANALYSIS SUCCESS!\n\nTrack: ${trackName}\n\n📊 Data Available:\n• Sections: ${audioAnalysis.sections?.length || 0}\n• Segments: ${audioAnalysis.segments?.length || 0}\n• Bars: ${audioAnalysis.bars?.length || 0}\n• Beats: ${audioAnalysis.beats?.length || 0}\n\n🎵 First 5 Sections:\n${sectionTypes.join('\n')}\n\n✅ We CAN access detailed sectional data!`);
+        
+      } else {
+        console.log('❌ SPOTIFY AUDIO ANALYSIS FAILED - returned null');
+        alert('❌ SPOTIFY AUDIO ANALYSIS FAILED\n\nThe API call returned null.\nThis could indicate:\n• 403 Forbidden (Extended Dev Access required)\n• Rate limiting\n• Track not available for analysis\n\nCheck console for detailed error info.');
+      }
+      
+    } catch (error) {
+      console.error('❌ Spotify Audio Analysis Test Failed:', error);
+      
+      // Check for specific error types
+      let errorMessage = (error as Error).message;
+      if (errorMessage.includes('403')) {
+        errorMessage = '403 FORBIDDEN - Extended Developer Access required for Audio Analysis API';
+      } else if (errorMessage.includes('429')) {
+        errorMessage = '429 RATE LIMITED - Too many requests';
+      }
+      
+      alert(`❌ SPOTIFY AUDIO ANALYSIS TEST FAILED!\n\nError: ${errorMessage}\n\nThis confirms API access restrictions.`);
+    }
+  };
+
   return (
     <div 
       style={{
@@ -280,6 +344,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🎵 Enhanced Analysis
+        </button>
+        
+        <button 
+          onClick={testSpotifyAudioAnalysis}
+          style={{
+            padding: '6px 10px',
+            background: '#1db954',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🎧 Test Spotify Audio Analysis
         </button>
         
         <button 
