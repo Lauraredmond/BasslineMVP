@@ -1388,13 +1388,7 @@ const MusicSync = () => {
                       key: playbackState?.item?.key,
                       mode: playbackState?.item?.mode
                     }}
-                    rapidApiData={currentTrackData ? {
-                      tempo: currentTrackData.tempo,
-                      energy: currentTrackData.energy,
-                      danceability: currentTrackData.danceability,
-                      key: currentTrackData.key,
-                      mode: currentTrackData.mode
-                    } : undefined}
+                    rapidApiData={undefined}
                   />
                   
                   {/* 🔍 API Data Debug Panel - Only show when ?debug=true */}
@@ -1412,17 +1406,7 @@ const MusicSync = () => {
                         </div>
                         <div>
                           <div className="font-bold text-green-400 mb-2">🎹 RapidAPI Data</div>
-                          {currentTrackData ? (
-                            <div className="space-y-1">
-                              <div>Tempo: {currentTrackData.tempo || 'N/A'} BPM</div>
-                              <div>Energy: {currentTrackData.energy || 'N/A'}/100</div>
-                              <div>Danceability: {currentTrackData.danceability || 'N/A'}/100</div>
-                              <div>Key: {currentTrackData.key || 'N/A'}</div>
-                              <div>Mode: {currentTrackData.mode || 'N/A'}</div>
-                            </div>
-                          ) : (
-                            <div className="text-yellow-400">No RapidAPI data available</div>
-                          )}
+                          <div className="text-yellow-400">No RapidAPI data available</div>
                         </div>
                         <div className="col-span-2 mt-2 pt-2 border-t border-gray-600">
                           <div className="font-bold text-purple-400 mb-2">🧠 Section Analysis Source</div>
