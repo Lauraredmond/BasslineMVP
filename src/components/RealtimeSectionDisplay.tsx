@@ -31,9 +31,21 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
   const [currentSection, setCurrentSection] = useState<SectionData | null>(null);
   const [sections, setSections] = useState<SectionData[]>([]);
   const [lastFetchedTrack, setLastFetchedTrack] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch sectional data for the current track
   const fetchSectionalData = async (trackName: string, artistName: string) => {
+    if (!trackName || !artistName) {
+      console.warn('⚠️ Missing track or artist name, using estimated sections');
+      const estimatedSections = createEstimatedSections(trackName || 'Unknown');
+      setSections(estimatedSections);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    
     try {
       console.log('🎯 Fetching sectional data for real-time display:', trackName);
       
@@ -46,9 +58,17 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
 
       if (response.ok) {
         const data = await response.json();
-        if (data.sections && data.sections.length > 0) {
+        if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
           console.log('✅ Found sectional data:', data.sections.length, 'sections');
-          setSections(data.sections);
+          // Validate sections data before setting
+          const validSections = data.sections.filter(section => 
+            section && 
+            typeof section.sectionType === 'string' && 
+            typeof section.sectionStartTime === 'number' &&
+            typeof section.sectionEndTime === 'number'
+          );
+          setSections(validSections);
+          setError(null);
           return;
         }
       }
@@ -57,12 +77,16 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       // Fallback: Create estimated sections if no database data
       const estimatedSections = createEstimatedSections(trackName);
       setSections(estimatedSections);
+      setError(null);
 
     } catch (error) {
       console.error('❌ Error fetching sectional data:', error);
+      setError(`Failed to fetch data: ${error instanceof Error ? error.message : 'Unknown error'}`);
       // Fallback to estimated sections
       const estimatedSections = createEstimatedSections(trackName || 'Unknown');
       setSections(estimatedSections);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,33 +155,42 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
 
   // Update current section based on playback position
   useEffect(() => {
-    if (!isPlaying || sections.length === 0) {
-      return;
-    }
+    try {
+      if (!isPlaying || sections.length === 0 || !currentPositionMs || currentPositionMs < 0) {
+        return;
+      }
 
-    const currentPositionSeconds = currentPositionMs / 1000;
-    
-    // Find the current section based on playback position
-    const activeSection = sections.find(section => 
-      currentPositionSeconds >= section.sectionStartTime && 
-      currentPositionSeconds < section.sectionEndTime
-    );
+      const currentPositionSeconds = currentPositionMs / 1000;
+      
+      // Find the current section based on playback position
+      const activeSection = sections.find(section => 
+        section && 
+        currentPositionSeconds >= section.sectionStartTime && 
+        currentPositionSeconds < section.sectionEndTime
+      );
 
-    if (activeSection && activeSection !== currentSection) {
-      console.log('🎵 Section changed to:', activeSection.sectionType, 'at', currentPositionSeconds + 's');
-      setCurrentSection(activeSection);
+      if (activeSection && activeSection !== currentSection) {
+        console.log('🎵 Section changed to:', activeSection.sectionType, 'at', currentPositionSeconds + 's');
+        setCurrentSection(activeSection);
+      }
+    } catch (error) {
+      console.error('❌ Error updating current section:', error);
     }
   }, [currentPositionMs, isPlaying, sections, currentSection]);
 
   // Fetch sectional data when track changes
   useEffect(() => {
-    if (currentTrack?.name && currentTrack.artists?.[0]?.name) {
-      const trackKey = `${currentTrack.name}_${currentTrack.artists[0].name}`;
-      if (trackKey !== lastFetchedTrack) {
-        console.log('🔄 Track changed, fetching sectional data...');
-        fetchSectionalData(currentTrack.name, currentTrack.artists[0].name);
-        setLastFetchedTrack(trackKey);
+    try {
+      if (currentTrack?.name && currentTrack.artists?.[0]?.name) {
+        const trackKey = `${currentTrack.name}_${currentTrack.artists[0].name}`;
+        if (trackKey !== lastFetchedTrack) {
+          console.log('🔄 Track changed, fetching sectional data...');
+          fetchSectionalData(currentTrack.name, currentTrack.artists[0].name);
+          setLastFetchedTrack(trackKey);
+        }
       }
+    } catch (error) {
+      console.error('❌ Error in track change effect:', error);
     }
   }, [currentTrack?.name, currentTrack?.artists?.[0]?.name, lastFetchedTrack]);
 
@@ -181,29 +214,75 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     }
   };
 
-  if (!currentTrack || !isPlaying || !currentSection) {
-    return null;
-  }
+  // SAFE RENDERING: Add multiple checks to prevent crashes
+  try {
+    // Show loading state
+    if (isLoading) {
+      return (
+        <div className={`flex items-center justify-center ${className}`}>
+          <div className="px-4 py-2 rounded-lg bg-gray-500/20 border border-gray-400 text-gray-100">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full"></div>
+              <span className="text-sm">Loading sections...</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
-  return (
-    <div className={`flex items-center justify-center ${className}`}>
-      <div className={getSectionStyling(currentSection.sectionType)}>
-        <div className="flex items-center gap-2">
-          <span className="text-lg">
-            {currentSection.sectionType === 'chorus' ? '🎤' :
-             currentSection.sectionType === 'verse' ? '🎵' :
-             currentSection.sectionType === 'intro' ? '🎶' :
-             currentSection.sectionType === 'bridge' ? '🌉' :
-             currentSection.sectionType === 'outro' ? '🎭' : '🎼'}
-          </span>
-          <span className="capitalize font-bold">
-            {currentSection.sectionType}
-          </span>
-          <span className="text-xs opacity-80">
-            {Math.round(currentSection.sectionStartTime)}s-{Math.round(currentSection.sectionEndTime)}s
-          </span>
+    // Show error state but don't crash
+    if (error) {
+      console.warn('⚠️ RealtimeSectionDisplay error (non-blocking):', error);
+      // Don't show error to user, just continue with fallback
+    }
+
+    // Early returns for various states
+    if (!currentTrack) {
+      console.log('🔍 RealtimeSectionDisplay: No current track');
+      return null;
+    }
+
+    if (!isPlaying) {
+      console.log('🔍 RealtimeSectionDisplay: Not playing');
+      return null;
+    }
+
+    if (!currentSection || !currentSection.sectionType) {
+      console.log('🔍 RealtimeSectionDisplay: No current section', { currentSection, sectionsCount: sections.length });
+      return null;
+    }
+
+    // Valid render
+    return (
+      <div className={`flex items-center justify-center ${className}`}>
+        <div className={getSectionStyling(currentSection.sectionType)}>
+          <div className="flex items-center gap-2">
+            <span className="text-lg">
+              {currentSection.sectionType === 'chorus' ? '🎤' :
+               currentSection.sectionType === 'verse' ? '🎵' :
+               currentSection.sectionType === 'intro' ? '🎶' :
+               currentSection.sectionType === 'bridge' ? '🌉' :
+               currentSection.sectionType === 'outro' ? '🎭' : '🎼'}
+            </span>
+            <span className="capitalize font-bold">
+              {currentSection.sectionType || 'unknown'}
+            </span>
+            <span className="text-xs opacity-80">
+              {Math.round(currentSection.sectionStartTime || 0)}s-{Math.round(currentSection.sectionEndTime || 0)}s
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('❌ Critical error rendering RealtimeSectionDisplay:', error);
+    // Return a safe fallback instead of crashing
+    return (
+      <div className={`flex items-center justify-center ${className}`}>
+        <div className="px-4 py-2 rounded-lg bg-red-500/20 border border-red-400 text-red-100 text-sm">
+          Section display error
+        </div>
+      </div>
+    );
+  }
 };

@@ -1,936 +1,162 @@
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:01" (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:01" (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:03" (index-Ckwi95sh.js, line 543)
-[Log] 🏋️ [DEBUG] Start Workout button clicked! (index-Ckwi95sh.js, line 558)
-[Log] 🏋️ [DEBUG] handleStartWorkout called - beginning workout start process (index-Ckwi95sh.js, line 543)
-[Log] 🎵 Setting up the same 2 narratives for ALL workout phases... (index-Ckwi95sh.js, line 288)
-[Log] 📊 Found 7 spinning phases: – ["cooldown", "jumps", "climb", …] (7) (index-Ckwi95sh.js, line 292)
-["cooldown", "jumps", "climb", "resistance", "hills", "sprint", "warmup"]Array (7)
-[Log] 🧹 Clearing narratives for cooldown... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for jumps... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for climb... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for resistance... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for hills... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for sprint... (index-Ckwi95sh.js, line 292)
-[Log] 🧹 Clearing narratives for warmup... (index-Ckwi95sh.js, line 292)
-[Log] ✅ SUCCESS: Inserted 2 narratives for each of 7 phases (14 total narratives) (index-Ckwi95sh.js, line 292)
-[Log] 🧹 COMPLETELY clearing ALL warmup narratives... (index-Ckwi95sh.js, line 285)
-[Log] 📝 Inserting EXACTLY 2 narratives ONLY... (index-Ckwi95sh.js, line 288)
-[Log] ✅ Final verification: 2 narratives in database: (index-Ckwi95sh.js, line 288)
-[Log]    1. "We're just warming up the legs here"
-[Log]    2. "Chorus in 7 seconds"
-[Log] ✅ SUCCESS: ONLY your 2 warmup narratives are in the database (index-Ckwi95sh.js, line 288)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:08" (index-Ckwi95sh.js, line 543, x2)
-[Log] 🎯 Making Audio Features API request: – {url: "https://api.spotify.com/v1/audio-features?ids=7x8d…GbX,0c0ptxjRaqaxMM8gvSWCG0,3zca0nsKOLnN28ftZEXAQn", trackIds: Array, hasToken: true} (index-Ckwi95sh.js, line 273)
-{url: "https://api.spotify.com/v1/audio-features?ids=7x8d…GbX,0c0ptxjRaqaxMM8gvSWCG0,3zca0nsKOLnN28ftZEXAQn", trackIds: Array, hasToken: true}Object
-[Error] Failed to load resource: the server responded with a status of 403 () (audio-features, line 0)
-[Log] 📡 Audio Features API response status: – 403 – "" (index-Ckwi95sh.js, line 273)
-[Error] ❌ Audio Features API error response: – {status: 403, statusText: "", headers: {cache-control: "private, max-age=0", content-length: "60", content-type: "application/json; charset=utf-8"}}
-	(anonymous function) (index-Ckwi95sh.js:273:51742)
-[Error] ❌ Audio Features API error body: – "{↵  \"error\" : {↵    \"status\" : 403↵  }↵}"
-"{
-  \"error\" : {
-    \"status\" : 403
-  }
-}"
-	(anonymous function) (index-Ckwi95sh.js:273:51916)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: The Pretender by Foo Fighters (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "The Pretender" – "by" – "Foo Fighters" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "The Pretender" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: Slide Away by Oasis (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "Slide Away" – "by" – "Oasis" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "Slide Away" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: Dirge by Death In Vegas (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "Dirge" – "by" – "Death In Vegas" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "Dirge" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: Firestarter by The Prodigy (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "Firestarter" – "by" – "The Prodigy" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "Firestarter" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: I Predict A Riot by Kaiser Chiefs (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "I Predict A Riot" – "by" – "Kaiser Chiefs" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "I Predict A Riot" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: Buddy Holly by Weezer (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "Buddy Holly" – "by" – "Weezer" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "Buddy Holly" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: 21 Guns by Green Day (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "21 Guns" – "by" – "Green Day" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "21 Guns" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: The Static Age by Green Day (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "The Static Age" – "by" – "Green Day" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "The Static Age" (index-Ckwi95sh.js, line 273)
-[Log] 🚀 Getting Rapid Soundnet analysis (basic mode) for: Macy's Day Parade by Green Day (index-Ckwi95sh.js, line 273)
-[Log] ✅ Cache hit for: – "Macy's Day Parade" – "by" – "Green Day" – "(0 days old)" (index-Ckwi95sh.js, line 273)
-[Log] 📚 Using cached Rapid Soundnet data for: – "Macy's Day Parade" (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: The Pretender (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=37, popularity=78 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: Slide Away (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=23, popularity=67 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: Dirge (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: Firestarter (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: I Predict A Riot (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: Buddy Holly (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: 21 Guns (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: The Static Age (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using RapidAPI audio features as fallback for: Macy's Day Parade (index-Ckwi95sh.js, line 273)
-[Log] 🎯 Captured RapidAPI advanced metrics: happiness=50, popularity=50 (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:09" (index-Ckwi95sh.js, line 543, x2)
-[Log] 🏋️ STARTING WORKOUT SESSION for analysis logging... (index-Ckwi95sh.js, line 543)
-[Log] 🆕 Creating database session... (index-Ckwi95sh.js, line 273)
-[Log] ✅ Session created: – "b6c61065-227d-42a6-821f-484190f5b5e9" (index-Ckwi95sh.js, line 273)
-[Log] ✅ Started secure logging session: – "b6c61065-227d-42a6-821f-484190f5b5e9" (index-Ckwi95sh.js, line 273)
-[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 00:06:10" (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-Ckwi95sh.js, line 543)
-[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:10" (index-Ckwi95sh.js, line 543)
-[Log] 🏋️ [DEBUG] Workout state changed: – {isWorkoutActive: true} (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:11" (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:12" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
+[Warning] 750 console messages are not shown.
+[Error] ReferenceError: Can't find variable: currentTrack
+	_g (index-BJIAWWvv.js:40:167)
+	(anonymous function) (index-BJIAWWvv.js:40:390)
+	Lj (index-BJIAWWvv.js:38:16040)
+	$E (index-BJIAWWvv.js:40:32461)
+	DE (index-BJIAWWvv.js:40:31868)
+	j5 (index-BJIAWWvv.js:40:31410)
+	A5 (index-BJIAWWvv.js:40:41472)
+	ts (index-BJIAWWvv.js:40:40814)
+	BE (index-BJIAWWvv.js:40:35642)
+	A (index-BJIAWWvv.js:25:1597)
+	q (index-BJIAWWvv.js:25:1959)
+[Error] ❌ [unknown:unknown] – "Can't find variable: currentTrack" – Object
+Object
+	consoleLog (index-BJIAWWvv.js:501:4369)
+	log (index-BJIAWWvv.js:501:1513)
+	logError (index-BJIAWWvv.js:501:1685)
+	(anonymous function) (index-BJIAWWvv.js:501:5533)
+[Error] ReferenceError: Can't find variable: currentTrack
+	A5 (index-BJIAWWvv.js:40:41756)
+	ts (index-BJIAWWvv.js:40:40814)
+	BE (index-BJIAWWvv.js:40:35642)
+	A (index-BJIAWWvv.js:25:1597)
+	q (index-BJIAWWvv.js:25:1959)
+[Log] ✅ Session created: – "25ca4708-9acb-49cf-a0a2-33b7ec43cb64" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "25ca4708-9acb-49cf-a0a2-33b7ec43cb64" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Session created: – "75f2d6a1-a3df-4ffc-9970-913206033efe" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:47" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "75f2d6a1-a3df-4ffc-9970-913206033efe" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:47" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] ✅ Session created: – "dcf09275-7d82-4450-b58b-574052d1343a" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "dcf09275-7d82-4450-b58b-574052d1343a" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:47" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] ✅ Session created: – "fd9663af-829a-4f40-b8ca-87dd5eb7eae6" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "fd9663af-829a-4f40-b8ca-87dd5eb7eae6" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:49" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] ✅ Session created: – "1467b81e-3688-47e8-a608-95d09ad19f80" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Session created: – "ff59fd35-7cdc-49ab-8662-a6f9081ebc46" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Session created: – "acba5f28-f6c1-4693-bf75-554807c1a39a" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "1467b81e-3688-47e8-a608-95d09ad19f80" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "ff59fd35-7cdc-49ab-8662-a6f9081ebc46" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Started secure logging session: – "acba5f28-f6c1-4693-bf75-554807c1a39a" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:47" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:49" (index-BJIAWWvv.js, line 273)
+[Log] Auto-started workout logging session: – "Spinning Workout - 28/08/2025, 09:40:47" (index-BJIAWWvv.js, line 273)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] ✅ Analysis logging session started, isAnalysisLogging set to true (index-BJIAWWvv.js, line 543)
+[Log] 🏋️ [DEBUG] Setting workout as ACTIVE (Spotify path) (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – Object (index-BJIAWWvv.js, line 543)
+Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-BJIAWWvv.js, line 543)
 {hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-BJIAWWvv.js, line 543)
 {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:13" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: null, playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: false, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: null, playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: false, trackName: "The Pretender", comparison: "\"null\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration... (index-Ckwi95sh.js, line 543)
-[Log]   - Previous track ID: – null (index-Ckwi95sh.js, line 543)
-[Log]   - New track ID: – "7x8dCjCr0x6x2lXKujYD34" (index-Ckwi95sh.js, line 543)
-[Log]   - New track name: – "The Pretender" (index-Ckwi95sh.js, line 543)
-[Log]   - Is workout active?: – true (index-Ckwi95sh.js, line 543)
-[Log]   - Is Spotify authenticated?: – true (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] WORKOUT DETECTION DEBUG: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender", hasPlaybackState: true, …}Object
-[Log] 🔍 [DEBUG] CHECKING CONDITIONS: – {hasPlaybackItem: true, isSpotifyAuthenticated: true, isWorkoutActive: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackItem: true, isSpotifyAuthenticated: true, isWorkoutActive: true, allConditionsMet: true}Object
-[Log] ✅ [DEBUG] CONDITIONS MET - Starting track logging... (index-Ckwi95sh.js, line 543)
-[Log] 🎵 📊 Starting FALLBACK Spotify analysis logging for: – "The Pretender" (index-Ckwi95sh.js, line 543)
-[Log] ⚠️ ELIMINATING ALL Spotify API calls - using only RapidAPI (index-Ckwi95sh.js, line 543)
-[Log] 🔍 Attempting to get audio features with Rapid Soundnet fallback... (index-Ckwi95sh.js, line 543)
-[Log] 🚀 Getting Rapid Soundnet enhanced analysis for workout logging... (index-Ckwi95sh.js, line 543)
-[Log] 🔍 Testing Secure Rapid Soundnet service availability: – true (index-Ckwi95sh.js, line 543)
-[Log] ✅ Using cached secure RapidAPI data for: – "The Pretender" (index-Ckwi95sh.js, line 382)
-[Log] 🌉 [SECURE BRIDGE] Triggering database logging for secure RapidAPI data (index-Ckwi95sh.js, line 382)
-[Warning] ⚠️ No analysis data available, creating minimal fallback for basic logging (index-Ckwi95sh.js, line 273)
-[Log] 🔧 Creating analysis data for: – "The Pretender" (index-Ckwi95sh.js, line 273)
-[Log] ⚠️ No Audio Features available, using minimal defaults (index-Ckwi95sh.js, line 273)
-[Log] ✅ Created minimal analysis data for basic logging (index-Ckwi95sh.js, line 273)
-[Log] 🎵 Starting track logging for: – "The Pretender" (index-Ckwi95sh.js, line 273)
-[Log] 📊 Analysis data available: – true (index-Ckwi95sh.js, line 273)
-[Log] 🔗 Session ID: – "b6c61065-227d-42a6-821f-484190f5b5e9" (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 0 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: 0, current_segment_loudness_max: -8}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: 0, current_segment_loudness_max: -8}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Track logging started with – 1000 – "ms interval" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [SECURE BRIDGE] Database logging triggered successfully (index-Ckwi95sh.js, line 382)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:13" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🎯 Raw Rapid Soundnet API result: – {key: "A", mode: "major", tempo: 173, …} (index-Ckwi95sh.js, line 543)
-{key: "A", mode: "major", tempo: 173, camelot: "11B", energy: 96, …}Object
-[Log] 🎯 🎵 GOT COMPREHENSIVE RAPID SOUNDNET DATA: – {camelot: "11B", energy: 96, danceability: 43, …} (index-Ckwi95sh.js, line 543)
-{camelot: "11B", energy: 96, danceability: 43, happiness: 37, acousticness: 50, …}Object
-[Log] ✅ Using RapidAPI audio features as fallback (index-Ckwi95sh.js, line 543)
-[Log] 🔥 [DEBUG] COMPREHENSIVE CONTEXT FOR LOGGING: – {trackName: "The Pretender", hasAudioFeatures: true, dataSource: "rapidapi", …} (index-Ckwi95sh.js, line 543)
-{trackName: "The Pretender", hasAudioFeatures: true, dataSource: "rapidapi", hasRapidSoundnetData: true, rapidSoundnetKeys: Array, …}Object
-[Log] 🚨 TRIGGERING ENHANCED SECTIONAL ANALYSIS - Creating section-based rows with different attribute values! 🚨 (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] RapidAPI metadata check: – {hasRapidSoundnetMetadata: true, hasRapidSoundnetData: true, rapidSoundnetMetadataKeys: ["dataSource", "fromCache", "fallbackType", …], …} (index-Ckwi95sh.js, line 543)
-{hasRapidSoundnetMetadata: true, hasRapidSoundnetData: true, rapidSoundnetMetadataKeys: ["dataSource", "fromCache", "fallbackType", "rapidSoundnetData"], rapidSoundnetDataKeys: Array}Object
-[Log] 🚨 [FORCED] Attempting enhanced sectional analysis... (index-Ckwi95sh.js, line 543)
-[Log] 🎯 Starting SECTIONAL ANALYSIS for workout: The Pretender by Foo Fighters (index-Ckwi95sh.js, line 543)
-[Log] 🚨 Using cached RapidAPI data for sectional analysis (avoiding fresh API calls) (index-Ckwi95sh.js, line 543)
-[Log] 🚨 Creating sectional analysis from cached RapidAPI data (avoiding 429 rate limits) (index-Ckwi95sh.js, line 273)
-[Log] ✅ Using cached RapidAPI data to generate sections: – {track: "The Pretender", hasTempo: true, hasLoudness: true, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", hasTempo: true, hasLoudness: true, hasEnergy: true}Object
-[Log] 🎯 Generated sectional analysis from cached data: – {sectionsCreated: 5, sectionsPreview: Array} (index-Ckwi95sh.js, line 273)
-{sectionsCreated: 5, sectionsPreview: Array}Object
-[Log] 🎯 Generating workout moments from analysis with – 5 – "sections" (index-Ckwi95sh.js, line 273)
-[Log] 🗄️ Starting enhanced database logging for: – "The Pretender" (index-Ckwi95sh.js, line 273)
-[Log] 🗄️ Processing sections for database logging: – 5 (index-Ckwi95sh.js, line 273)
-[Log] 🗄️ Created section entries: – 5 (index-Ckwi95sh.js, line 273)
-[Log] 🗄️ Logging section 0 (intro) at 0s (index-Ckwi95sh.js, line 273)
-[Log] 📝 DIRECT section database insert: – {section: "0: intro", tempo: 173, loudness: -8, …} (index-Ckwi95sh.js, line 273)
-{section: "0: intro", tempo: 173, loudness: -8, energy: 70.66666666666666, sectionIndicator: "Section 0: intro (0s-26.9s)"}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 43 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "b09983f6-0aee-4213-8f1f-9e82a4f042da", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "b09983f6-0aee-4213-8f1f-9e82a4f042da" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: invalid input syntax for type integer: "4.9" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "4.9" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:3601)
-[Error] 💥 Failed to log section entry: – Error: invalid input syntax for type integer: "4.9" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "4.9" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:35841)
-[Log] 🗄️ Logging section 1 (verse) at 26.900000000000002s (index-Ckwi95sh.js, line 273)
-[Log] 📝 DIRECT section database insert: – {section: "1: verse", tempo: 173, loudness: -6, …} (index-Ckwi95sh.js, line 273)
-{section: "1: verse", tempo: 173, loudness: -6, energy: 73.66666666666666, sectionIndicator: "Section 1: verse (26.900000000000002s-94.2s)"}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 43 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 0 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: 0, current_segment_loudness_max: -8}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: 0, current_segment_loudness_max: -8}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:14" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: invalid input syntax for type bigint: "26900.000000000004" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type bigint: "26900.000000000004" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:3601)
-[Error] 💥 Failed to log section entry: – Error: invalid input syntax for type bigint: "26900.000000000004" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type bigint: "26900.000000000004" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:35841)
-[Log] 🗄️ Logging section 2 (chorus) at 94.14999999999999s (index-Ckwi95sh.js, line 273)
-[Log] 📝 DIRECT section database insert: – {section: "2: chorus", tempo: 173, loudness: -4, …} (index-Ckwi95sh.js, line 273)
-{section: "2: chorus", tempo: 173, loudness: -4, energy: 76.66666666666666, sectionIndicator: "Section 2: chorus (94.14999999999999s-174.8s)"}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 43 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "20bb4cd3-7d4a-45bd-b2bd-92e3d7cb971d", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "20bb4cd3-7d4a-45bd-b2bd-92e3d7cb971d" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: invalid input syntax for type bigint: "94149.99999999999" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type bigint: "94149.99999999999" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:3601)
-[Error] 💥 Failed to log section entry: – Error: invalid input syntax for type bigint: "94149.99999999999" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type bigint: "94149.99999999999" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:35841)
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-BJIAWWvv.js, line 543)
 {hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-BJIAWWvv.js, line 543)
 {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:15" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 4658 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🗄️ Logging section 3 (verse) at 174.85s (index-Ckwi95sh.js, line 273)
-[Log] 📝 DIRECT section database insert: – {section: "3: verse", tempo: 173, loudness: -6, …} (index-Ckwi95sh.js, line 273)
-{section: "3: verse", tempo: 173, loudness: -6, energy: 73.66666666666666, sectionIndicator: "Section 3: verse (174.85s-242.1s)"}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 43 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "256b75ba-51b8-448c-a638-df93ad712bba", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "256b75ba-51b8-448c-a638-df93ad712bba" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: invalid input syntax for type integer: "6.5" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "6.5" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:3601)
-[Error] 💥 Failed to log section entry: – Error: invalid input syntax for type integer: "6.5" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "6.5" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:35841)
-[Log] 🗄️ Logging section 4 (outro) at 242.1s (index-Ckwi95sh.js, line 273)
-[Log] 📝 DIRECT section database insert: – {section: "4: outro", tempo: 173, loudness: -8, …} (index-Ckwi95sh.js, line 273)
-{section: "4: outro", tempo: 173, loudness: -8, energy: 70.66666666666666, sectionIndicator: "Section 4: outro (242.1s-269.0s)"}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 43 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:16" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 4658 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Error] Failed to load resource: the server responded with a status of 500 () (secure-database-logger, line 0)
-[Error] Secure database function call failed: – Error: invalid input syntax for type integer: "3.9" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "3.9" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:3601)
-[Error] 💥 Failed to log section entry: – Error: invalid input syntax for type integer: "3.9" — index-Ckwi95sh.js:273:3514
-Error: invalid input syntax for type integer: "3.9" — index-Ckwi95sh.js:273:3514
-	(anonymous function) (index-Ckwi95sh.js:273:35841)
-[Log] ✅ Enhanced database logging completed for: – "The Pretender" (index-Ckwi95sh.js, line 273)
-[Log] 🗄️ Logging track summary with sections count: – 5 (index-Ckwi95sh.js, line 273)
-[Log] 🎵 Starting track logging for: – "The Pretender (SUMMARY)" (index-Ckwi95sh.js, line 273)
-[Log] 📊 Analysis data available: – true (index-Ckwi95sh.js, line 273)
-[Log] 🔗 Session ID: – "b6c61065-227d-42a6-821f-484190f5b5e9" (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 4658 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Track logging started with – 1000 – "ms interval" (index-Ckwi95sh.js, line 273)
-[Error] 💥 Failed to log track summary: – TypeError: ct.stopTrackLogging is not a function. (In 'ct.stopTrackLogging()', 'ct.stopTrackLogging' is undefined) — index-Ckwi95sh.js:273:36897
-TypeError: ct.stopTrackLogging is not a function. (In 'ct.stopTrackLogging()', 'ct.stopTrackLogging' is undefined) — index-Ckwi95sh.js:273:36897
-	(anonymous function) (index-Ckwi95sh.js:273:36922)
-[Log] ✅ Enhanced sectional analysis completed from cached data - database should now have section-based rows! (index-Ckwi95sh.js, line 273)
-[Log] ✅ 🎵 Enhanced sectional analysis completed during workout: – {sectionsCreated: 5, expectedDatabaseRows: 6, sectionPreview: Array} (index-Ckwi95sh.js, line 543)
-{sectionsCreated: 5, expectedDatabaseRows: 6, sectionPreview: Array}Object
-[Log] ✅ 🚨 SECTIONAL ANALYSIS SUCCESS - Database should now have section-based rows! (index-Ckwi95sh.js, line 543)
-[Log] ✅ 🚀 Workout logging setup completed with sectional analysis priority (index-Ckwi95sh.js, line 543)
-[Log] ✅ Analysis logged successfully: – {logId: "3c3221f5-53af-4ea7-a59a-dc5fa6f70529", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "3c3221f5-53af-4ea7-a59a-dc5fa6f70529" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "8d7ae256-d2cf-4369-92cd-2d4e73ca9578", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "8d7ae256-d2cf-4369-92cd-2d4e73ca9578" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-BJIAWWvv.js, line 543)
 {hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-BJIAWWvv.js, line 543)
 {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:17" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:17" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 6654 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 6654 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Analysis logged successfully: – {logId: "283c999a-848e-49c6-87c8-3c197122a1b8", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "283c999a-848e-49c6-87c8-3c197122a1b8" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "17e4502e-b991-4156-809e-987900432bed", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "17e4502e-b991-4156-809e-987900432bed" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:18" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 6654 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 6654 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Analysis logged successfully: – {logId: "fb5e034f-29fb-4735-a14c-4c702002a23e", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "fb5e034f-29fb-4735-a14c-4c702002a23e" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "71289d0d-e376-46f8-8cab-aac7e9b98918", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "71289d0d-e376-46f8-8cab-aac7e9b98918" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-BJIAWWvv.js, line 543)
 {hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
+[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-BJIAWWvv.js, line 543)
+[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-BJIAWWvv.js, line 543)
 {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 8729 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:19" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 8729 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Analysis logged successfully: – {logId: "ec08ff5b-0642-4c61-8f1e-20da847145ad", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "ec08ff5b-0642-4c61-8f1e-20da847145ad" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "ee705a19-89f1-4e58-bbb1-d63d541b894f", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "ee705a19-89f1-4e58-bbb1-d63d541b894f" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:20" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 8729 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 8729 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Analysis logged successfully: – {logId: "9deca524-f027-418e-9bca-f6eba04186a2", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "9deca524-f027-418e-9bca-f6eba04186a2" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:21" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "8162d98e-d9e7-46a1-aba7-cc3a78e39468", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "8162d98e-d9e7-46a1-aba7-cc3a78e39468" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:21" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 10839 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] ✅ Analysis logged successfully: – {logId: "528edbd8-1240-4883-9c11-497f8ec9edb6", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "528edbd8-1240-4883-9c11-497f8ec9edb6" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:22" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 10839 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 10839 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:23" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "885c6605-cb0e-4ccd-834d-15be50230568", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "885c6605-cb0e-4ccd-834d-15be50230568" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "2e95ad90-3bd2-4710-8f49-7c2a24366eee", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "2e95ad90-3bd2-4710-8f49-7c2a24366eee" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:24" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:25" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 12933 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 12933 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:27" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "2adba2ee-54a6-4ea1-a631-3f92192d60f5", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "2adba2ee-54a6-4ea1-a631-3f92192d60f5" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "a875c940-4bbc-4f9b-b83b-6d4029b35f61", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "a875c940-4bbc-4f9b-b83b-6d4029b35f61" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:28" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:29" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:31" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 17052 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 17052 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:32" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "e01aeb4c-4089-4581-8d90-6fa34d6c93c4", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "e01aeb4c-4089-4581-8d90-6fa34d6c93c4" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "6dadb72b-e7d0-4d5e-a7ff-38e5499a5318", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "6dadb72b-e7d0-4d5e-a7ff-38e5499a5318" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:33" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:34" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:36" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 21945 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 21945 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:37" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "abb98de1-b076-464f-9934-98f4e5c0b744", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "abb98de1-b076-464f-9934-98f4e5c0b744" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "99a150f8-2ca8-4678-a51b-0331a6209ab5", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "99a150f8-2ca8-4678-a51b-0331a6209ab5" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 26691 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 26691 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:38" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "a4dbc171-578c-46e8-b4fd-200264acac63", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "a4dbc171-578c-46e8-b4fd-200264acac63" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "8378d593-bbf5-4d95-901e-bd92f0dae7bd", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "8378d593-bbf5-4d95-901e-bd92f0dae7bd" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 26691 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 26691 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:39" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "e5b2cf9a-0497-4729-a1c2-2a64022070f9", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "e5b2cf9a-0497-4729-a1c2-2a64022070f9" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "e85d2fd4-45d4-4acc-b05c-f080ca79f745", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "e85d2fd4-45d4-4acc-b05c-f080ca79f745" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 28664 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 28664 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:40" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
-[Log] ✅ Analysis logged successfully: – {logId: "84b84a21-49f5-4a8f-a8ac-541603b833c7", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "84b84a21-49f5-4a8f-a8ac-541603b833c7" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] ✅ Analysis logged successfully: – {logId: "b5deac2c-0366-4d13-ac36-a9b725871f20", originalFields: 24, filteredFields: 24} (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] Successfully logged via secure service: – "b5deac2c-0366-4d13-ac36-a9b725871f20" (index-Ckwi95sh.js, line 273)
-[Log] ✅ [DEBUG] RapidAPI data properly mapped and inserted (index-Ckwi95sh.js, line 273)
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender (SUMMARY)", hasRapidSoundnetData: true, dataSource: "enhanced-rapidapi-summary"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender (SUMMARY)" – "at position" – 28664 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender (SUMMARY)", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔥 [DEBUG] logCurrentState called with: – {hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 273)
-{hasSessionId: true, hasAnalysisData: true, trackName: "The Pretender", hasRapidSoundnetData: true, dataSource: "rapidapi"}Object
-[Log] 📝 Logging analysis entry for: – "The Pretender" – "at position" – 28664 – "ms" (index-Ckwi95sh.js, line 273)
-[Log] 📊 CAPTURED ATTRIBUTES: – {track: "The Pretender", artist: "Foo Fighters", tempo: undefined, …} (index-Ckwi95sh.js, line 273)
-{track: "The Pretender", artist: "Foo Fighters", tempo: undefined, key: undefined, loudness_db: undefined, …}Object
-[Log] 🗄️ DATABASE LOG ENTRY: – {audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}} (index-Ckwi95sh.js, line 273)
-{audioFeaturesInLogEntry: Object, advancedAnalysisInLogEntry: {current_section_start: 0, current_beat_start: undefined, current_segment_loudness_max: undefined}}Object
-[Log] 🔥 [DEBUG] About to insert log entry with RapidAPI data: – {hasRapidSoundnetData: true, rapidApiFields: Object} (index-Ckwi95sh.js, line 273)
-{hasRapidSoundnetData: true, rapidApiFields: Object}Object
-[Log] 📊 Logging analysis data server-side... (index-Ckwi95sh.js, line 273)
-[Log] 📝 Original payload keys: – 10 (index-Ckwi95sh.js, line 273)
-[Log] 🔀 Mapping RapidAPI data to database columns... (index-Ckwi95sh.js, line 273)
-[Log] ✅ RapidAPI data mapped to database columns: – {soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, …} (index-Ckwi95sh.js, line 273)
-{soundnet_tempo: "173", rs_key: "A", rs_energy_raw: 96, rs_camelot: "11B"}Object
-[Log] 🔍 [DEBUG] Spotify polling result: – {hasState: true, hasItem: true, trackName: "The Pretender", …} (index-Ckwi95sh.js, line 543)
-{hasState: true, hasItem: true, trackName: "The Pretender", isPlaying: true, isWorkoutActive: false, …}Object
-[Log] 🔧 [FIX] Music playing but workout state is false - correcting this! (index-Ckwi95sh.js, line 543)
-[Log] 🔍 [DEBUG] CURRENT CONDITIONS: – {isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, …} (index-Ckwi95sh.js, line 543)
-{isWorkoutActive: true, isSpotifyAuthenticated: true, bothConditionsMet: true, currentTrack: "The Pretender"}Object
-[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-Ckwi95sh.js, line 543)
-[Log] 🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time: – "00:06:41" (index-Ckwi95sh.js, line 543)
-[Log] 🔍 PLAYBACK STATE CHECK: – {hasPlaybackState: true, hasProgressMs: true, hasItem: true, …} (index-Ckwi95sh.js, line 543)
-{hasPlaybackState: true, hasProgressMs: true, hasItem: true, currentTrack: "The Pretender"}Object
-[Log] 🔍 TRACK ID COMPARISON: – {currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, …} (index-Ckwi95sh.js, line 543)
-{currentTrackId: "7x8dCjCr0x6x2lXKujYD34", playbackStateId: "7x8dCjCr0x6x2lXKujYD34", areEqual: true, trackName: "The Pretender", comparison: "\"7x8dCjCr0x6x2lXKujYD34\" !== \"7x8dCjCr0x6x2lXKujYD34\"", …}Object
+[Log] 🎯 [TRIGGER] Both conditions met - triggering track logging NOW! (index-BJIAWWvv.js, line 543)

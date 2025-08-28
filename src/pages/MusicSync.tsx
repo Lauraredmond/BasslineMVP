@@ -1377,8 +1377,8 @@ const MusicSync = () => {
                   
                   {/* 🎵 Real-time Section Display - Shows current section (intro, verse, chorus, etc.) */}
                   <RealtimeSectionDisplay
-                    currentTrack={currentTrack}
-                    currentPositionMs={spotifyPlayback?.position}
+                    currentTrack={playbackState?.item}
+                    currentPositionMs={playbackState?.progress_ms}
                     isPlaying={isPlaying}
                     className="mb-4"
                   />
