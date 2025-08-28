@@ -2,14 +2,26 @@
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+  node_bundler = "esbuild"
+
+[functions]
+  external_node_modules = ["@supabase/supabase-js"]
+  node_version = "18"
 
 # Configure secrets scanning to allow safe frontend environment variables
 [build.environment]
   SECRETS_SCAN_OMIT_KEYS = "VITE_SUPABASE_URL,VITE_SPOTIFY_CLIENT_ID,VITE_SPOTIFY_REDIRECT_URI_LOCAL,VITE_SPOTIFY_REDIRECT_URI_PROD,VITE_SUPABASE_ANON_KEY,VITE_RAPIDAPI_KEY"
 
-# SPA routing - redirect everything except function calls to index.html
+# Function routing - ensure functions are accessible
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# SPA routing - redirect everything except function calls and assets to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = false
+  conditions = {Role = ["!Function"]}
