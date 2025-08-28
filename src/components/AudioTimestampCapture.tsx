@@ -11,11 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface TimestampEvent {
   id: string;
   timestamp: number;
-  eventType: 'section_change' | 'bar_change' | 'beat' | 'custom';
+  eventType: 'section_change' | 'custom';
   sectionType?: string;
   sectionNumber?: number;
-  barNumber?: number;
-  beatNumber?: number;
   energyLevel?: number;
   intensityLevel?: number;
   notes?: string;
@@ -43,12 +41,10 @@ export const AudioTimestampCapture: React.FC = () => {
   const [trackName, setTrackName] = useState('The Pretender');
   const [artistName, setArtistName] = useState('Foo Fighters');
   
-  // Event capture state
-  const [eventType, setEventType] = useState<'section_change' | 'bar_change' | 'beat' | 'custom'>('section_change');
+  // Event capture state - Focus only on section changes (bar changes are too granular for manual capture)
+  const [eventType, setEventType] = useState<'section_change' | 'custom'>('section_change');
   const [sectionType, setSectionType] = useState('');
   const [sectionNumber, setSectionNumber] = useState(1);
-  const [barNumber, setBarNumber] = useState(1);
-  const [beatNumber, setBeatNumber] = useState(1);
   const [energyLevel, setEnergyLevel] = useState(50);
   const [intensityLevel, setIntensityLevel] = useState(50);
   const [notes, setNotes] = useState('');
@@ -146,20 +142,35 @@ export const AudioTimestampCapture: React.FC = () => {
 
   // Stop recording
   const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
+    console.log('🛑 Stopping recording...');
+    
+    try {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        console.log('📹 MediaRecorder stopped');
+      }
+      
+      if (audioStream) {
+        audioStream.getTracks().forEach(track => {
+          track.stop();
+          console.log('🎤 Audio track stopped');
+        });
+        setAudioStream(null);
+      }
+      
+      setIsRecording(false);
+      setRecordingStartTime(null);
+      setCurrentTime(0);
+      
+      console.log('✅ Recording stopped successfully');
+    } catch (error) {
+      console.error('❌ Error stopping recording:', error);
+      // Force stop the recording state even if there's an error
+      setIsRecording(false);
+      setRecordingStartTime(null);
+      setCurrentTime(0);
+      setError('Recording stopped with minor errors');
     }
-    
-    if (audioStream) {
-      audioStream.getTracks().forEach(track => track.stop());
-      setAudioStream(null);
-    }
-    
-    setIsRecording(false);
-    setRecordingStartTime(null);
-    setCurrentTime(0);
-    
-    console.log('🛑 Recording stopped');
   };
 
   // Capture timestamp event
@@ -185,9 +196,6 @@ export const AudioTimestampCapture: React.FC = () => {
       newEvent.sectionNumber = sectionNumber;
       newEvent.energyLevel = energyLevel;
       newEvent.intensityLevel = intensityLevel;
-    } else if (eventType === 'bar_change') {
-      newEvent.barNumber = barNumber;
-      newEvent.beatNumber = beatNumber;
     }
     
     // Update session
@@ -201,8 +209,6 @@ export const AudioTimestampCapture: React.FC = () => {
     if (eventType === 'section_change' && sectionType) {
       // Keep same section type, increment number
       setSectionNumber(prev => prev + 1);
-    } else if (eventType === 'bar_change') {
-      setBarNumber(prev => prev + 1);
     }
     
     // Clear notes
@@ -235,8 +241,6 @@ export const AudioTimestampCapture: React.FC = () => {
           event_type: event.eventType,
           section_type: event.sectionType,
           section_number: event.sectionNumber,
-          bar_number: event.barNumber,
-          beat_number: event.beatNumber,
           energy_level: event.energyLevel,
           intensity_level: event.intensityLevel,
           notes: event.notes,
@@ -245,6 +249,8 @@ export const AudioTimestampCapture: React.FC = () => {
         }))
       };
       
+      console.log('🔍 Session data to save:', JSON.stringify(sessionData, null, 2));
+      
       // Save to database via API
       const response = await fetch('/netlify/functions/save-audio-timestamps', {
         method: 'POST',
@@ -252,12 +258,17 @@ export const AudioTimestampCapture: React.FC = () => {
         body: JSON.stringify(sessionData)
       });
       
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
+      
       if (response.ok) {
         const result = await response.json();
         console.log('✅ Session saved successfully:', result);
-        alert(`Session saved! ${sessionData.events.length} timestamps recorded.`);
+        alert(`✅ Session saved! ${sessionData.events.length} timestamps recorded.`);
       } else {
-        throw new Error(`HTTP ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Server error response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown server error'}`);
       }
       
     } catch (err) {
@@ -339,11 +350,9 @@ export const AudioTimestampCapture: React.FC = () => {
             {/* Timestamp Capture */}
             {isRecording && (
               <Tabs value={eventType} onValueChange={(value) => setEventType(value as any)}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="section_change">Section Change</TabsTrigger>
-                  <TabsTrigger value="bar_change">Bar Change</TabsTrigger>
-                  <TabsTrigger value="beat">Beat</TabsTrigger>
-                  <TabsTrigger value="custom">Custom</TabsTrigger>
+                  <TabsTrigger value="custom">Custom Event</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="section_change" className="space-y-4">
@@ -387,36 +396,6 @@ export const AudioTimestampCapture: React.FC = () => {
                       <span className="text-sm text-gray-600">{energyLevel}</span>
                     </div>
                   </div>
-                </TabsContent>
-
-                <TabsContent value="bar_change" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Bar Number</Label>
-                      <Input
-                        type="number"
-                        value={barNumber}
-                        onChange={(e) => setBarNumber(Number(e.target.value))}
-                        min="1"
-                      />
-                    </div>
-                    <div>
-                      <Label>Beat Number</Label>
-                      <Input
-                        type="number"
-                        value={beatNumber}
-                        onChange={(e) => setBeatNumber(Number(e.target.value))}
-                        min="1"
-                        max="4"
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="beat" className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Click "Capture Timestamp" on each beat to record beat timing.
-                  </p>
                 </TabsContent>
 
                 <TabsContent value="custom" className="space-y-4">
