@@ -77,6 +77,11 @@ exports.handler = async (event, context) => {
         rs_loudness,
         soundnet_energy,
         soundnet_danceability,
+        current_section_start,
+        current_section_duration,
+        current_section_loudness,
+        current_section_tempo,
+        spotify_tempo,
         created_at
       `)
       .eq('track_name', trackName)
@@ -116,18 +121,20 @@ exports.handler = async (event, context) => {
 
     // Transform the data into the format expected by the component
     const sections = data.map(row => {
-      const startTimeSeconds = (row.playback_position_ms || 0) / 1000;
+      // Use Spotify's section timing if available, otherwise use playback position
+      const startTimeSeconds = row.current_section_start || (row.playback_position_ms || 0) / 1000;
+      const durationSeconds = row.current_section_duration || 60;
       
       return {
         sectionIndex: row.section_index || 0,
         sectionType: row.section_type || 'unknown',
         sectionStartTime: startTimeSeconds,
-        sectionDuration: 60, // Default duration - will be calculated properly
-        sectionEndTime: startTimeSeconds + 60,
-        sectionIndicator: row.section_indicator || `Section ${row.section_index}: ${row.section_type}`,
+        sectionDuration: durationSeconds,
+        sectionEndTime: startTimeSeconds + durationSeconds,
+        sectionIndicator: row.section_indicator || `Section ${row.section_index}: ${row.section_type} (${Math.round(startTimeSeconds)}s-${Math.round(startTimeSeconds + durationSeconds)}s)`,
         energy: row.rs_energy_raw || row.soundnet_energy || 50,
-        tempo: row.soundnet_tempo || 120,
-        loudness: row.rs_loudness ? parseFloat(row.rs_loudness.replace(' dB', '')) : -6
+        tempo: row.current_section_tempo || row.spotify_tempo || row.soundnet_tempo || 120,
+        loudness: row.current_section_loudness || (row.rs_loudness ? parseFloat(row.rs_loudness.replace(' dB', '')) : -6)
       };
     });
 

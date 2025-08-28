@@ -70,6 +70,8 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           setSections(validSections);
           setError(null);
           return;
+        } else {
+          console.log('⚠️ API returned empty sections - database likely missing section_type data');
         }
       }
 
@@ -90,18 +92,19 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     }
   };
 
-  // Create estimated sections as fallback
+  // Create estimated sections as fallback - IMPROVED TIMING
   const createEstimatedSections = (trackName: string): SectionData[] => {
     const estimatedDuration = 240; // 4 minutes default
     
+    // MORE REALISTIC SECTION TIMING - based on typical song structure
     return [
       {
         sectionIndex: 0,
         sectionType: 'intro',
         sectionStartTime: 0,
-        sectionDuration: 27,
-        sectionEndTime: 27,
-        sectionIndicator: 'Section 0: intro (0s-27s)',
+        sectionDuration: 15, // Shorter intro
+        sectionEndTime: 15,
+        sectionIndicator: 'Section 0: intro (0s-15s)',
         energy: 70,
         tempo: 120,
         loudness: -8
@@ -109,10 +112,10 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       {
         sectionIndex: 1,
         sectionType: 'verse',
-        sectionStartTime: 27,
-        sectionDuration: 67,
-        sectionEndTime: 94,
-        sectionIndicator: 'Section 1: verse (27s-94s)',
+        sectionStartTime: 15,
+        sectionDuration: 40, // Typical verse length
+        sectionEndTime: 55,
+        sectionIndicator: 'Section 1: verse (15s-55s)',
         energy: 75,
         tempo: 120,
         loudness: -6
@@ -120,10 +123,10 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       {
         sectionIndex: 2,
         sectionType: 'chorus',
-        sectionStartTime: 94,
-        sectionDuration: 81,
-        sectionEndTime: 175,
-        sectionIndicator: 'Section 2: chorus (94s-175s)',
+        sectionStartTime: 55,
+        sectionDuration: 35, // Chorus length
+        sectionEndTime: 90,
+        sectionIndicator: 'Section 2: chorus (55s-90s)',
         energy: 95,
         tempo: 120,
         loudness: -4
@@ -131,22 +134,55 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       {
         sectionIndex: 3,
         sectionType: 'verse',
-        sectionStartTime: 175,
-        sectionDuration: 67,
-        sectionEndTime: 242,
-        sectionIndicator: 'Section 3: verse (175s-242s)',
+        sectionStartTime: 90,
+        sectionDuration: 40, // Second verse
+        sectionEndTime: 130,
+        sectionIndicator: 'Section 3: verse (90s-130s)',
         energy: 75,
         tempo: 120,
         loudness: -6
       },
       {
         sectionIndex: 4,
+        sectionType: 'chorus',
+        sectionStartTime: 130,
+        sectionDuration: 35, // Second chorus
+        sectionEndTime: 165,
+        sectionIndicator: 'Section 4: chorus (130s-165s)',
+        energy: 95,
+        tempo: 120,
+        loudness: -4
+      },
+      {
+        sectionIndex: 5,
+        sectionType: 'bridge',
+        sectionStartTime: 165,
+        sectionDuration: 25, // Bridge section
+        sectionEndTime: 190,
+        sectionIndicator: 'Section 5: bridge (165s-190s)',
+        energy: 85,
+        tempo: 120,
+        loudness: -5
+      },
+      {
+        sectionIndex: 6,
+        sectionType: 'chorus',
+        sectionStartTime: 190,
+        sectionDuration: 35, // Final chorus
+        sectionEndTime: 225,
+        sectionIndicator: 'Section 6: chorus (190s-225s)',
+        energy: 100,
+        tempo: 120,
+        loudness: -3
+      },
+      {
+        sectionIndex: 7,
         sectionType: 'outro',
-        sectionStartTime: 242,
-        sectionDuration: 27,
-        sectionEndTime: 269,
-        sectionIndicator: 'Section 4: outro (242s-269s)',
-        energy: 70,
+        sectionStartTime: 225,
+        sectionDuration: 15, // Outro
+        sectionEndTime: 240,
+        sectionIndicator: 'Section 7: outro (225s-240s)',
+        energy: 60,
         tempo: 120,
         loudness: -8
       }
