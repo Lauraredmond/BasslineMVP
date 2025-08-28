@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { algorithmicSectionAnalyzer } from '@/lib/algorithmic-section-analyzer';
+import type { PredictedSection, SongMetadata } from '@/lib/algorithmic-section-analyzer';
 
 interface SectionData {
   sectionIndex: number;
@@ -10,23 +12,43 @@ interface SectionData {
   energy: number;
   tempo: number;
   loudness: number;
+  confidence?: number; // For algorithmic predictions
+  intensity?: number;  // Workout intensity
+  narrative?: string;  // Workout instruction
 }
 
 interface RealtimeSectionDisplayProps {
   currentTrack?: {
     name: string;
     artists: Array<{ name: string }>;
+    duration_ms?: number; // Track duration for algorithmic analysis
   };
   currentPositionMs?: number;
   isPlaying?: boolean;
   className?: string;
+  spotifyMetadata?: {
+    tempo?: number;
+    energy?: number;
+    danceability?: number;
+    key?: string;
+    mode?: string;
+  };
+  rapidApiData?: {
+    tempo?: number;
+    energy?: number;
+    danceability?: number;
+    key?: string;
+    mode?: string;
+  };
 }
 
 export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
   currentTrack,
   currentPositionMs = 0,
   isPlaying = false,
-  className = ""
+  className = "",
+  spotifyMetadata,
+  rapidApiData
 }) => {
   const [currentSection, setCurrentSection] = useState<SectionData | null>(null);
   const [sections, setSections] = useState<SectionData[]>([]);
@@ -81,20 +103,199 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         }
       }
 
-      console.log('⚠️ No sectional data found, using estimated sections');
-      // Fallback: Create estimated sections if no database data
-      const estimatedSections = createEstimatedSections(trackName);
-      setSections(estimatedSections);
+      console.log('⚠️ No sectional data found, using algorithmic analysis');
+      // Enhanced Fallback: Use algorithmic section analyzer
+      const algorithmicSections = await createAlgorithmicSections(trackName, artistName);
+      setSections(algorithmicSections);
       setError(null);
 
     } catch (error) {
       console.error('❌ Error fetching sectional data:', error);
       setError(`Failed to fetch data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      // Fallback to estimated sections
-      const estimatedSections = createEstimatedSections(trackName || 'Unknown');
-      setSections(estimatedSections);
+      // Fallback to algorithmic sections
+      const algorithmicSections = await createAlgorithmicSections(trackName || 'Unknown', artistName || 'Unknown');
+      setSections(algorithmicSections);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Create algorithmic sections using metadata analysis
+  const createAlgorithmicSections = async (trackName: string, artistName: string): Promise<SectionData[]> => {
+    console.log('🧠 Creating algorithmic sections for:', trackName, 'by', artistName);
+    
+    try {
+      // Gather all available metadata
+      const metadata: SongMetadata = {
+        duration: 240, // Default duration, will be overridden if available
+        name: trackName,
+        artist: artistName
+      };
+
+      // Use track duration if available
+      if (currentTrack?.duration_ms) {
+        metadata.duration = currentTrack.duration_ms / 1000;
+      }
+
+      // Use Spotify metadata if available
+      if (spotifyMetadata) {
+        metadata.tempo = spotifyMetadata.tempo;
+        metadata.energy = spotifyMetadata.energy;
+        metadata.danceability = spotifyMetadata.danceability;
+        metadata.key = spotifyMetadata.key;
+        metadata.mode = spotifyMetadata.mode;
+      }
+
+      // Use RapidAPI data if available (may override Spotify data)
+      if (rapidApiData) {
+        metadata.tempo = rapidApiData.tempo || metadata.tempo;
+        metadata.energy = rapidApiData.energy || metadata.energy;
+        metadata.danceability = rapidApiData.danceability || metadata.danceability;
+        metadata.key = rapidApiData.key || metadata.key;
+        metadata.mode = rapidApiData.mode || metadata.mode;
+      }
+
+      // Infer genre from artist name if possible
+      metadata.genres = inferGenreFromArtist(artistName);
+
+      console.log('🎯 Using metadata for algorithmic analysis:', metadata);
+
+      // Generate algorithmic sections
+      const predictedSections = algorithmicSectionAnalyzer.analyzeSongStructure(metadata);
+      
+      // Convert PredictedSection to SectionData format
+      const algorithmicSections: SectionData[] = predictedSections.map((section, index) => ({
+        sectionIndex: index,
+        sectionType: section.sectionType,
+        sectionStartTime: section.sectionStartTime,
+        sectionDuration: section.sectionDuration,
+        sectionEndTime: section.sectionEndTime,
+        sectionIndicator: `Section ${index}: ${section.sectionType} (${Math.round(section.sectionStartTime)}s-${Math.round(section.sectionEndTime)}s)`,
+        energy: Math.round((metadata.energy || 75) * (section.intensity / 100)),
+        tempo: Math.round(metadata.tempo || 120),
+        loudness: -12 + (section.intensity / 10), // Convert intensity to loudness estimate
+        confidence: section.confidence,
+        intensity: section.intensity,
+        narrative: section.narrative
+      }));
+
+      console.log('✅ Generated algorithmic sections:', algorithmicSections.length, 'sections');
+      console.log('🎵 Algorithmic sections preview:', algorithmicSections.slice(0, 3).map(s => ({
+        type: s.sectionType,
+        start: Math.round(s.sectionStartTime),
+        duration: Math.round(s.sectionDuration),
+        intensity: s.intensity
+      })));
+
+      // Write algorithmic sections to database for persistence and future use
+      await writeAlgorithmicSectionsToDatabase(trackName, artistName, algorithmicSections, metadata);
+
+      return algorithmicSections;
+      
+    } catch (error) {
+      console.error('❌ Error creating algorithmic sections:', error);
+      console.log('⚠️ Falling back to basic estimated sections');
+      return createEstimatedSections(trackName);
+    }
+  };
+
+  // Simple genre inference from artist name (can be enhanced)
+  const inferGenreFromArtist = (artistName: string): string[] => {
+    const artist = artistName.toLowerCase();
+    
+    // Electronic/EDM artists
+    if (artist.includes('deadmau5') || artist.includes('skrillex') || artist.includes('calvin harris') || 
+        artist.includes('tiësto') || artist.includes('david guetta') || artist.includes('diplo')) {
+      return ['electronic', 'edm'];
+    }
+    
+    // Rock artists
+    if (artist.includes('foo fighters') || artist.includes('metallica') || artist.includes('red hot chili') ||
+        artist.includes('pearl jam') || artist.includes('nirvana') || artist.includes('green day')) {
+      return ['rock', 'alternative rock'];
+    }
+    
+    // Hip-hop artists
+    if (artist.includes('drake') || artist.includes('kendrick') || artist.includes('kanye') ||
+        artist.includes('eminem') || artist.includes('jay-z') || artist.includes('nas')) {
+      return ['hip-hop', 'rap'];
+    }
+    
+    // Pop artists
+    if (artist.includes('taylor swift') || artist.includes('ariana grande') || artist.includes('ed sheeran') ||
+        artist.includes('justin bieber') || artist.includes('billie eilish')) {
+      return ['pop'];
+    }
+    
+    return []; // Let the analyzer use default pattern
+  };
+
+  // Write algorithmic sections to database for persistence
+  const writeAlgorithmicSectionsToDatabase = async (
+    trackName: string, 
+    artistName: string, 
+    sections: SectionData[], 
+    metadata: SongMetadata
+  ): Promise<void> => {
+    try {
+      console.log('💾 Writing algorithmic sections to database...');
+
+      // Prepare section data for database storage
+      const sectionEntries = sections.map((section, index) => ({
+        track_name: trackName,
+        artist_name: artistName,
+        analysis_source: 'algorithmic_prediction',
+        section_type: section.sectionType,
+        section_index: index,
+        section_start_time: section.sectionStartTime,
+        section_duration: section.sectionDuration,
+        section_end_time: section.sectionEndTime,
+        section_indicator: section.sectionIndicator,
+        tempo: section.tempo,
+        energy: section.energy,
+        loudness: section.loudness,
+        confidence_score: section.confidence || 0.8,
+        intensity_level: section.intensity || 75,
+        workout_narrative: section.narrative,
+        prediction_metadata: JSON.stringify({
+          algorithm_version: '1.0',
+          genre_pattern_used: metadata.genres?.[0] || 'default',
+          source_tempo: metadata.tempo,
+          source_energy: metadata.energy,
+          source_danceability: metadata.danceability,
+          track_duration: metadata.duration
+        }),
+        created_at: new Date().toISOString(),
+        playback_position_ms: 0 // Prediction, not live playback
+      }));
+
+      // Write to database via API
+      const response = await fetch('/netlify/functions/store-algorithmic-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trackName,
+          artistName,
+          sections: sectionEntries,
+          metadata: {
+            total_sections: sections.length,
+            algorithm_version: '1.0',
+            prediction_confidence: sections.reduce((acc, s) => acc + (s.confidence || 0.8), 0) / sections.length
+          }
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Successfully wrote', sections.length, 'algorithmic sections to database');
+        console.log('📊 Database result:', result);
+      } else {
+        console.warn('⚠️ Failed to write algorithmic sections to database:', response.status);
+      }
+
+    } catch (error) {
+      console.error('❌ Error writing algorithmic sections to database:', error);
+      // Don't throw - this shouldn't block the workout experience
     }
   };
 

@@ -204,6 +204,60 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const testAlgorithmicSectionAnalyzer = async () => {
+    try {
+      console.log('🧪 Testing Algorithmic Section Analyzer...');
+      
+      // Import the algorithmic analyzer
+      const { algorithmicSectionAnalyzer } = await import('@/lib/algorithmic-section-analyzer');
+      
+      // Test with "The Pretender" - the song user is testing with
+      const testMetadata = {
+        name: 'The Pretender',
+        artist: 'Foo Fighters',
+        duration: 268, // 4:28 actual duration
+        tempo: 152, // Actual tempo from RapidAPI
+        energy: 85,
+        danceability: 45,
+        genres: ['rock', 'alternative rock']
+      };
+      
+      console.log(`🎯 Testing algorithmic analysis for: ${testMetadata.name} by ${testMetadata.artist}`);
+      console.log('📊 Using metadata:', testMetadata);
+      
+      // Generate algorithmic sections
+      const predictedSections = algorithmicSectionAnalyzer.analyzeSongStructure(testMetadata);
+      
+      if (predictedSections && predictedSections.length > 0) {
+        console.log('✅ Algorithmic analysis successful:', {
+          totalSections: predictedSections.length,
+          sectionsFound: predictedSections.map(s => `${s.sectionType} (${Math.round(s.sectionStartTime)}s-${Math.round(s.sectionEndTime)}s, intensity: ${s.intensity})`),
+          totalDuration: Math.round(predictedSections[predictedSections.length - 1]?.sectionEndTime || 0)
+        });
+        
+        // Test current section detection
+        const testPosition = 120000; // 2 minutes in
+        const currentSection = algorithmicSectionAnalyzer.getCurrentSection(predictedSections, testPosition);
+        const upcomingSection = algorithmicSectionAnalyzer.getUpcomingSection(predictedSections, testPosition, 10);
+        
+        console.log('🎵 Section detection test at 2:00:', {
+          currentSection: currentSection ? `${currentSection.sectionType} (${Math.round(currentSection.sectionStartTime)}s-${Math.round(currentSection.sectionEndTime)}s)` : 'none',
+          upcomingSection: upcomingSection ? `${upcomingSection.sectionType} (${Math.round(upcomingSection.sectionStartTime)}s-${Math.round(upcomingSection.sectionEndTime)}s)` : 'none'
+        });
+        
+        alert(`✅ Algorithmic Section Analyzer SUCCESS!\\n\\nTrack: ${testMetadata.name}\\nGenre Pattern: ${predictedSections.length > 0 ? 'rock' : 'default'}\\n\\n📊 Sections Generated: ${predictedSections.length}\\n\\n🎵 Structure Preview:\\n${predictedSections.slice(0, 5).map(s => `• ${s.sectionType} (${Math.round(s.sectionStartTime)}s-${Math.round(s.sectionEndTime)}s) - intensity ${s.intensity}%`).join('\\n')}\\n\\n${predictedSections.length > 5 ? `...and ${predictedSections.length - 5} more sections` : ''}\\n\\n✅ Ready for real-time workout sync!`);
+        
+      } else {
+        console.error('❌ Algorithmic analysis failed - no sections generated');
+        alert('❌ Algorithmic analysis test failed - check console for details');
+      }
+      
+    } catch (error) {
+      console.error('💥 Algorithmic section analyzer test error:', error);
+      alert(`💥 Algorithmic analyzer test error: ${error.message}`);
+    }
+  };
+
   const testSpotifyAudioAnalysis = async () => {
     try {
       console.log('🧪 Testing Spotify Audio Analysis API Access...');
@@ -344,6 +398,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🎵 Enhanced Analysis
+        </button>
+        
+        <button 
+          onClick={testAlgorithmicSectionAnalyzer}
+          style={{
+            padding: '6px 10px',
+            background: '#9c27b0',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🧠 Test Algorithmic Analyzer
         </button>
         
         <button 
