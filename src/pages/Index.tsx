@@ -67,6 +67,13 @@ const Index = () => {
           >
             No plan? Take me to format selection
           </Button>
+          
+          <Button 
+            onClick={() => navigate('/audio-timestamping')}
+            className="w-full h-14 text-lg bg-burgundy-dark shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-maroon border border-cream/30"
+          >
+            🎤 Audio Timestamping Tool
+          </Button>
         </div>
 
         {/* Database Test Component */}
