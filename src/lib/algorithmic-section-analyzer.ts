@@ -237,15 +237,24 @@ class AlgorithmicSectionAnalyzer {
   private adjustPatternForTempo(pattern: GenrePattern, tempo?: number): GenrePattern {
     if (!tempo) return pattern;
 
-    // Tempo-based section duration adjustments
+    // More sophisticated tempo-based section duration adjustments
     let tempoMultiplier = 1.0;
     
-    if (tempo < 90) {
-      tempoMultiplier = 1.2; // Slower songs tend to have longer sections
+    if (tempo < 80) {
+      tempoMultiplier = 1.3; // Very slow songs (ballads)
+    } else if (tempo < 100) {
+      tempoMultiplier = 1.15; // Slow songs 
+    } else if (tempo > 160) {
+      tempoMultiplier = 0.8; // Very fast songs (punk, speed metal)
     } else if (tempo > 140) {
-      tempoMultiplier = 0.85; // Faster songs tend to have shorter sections
+      tempoMultiplier = 0.9; // Fast songs (most rock, electronic)
     } else if (tempo > 120) {
-      tempoMultiplier = 0.95;
+      tempoMultiplier = 0.95; // Moderate-fast songs
+    }
+    
+    // Special case for rock songs with high tempo (like The Pretender at 152 BPM)
+    if (tempo > 145 && pattern.name === 'rock') {
+      tempoMultiplier = 0.88; // Rock songs at this tempo tend to have shorter, punchier sections
     }
 
     console.log('🎵 Applying tempo adjustment:', {

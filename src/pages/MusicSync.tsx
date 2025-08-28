@@ -1381,7 +1381,58 @@ const MusicSync = () => {
                     currentPositionMs={playbackState?.progress_ms}
                     isPlaying={isPlaying}
                     className="mb-4"
+                    spotifyMetadata={{
+                      tempo: playbackState?.item?.tempo,
+                      energy: playbackState?.item?.energy,
+                      danceability: playbackState?.item?.danceability,
+                      key: playbackState?.item?.key,
+                      mode: playbackState?.item?.mode
+                    }}
+                    rapidApiData={currentTrackData ? {
+                      tempo: currentTrackData.tempo,
+                      energy: currentTrackData.energy,
+                      danceability: currentTrackData.danceability,
+                      key: currentTrackData.key,
+                      mode: currentTrackData.mode
+                    } : undefined}
                   />
+                  
+                  {/* 🔍 API Data Debug Panel - Only show when ?debug=true */}
+                  {new URLSearchParams(window.location.search).get('debug') === 'true' && (
+                    <div className="mb-4 p-3 bg-gray-900/50 border border-gray-600 rounded-lg text-xs">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="font-bold text-blue-400 mb-2">🎵 Track Info</div>
+                          <div className="space-y-1">
+                            <div>Name: {playbackState?.item?.name || 'N/A'}</div>
+                            <div>Artist: {playbackState?.item?.artists?.[0]?.name || 'N/A'}</div>
+                            <div>Duration: {playbackState?.item?.duration_ms ? Math.round(playbackState.item.duration_ms / 1000) + 's' : 'N/A'}</div>
+                            <div>Position: {playbackState?.progress_ms ? Math.round(playbackState.progress_ms / 1000) + 's' : 'N/A'}</div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-bold text-green-400 mb-2">🎹 RapidAPI Data</div>
+                          {currentTrackData ? (
+                            <div className="space-y-1">
+                              <div>Tempo: {currentTrackData.tempo || 'N/A'} BPM</div>
+                              <div>Energy: {currentTrackData.energy || 'N/A'}/100</div>
+                              <div>Danceability: {currentTrackData.danceability || 'N/A'}/100</div>
+                              <div>Key: {currentTrackData.key || 'N/A'}</div>
+                              <div>Mode: {currentTrackData.mode || 'N/A'}</div>
+                            </div>
+                          ) : (
+                            <div className="text-yellow-400">No RapidAPI data available</div>
+                          )}
+                        </div>
+                        <div className="col-span-2 mt-2 pt-2 border-t border-gray-600">
+                          <div className="font-bold text-purple-400 mb-2">🧠 Section Analysis Source</div>
+                          <div className="text-orange-300">
+                            Check console for detailed sectional analysis logs and data sources
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="text-sm text-primary/70 mb-4">
                     <p>Phase {currentPhase + 1} of {workoutPhases.length} • {workoutPhases[currentPhase]?.duration}</p>

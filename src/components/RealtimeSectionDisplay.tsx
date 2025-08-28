@@ -159,8 +159,15 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       metadata.genres = inferGenreFromArtist(artistName);
 
       console.log('🎯 Using metadata for algorithmic analysis:', metadata);
+      console.log('📊 Data sources available:', {
+        spotifyMetadata: !!spotifyMetadata,
+        rapidApiData: !!rapidApiData,
+        trackDuration: currentTrack?.duration_ms,
+        inferredGenre: metadata.genres
+      });
 
       // Generate algorithmic sections
+      console.log('🧠 GENERATING ALGORITHMIC SECTIONS - This is PREDICTION, not real API sectional data');
       const predictedSections = algorithmicSectionAnalyzer.analyzeSongStructure(metadata);
       
       // Convert PredictedSection to SectionData format
@@ -419,8 +426,22 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           expectedStart: activeSection.sectionStartTime,
           expectedEnd: activeSection.sectionEndTime,
           actualPosition: currentPositionSeconds,
-          timingOffset: currentPositionSeconds - activeSection.sectionStartTime
+          timingOffset: currentPositionSeconds - activeSection.sectionStartTime,
+          dataSource: activeSection.confidence ? 'ALGORITHMIC_PREDICTION' : 'DATABASE_OR_ESTIMATED'
         });
+        
+        // 🚨 TIMING ACCURACY ANALYSIS
+        const timingOffset = currentPositionSeconds - activeSection.sectionStartTime;
+        if (Math.abs(timingOffset) > 5) {
+          console.warn('⚠️ TIMING ACCURACY ISSUE:', {
+            sectionType: activeSection.sectionType,
+            expectedStart: Math.round(activeSection.sectionStartTime),
+            actualPosition: Math.round(currentPositionSeconds),
+            offsetSeconds: Math.round(timingOffset),
+            severity: Math.abs(timingOffset) > 15 ? 'CRITICAL' : 'MODERATE'
+          });
+        }
+        
         setCurrentSection(activeSection);
       }
     } catch (error) {
