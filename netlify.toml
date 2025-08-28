@@ -2,11 +2,10 @@
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
-  node_bundler = "esbuild"
 
 [functions]
+  node_bundler = "esbuild"
   external_node_modules = ["@supabase/supabase-js"]
-  node_version = "18"
 
 # Configure secrets scanning to allow safe frontend environment variables
 [build.environment]

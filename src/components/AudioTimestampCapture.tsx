@@ -283,22 +283,48 @@ export const AudioTimestampCapture: React.FC = () => {
         }))
       };
       
-      // Try to save to database
-      const url = '/netlify/functions/save-audio-timestamps';
-      console.log('📡 Attempting database save to:', url);
+      // Try to save to database with multiple endpoint attempts
+      const urls = [
+        '/.netlify/functions/save-audio-timestamps',
+        '/api/save-audio-timestamps', 
+        '/netlify/functions/save-audio-timestamps'
+      ];
       
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sessionData)
-      });
+      let response: Response | null = null;
+      let lastError: string = '';
       
-      if (response.ok) {
+      for (const url of urls) {
+        try {
+          console.log('📡 Attempting database save to:', url);
+          
+          response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sessionData)
+          });
+          
+          if (response.ok || response.status !== 404) {
+            break; // Found working endpoint or got real error (not 404)
+          }
+          
+          console.log(`⚠️ Endpoint ${url} returned 404, trying next...`);
+          
+        } catch (error) {
+          lastError = `${url}: ${error}`;
+          console.log(`❌ Failed to reach ${url}:`, error);
+          continue;
+        }
+      }
+      
+      if (response && response.ok) {
         const result = await response.json();
         console.log('✅ Session saved to database:', result);
         alert(`✅ Session saved to database! ${sessionData.events.length} timestamps recorded.`);
+      } else if (response) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       } else {
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`All endpoints failed. Last error: ${lastError}`);
       }
       
     } catch (err) {
