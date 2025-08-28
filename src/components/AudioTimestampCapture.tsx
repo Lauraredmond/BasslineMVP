@@ -252,7 +252,11 @@ export const AudioTimestampCapture: React.FC = () => {
       console.log('🔍 Session data to save:', JSON.stringify(sessionData, null, 2));
       
       // Save to database via API
-      const response = await fetch('/netlify/functions/save-audio-timestamps', {
+      const url = '/netlify/functions/save-audio-timestamps';
+      console.log('📡 Making request to:', url);
+      console.log('📦 Request payload:', JSON.stringify(sessionData, null, 2));
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sessionData)
