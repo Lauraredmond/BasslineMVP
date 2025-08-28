@@ -60,6 +60,7 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         const data = await response.json();
         if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
           console.log('✅ Found sectional data:', data.sections.length, 'sections');
+          console.log('🔍 Section data preview:', data.sections.slice(0, 3));
           // Validate sections data before setting
           const validSections = data.sections.filter(section => 
             section && 
@@ -67,6 +68,11 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
             typeof section.sectionStartTime === 'number' &&
             typeof section.sectionEndTime === 'number'
           );
+          console.log('✅ Using sections:', validSections.map(s => ({
+            type: s.sectionType,
+            start: s.sectionStartTime,
+            end: s.sectionEndTime
+          })));
           setSections(validSections);
           setError(null);
           return;
@@ -207,6 +213,13 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
 
       if (activeSection && activeSection !== currentSection) {
         console.log('🎵 Section changed to:', activeSection.sectionType, 'at', currentPositionSeconds + 's');
+        console.log('🎯 Section timing details:', {
+          sectionType: activeSection.sectionType,
+          expectedStart: activeSection.sectionStartTime,
+          expectedEnd: activeSection.sectionEndTime,
+          actualPosition: currentPositionSeconds,
+          timingOffset: currentPositionSeconds - activeSection.sectionStartTime
+        });
         setCurrentSection(activeSection);
       }
     } catch (error) {

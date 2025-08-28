@@ -121,9 +121,25 @@ exports.handler = async (event, context) => {
 
     // Transform the data into the format expected by the component
     const sections = data.map(row => {
-      // Use Spotify's section timing if available, otherwise use playback position
-      const startTimeSeconds = row.current_section_start || (row.playback_position_ms || 0) / 1000;
-      const durationSeconds = row.current_section_duration || 60;
+      let startTimeSeconds = row.current_section_start || (row.playback_position_ms || 0) / 1000;
+      let durationSeconds = row.current_section_duration || 60;
+      
+      // EXTRACT TIMING FROM SECTION_INDICATOR if available (more reliable)
+      if (row.section_indicator && row.section_indicator.includes('(') && row.section_indicator.includes('s-')) {
+        try {
+          // Parse: "Section 1: verse (26.900000000000002s-94.2s)"
+          const timingMatch = row.section_indicator.match(/\((\d+(?:\.\d+)?)s-(\d+(?:\.\d+)?)s\)/);
+          if (timingMatch) {
+            const extractedStart = parseFloat(timingMatch[1]);
+            const extractedEnd = parseFloat(timingMatch[2]);
+            startTimeSeconds = extractedStart;
+            durationSeconds = extractedEnd - extractedStart;
+            console.log(`🎯 Extracted timing from section_indicator: ${extractedStart}s-${extractedEnd}s`);
+          }
+        } catch (parseError) {
+          console.warn('Could not parse timing from section_indicator:', row.section_indicator);
+        }
+      }
       
       return {
         sectionIndex: row.section_index || 0,
