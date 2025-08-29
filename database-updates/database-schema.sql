@@ -21,7 +21,7 @@ CREATE TABLE users (
 CREATE TABLE workout_types (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL, -- 'spinning', 'pilates', 'hiit', 'circuits'
-    display_name VARCHAR(100) NOT NULL, -- 'Spinning', 'Pilates', 'HIIT', 'Circuits'
+    workout_track VARCHAR(100) NOT NULL, -- 'Spinning', 'Pilates', 'HIIT', 'Circuits'
     description TEXT,
     default_duration INTEGER, -- in seconds
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -32,7 +32,7 @@ CREATE TABLE workout_phases (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     workout_type_id UUID REFERENCES workout_types(id),
     phase_type VARCHAR(50) NOT NULL, -- Generic phase identifier
-    display_name VARCHAR(100) NOT NULL, -- Workout-specific phase name
+    workout_track VARCHAR(100) NOT NULL, -- Workout-specific phase name
     target_tempo_min INTEGER,
     target_tempo_max INTEGER,
     energy_level_min DECIMAL(3,2), -- 0.00 to 1.00
@@ -226,7 +226,7 @@ CREATE INDEX idx_shared_playlists_user ON shared_playlists(user_id);
 CREATE INDEX idx_shared_playlists_public ON shared_playlists(is_public);
 
 -- Insert seed data for workout types
-INSERT INTO workout_types (name, display_name, description, default_duration) VALUES
+INSERT INTO workout_types (name, workout_track, description, default_duration) VALUES
 ('spinning', 'Spinning', 'High-energy indoor cycling workout with music synchronization', 2700),
 ('pilates', 'Pilates', 'Low-impact strength and flexibility training', 3600),
 ('circuits', 'Circuits', 'High-intensity circuit training with varied exercises', 1800),
@@ -236,11 +236,11 @@ INSERT INTO workout_types (name, display_name, description, default_duration) VA
 WITH workout_type_ids AS (
     SELECT name, id FROM workout_types
 )
-INSERT INTO workout_phases (workout_type_id, phase_type, display_name, target_tempo_min, target_tempo_max, energy_level_min, energy_level_max, energy_level, typical_duration, sort_order)
+INSERT INTO workout_phases (workout_type_id, phase_type, workout_track, target_tempo_min, target_tempo_max, energy_level_min, energy_level_max, energy_level, typical_duration, sort_order)
 SELECT 
     wt.id,
     phase_data.phase_type,
-    phase_data.display_name,
+    phase_data.workout_track,
     phase_data.tempo_min,
     phase_data.tempo_max,
     phase_data.energy_min,
@@ -251,7 +251,7 @@ SELECT
 FROM workout_type_ids wt
 CROSS JOIN (
     -- SPINNING PHASES
-    SELECT 'spinning' as workout_type, 'warmup' as phase_type, 'Warm Up' as display_name, 70 as tempo_min, 100 as tempo_max, 0.30 as energy_min, 0.60 as energy_max, 'low' as energy_level, 324 as duration, 1 as sort_order
+    SELECT 'spinning' as workout_type, 'warmup' as phase_type, 'Warm Up' as workout_track, 70 as tempo_min, 100 as tempo_max, 0.30 as energy_min, 0.60 as energy_max, 'low' as energy_level, 324 as duration, 1 as sort_order
     UNION ALL
     SELECT 'spinning', 'sprint', 'Sprint Intervals', 120, 160, 0.70, 1.00, 'high', 405, 2
     UNION ALL

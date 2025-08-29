@@ -26,7 +26,7 @@ export async function getSpinningPhases() {
     .from('workout_phases')
     .select(`
       *,
-      workout_types(name, display_name)
+      workout_types(name, workout_track)
     `)
     .eq('workout_types.name', 'spinning')
     .order('sort_order')

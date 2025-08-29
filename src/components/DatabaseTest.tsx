@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 interface WorkoutType {
   id: string;
   name: string;
-  display_name: string;
+  workout_track: string;
   description: string;
 }
 
@@ -59,7 +59,7 @@ export const DatabaseTest = () => {
                 <p className="text-green-700">Found {testResult.data?.length || 0} workout types</p>
                 {testResult.data?.map((type) => (
                   <div key={type.id} className="mt-2 p-2 bg-white rounded">
-                    <strong>{type.display_name}</strong>: {type.description}
+                    <strong>{type.workout_track}</strong>: {type.description}
                   </div>
                 ))}
               </div>
@@ -79,7 +79,7 @@ export const DatabaseTest = () => {
             <h3 className="font-bold mb-2">Spinning Workout Phases:</h3>
             {phases.map((phase, index) => (
               <div key={phase.id} className="p-2 bg-gray-100 rounded mb-2">
-                <strong>{index + 1}. {phase.display_name}</strong>
+                <strong>{index + 1}. {phase.workout_track}</strong>
                 <br />
                 <small>Tempo: {phase.target_tempo_min}-{phase.target_tempo_max} BPM | Energy: {phase.energy_level}</small>
               </div>
