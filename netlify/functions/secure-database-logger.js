@@ -55,6 +55,16 @@ exports.handler = async (event, context) => {
         
         console.log(`🔍 DEBUG MODE: Checking streaming_vendor_attributes table for: "${trackName}" by "${artistName}"`);
         
+        // First, let's see what data is actually in the table
+        const { data: allData, error: allError } = await supabase
+          .from('streaming_vendor_attributes')
+          .select('track_name, artist_name, section_type, timestamp_ms')
+          .limit(10);
+          
+        if (allData) {
+          console.log('📊 Sample data in table:', allData);
+        }
+        
         const { data: vendorData, error } = await supabase
           .from('streaming_vendor_attributes')
           .select('*')
