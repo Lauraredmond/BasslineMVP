@@ -1176,7 +1176,7 @@ const MusicSync = () => {
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   
-                  {/* 🎵 ENHANCED Real-time Section Display - Shows section_type from streaming_vendor_attributes */}
+                  {/* Real-time Section Display - WITHOUT redundant PT narratives */}
                   <div className="mb-6">
                     <RealtimeSectionDisplay
                       currentTrack={playbackState?.item}
@@ -1191,6 +1191,7 @@ const MusicSync = () => {
                         mode: playbackState?.item?.mode
                       }}
                       rapidApiData={undefined}
+                      hidePTNarrative={true}
                     />
                     
                   </div>
@@ -1250,7 +1251,7 @@ const MusicSync = () => {
                             )}
                             
                             {/* Main narrative text with enhanced styling */}
-                            <p className="text-xl font-bold text-center leading-relaxed animate-pulse">
+                            <p className="text-2xl font-bold text-center leading-relaxed text-cream">
                               "{narrativeToShow}"
                             </p>
                             
@@ -1263,12 +1264,12 @@ const MusicSync = () => {
                               </div>
                             )}
                             
-                            {/* Animated bottom bar */}
-                            <div className="mt-4 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded animate-pulse" />
+                            {/* Static bottom bar */}
+                            <div className="mt-4 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded" />
                           </div>
                           
-                          {/* Glow effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-xl animate-pulse -z-10" />
+                          {/* Static glow effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-xl -z-10" />
                         </div>
                       ) : null;
                     })()}

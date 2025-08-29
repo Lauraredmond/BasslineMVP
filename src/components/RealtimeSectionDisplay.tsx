@@ -35,6 +35,7 @@ interface RealtimeSectionDisplayProps {
   currentPositionMs?: number;
   isPlaying?: boolean;
   className?: string;
+  hidePTNarrative?: boolean; // Hide the redundant PT narrative
   spotifyMetadata?: {
     tempo?: number;
     energy?: number;
@@ -56,6 +57,7 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
   currentPositionMs = 0,
   isPlaying = false,
   className = "",
+  hidePTNarrative = false,
   spotifyMetadata,
   rapidApiData
 }) => {
@@ -747,17 +749,19 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         )}
         
         {/* ANIMATED PT NARRATIVES - Shows instructor guidance based on current section */}
-        <AnimatedPTNarrative 
-          currentSection={currentSection}
-          currentTrack={currentTrack ? {
-            ...currentTrack,
-            tempo: spotifyMetadata?.tempo,
-            audio_features: {
-              ...currentTrack.audio_features,
-              tempo: currentTrack.audio_features?.tempo || spotifyMetadata?.tempo
-            }
-          } : undefined}
-        />
+        {!hidePTNarrative && (
+          <AnimatedPTNarrative 
+            currentSection={currentSection}
+            currentTrack={currentTrack ? {
+              ...currentTrack,
+              tempo: spotifyMetadata?.tempo,
+              audio_features: {
+                ...currentTrack.audio_features,
+                tempo: currentTrack.audio_features?.tempo || spotifyMetadata?.tempo
+              }
+            } : undefined}
+          />
+        )}
         
       </div>
     );
