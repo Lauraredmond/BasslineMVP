@@ -16,12 +16,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-premium-texture flex flex-col">
-      <div className="flex-1 px-4 pt-4">
+      <div className="flex-1 px-4 pt-2">
         {/* Back Button */}
         <Button
           onClick={handleBack}
           variant="ghost"
-          className="mb-4 p-2 hover:bg-burgundy-dark/20"
+          className="mb-2 p-2 hover:bg-burgundy-dark/20"
         >
           <ArrowLeft className="w-5 h-5 text-cream" />
         </Button>
