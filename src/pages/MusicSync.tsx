@@ -1371,9 +1371,6 @@ const MusicSync = () => {
             <Card className="shadow-card border-0 bg-card-texture border border-cream/20">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-primary mb-2">
-                    {workoutPlan && currentTrackPhase ? currentTrackPhase.phase.name : workoutPhases[currentPhase]?.name}
-                  </h3>
                   
                   {/* 🎵 ENHANCED Real-time Section Display - Shows section_type from streaming_vendor_attributes */}
                   <div className="mb-6">
@@ -1392,12 +1389,6 @@ const MusicSync = () => {
                       rapidApiData={undefined}
                     />
                     
-                    {/* Section type flash indicator */}
-                    <div className="text-center">
-                      <p className="text-cream/60 text-xs">
-                        🎯 Live Section Detection • Synced to Track Position
-                      </p>
-                    </div>
                   </div>
                   
                   {/* 🔍 API Data Debug Panel - Only show when ?debug=true */}

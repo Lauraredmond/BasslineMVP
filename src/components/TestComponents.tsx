@@ -532,13 +532,13 @@ export const DebugPanel: React.FC = () => {
         <button 
           onClick={async () => {
             try {
-              console.log('🔍 DEBUG: Checking actual Supabase data via working function...');
-              const response = await fetch('/netlify/functions/simple-database-logger', {
+              console.log('🔍 DEBUG: Using secure-database-logger to check streaming vendor data...');
+              const response = await fetch('/netlify/functions/secure-database-logger', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ debug: 'streaming_vendor_sections' })
+                body: JSON.stringify({ action: 'debug_streaming_vendor' })
               });
-              console.log('📡 Debug response status:', response.status);
+              console.log('📡 Secure debug response status:', response.status);
               
               if (response.ok) {
                 const data = await response.json();
@@ -546,19 +546,24 @@ export const DebugPanel: React.FC = () => {
                 
                 if (data.totalRecords > 0) {
                   const timingReport = data.sections.map(s => 
-                    `${s.section_type}: ${s.timestamp_readable} (${Math.round(s.timestamp_ms/1000)}s)`
+                    `${s.section_type}${s.section_number ? ` ${s.section_number}` : ''}: ${s.timestamp_readable} (${Math.round(s.timestamp_ms/1000)}s)`
                   ).join('\n');
                   
-                  alert(`🔍 ACTUAL SUPABASE DATA FOUND!\n\n📊 The Pretender (${data.totalRecords} records):\n${timingReport}\n\n🎵 Section Types: ${data.sectionTypes.join(', ')}\n\n${data.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\n${data.sections.some(s => s.notes?.includes('estimated')) ? '⚠️ Using ESTIMATED data' : '✅ Using manual data'}`);
+                  const gapsReport = data.timingGaps
+                    .filter(gap => gap.gapSeconds)
+                    .map(gap => `${gap.current} → ${gap.next}: ${gap.gapSeconds}s gap`)
+                    .join('\n');
+                  
+                  alert(`🔍 ACTUAL SUPABASE DATA FOUND!\n\n📊 The Pretender (${data.totalRecords} records):\n${timingReport}\n\n⏱️ Section Gaps:\n${gapsReport}\n\n🎵 Section Types: ${data.sectionTypes.join(', ')}\n\n${data.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\n${data.sections.some(s => s.notes?.includes('estimated')) ? '⚠️ Using ESTIMATED sample data!' : '✅ Using your manual timing data'}`);
                 } else {
                   alert('❌ No data in streaming_vendor_attributes table for The Pretender\n\nYou need to add your manual timing data first!');
                 }
               } else {
-                alert(`❌ Debug call failed: ${response.status}`);
+                alert(`❌ Secure debug call failed: ${response.status}`);
               }
             } catch (error) {
-              console.error('Debug error:', error);
-              alert(`❌ Debug failed: ${error.message}`);
+              console.error('Secure debug error:', error);
+              alert(`❌ Secure debug failed: ${error.message}`);
             }
           }}
           style={{
