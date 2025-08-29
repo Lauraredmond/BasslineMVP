@@ -13,6 +13,7 @@ import { spotifyService, SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPl
 import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/musicAnalysis";
 import { narrativeEngine } from "@/lib/narrative-engine";
 import { dbAdmin } from "@/lib/database-admin";
+import { supabase } from "@/lib/supabase";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 // Removed WebAudioAnalysisLogger - eliminated Web Audio capture
@@ -75,7 +76,7 @@ const MusicSync = () => {
   
   // Database-driven narratives
   const [databaseNarratives, setDatabaseNarratives] = useState<any[]>([]);
-  const [currentDatabaseNarrative, setCurrentDatabaseNarrative] = useState<string | null>(null);
+  const [currentDatabaseNarrative, setCurrentDatabaseNarrative] = useState<{text: string, workoutTrack?: string, songComponent?: string, bpm?: number} | null>(null);
   const [narrativeEngineReady, setNarrativeEngineReady] = useState(false);
   
   // Advanced music analysis cache
@@ -534,14 +535,49 @@ const MusicSync = () => {
         }
         setPlaybackState(state);
         
-        // 🎵 AUTO-CAPTURE BPM: Store Spotify tempo when track plays
-        if (state?.item?.audio_features?.tempo) {
-          AutomaticBPMCapture.captureBPMForTrack(
-            state.item.name,
-            state.item.artists?.[0]?.name || '',
-            state.item.audio_features.tempo
-          );
-        }
+        // 🎵 AUTO-CAPTURE BPM: Store tempo from Spotify API or RapidAPI when track plays
+        const shouldCaptureBPM = async () => {
+          if (!state?.item) return;
+
+          let tempo = state.item.audio_features?.tempo;
+          let source = 'spotify_api';
+
+          // If Spotify audio_features failed (403 error), use RapidAPI tempo
+          if (!tempo) {
+            try {
+              console.log('🔄 Spotify BPM unavailable, fetching from RapidAPI...');
+              const rapidResult = await secureRapidSoundnetService.getTrackAnalysis(
+                state.item.name,
+                state.item.artists?.[0]?.name || '',
+                true
+              );
+              
+              if (rapidResult?.tempo) {
+                tempo = rapidResult.tempo;
+                source = 'rapidapi';
+                console.log(`✅ Using RapidAPI BPM: ${tempo} for "${state.item.name}"`);
+              }
+            } catch (error) {
+              console.warn('⚠️ Failed to get RapidAPI tempo:', error);
+            }
+          }
+
+          if (tempo) {
+            console.log(`🎵 AUTO-CAPTURE BPM: ${tempo} (${source}) for "${state.item.name}"`);
+            AutomaticBPMCapture.captureBPMForTrack(
+              state.item.name,
+              state.item.artists?.[0]?.name || '',
+              tempo,
+              state.item.duration_ms
+            );
+          } else {
+            console.warn('❌ No BPM available from Spotify OR RapidAPI');
+          }
+        };
+
+        shouldCaptureBPM().catch(error => {
+          console.error('❌ shouldCaptureBPM failed:', error);
+        });
         
         if (state) {
           setIsPlaying(state.is_playing);
@@ -578,6 +614,25 @@ const MusicSync = () => {
   useEffect(() => {
     return () => stopPlaybackMonitoring();
   }, []);
+
+  // Fetch database narrative when track or position changes
+  useEffect(() => {
+    if (!isWorkoutActive || !playbackState?.item) return;
+
+    const fetchNarrative = async () => {
+      console.log(`🔍 Fetching database narrative for: "${playbackState.item?.name}" by "${playbackState.item?.artists?.[0]?.name}"`);
+      const narrative = await getCurrentDatabaseNarrative();
+      console.log('📊 Database narrative result:', narrative);
+      setCurrentDatabaseNarrative(narrative);
+      
+      if (!narrative) {
+        console.warn('❌ No database narrative found - falling back to hardcoded narratives');
+        console.warn('🔍 This is why you see hardcoded text instead of database content');
+      }
+    };
+
+    fetchNarrative();
+  }, [playbackState?.item?.id, playbackState?.progress_ms, isWorkoutActive]);
 
   // Spotify playback controls
   const handleSpotifyPlay = async () => {
@@ -701,7 +756,7 @@ const MusicSync = () => {
       exerciseFormat: workoutFormat,
       comment: workoutShareData.comment,
       shareWith: workoutShareData.shareWith,
-      duration: `${workoutPhases.reduce((total, phase) => total + parseInt(phase.duration), 0)} min`,
+      duration: `${workoutPhases.reduce((total, phase) => total + parseInt(phase.duration || '0'), 0)} min`,
       timestamp: new Date().toISOString()
     };
     
@@ -736,341 +791,85 @@ const MusicSync = () => {
     return narratives[currentNarrative] || narratives[0];
   };
   
-  // Get current database-driven narrative (works in ALL phases now)
-  const getCurrentDatabaseNarrative = () => {
-    
-    // Show database narratives in ALL phases (not just warmup)
-    if (databaseNarratives.length > 0) {
-      
-      // FALLBACK: If no Spotify playback, show narratives based on simple timing
-      if (!playbackState || !playbackState.progress_ms || !playbackState.item) {
-        
-        // Simple time-based logic (show first narrative after 10 seconds, second after 30 seconds)
-        if (!workoutStartTime) {
-          return null;
-        }
-        
-        const phaseStartTime = workoutStartTime + (currentPhase * 60000); // Each phase is 1 min
-        const phaseElapsed = Date.now() - phaseStartTime; // Time within current phase
-        
-        if (phaseElapsed >= 10000 && phaseElapsed < 20000 && !narrativeStates.first_shown) {
-          const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
-          if (firstNarrative) {
-            setNarrativeStates(prev => ({ ...prev, first_shown: true }));
-            setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
-            return { text: firstNarrative.text };
-          }
-        } else if (phaseElapsed >= 30000 && phaseElapsed < 40000 && !narrativeStates.second_shown) {
-          const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
-          if (secondNarrative) {
-            setNarrativeStates(prev => ({ ...prev, second_shown: true }));
-            setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
-            return { text: secondNarrative.text };
-          }
-        }
-        
-        // Show persisted narrative for entire track/phase
-        if (displayedNarrative) {
-          return { text: displayedNarrative.text };
-        }
-        
+  // Get current database-driven narrative based on streaming_vendor_attributes table
+  const getCurrentDatabaseNarrative = async () => {
+    if (!playbackState?.item) return null;
+
+    try {
+      // Get BPM from streaming_vendor_attributes table
+      const { data: bpmData, error: bpmError } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('spotify_tempo')
+        .eq('track_name', playbackState.item.name)
+        .eq('artist_name', playbackState.item.artists[0]?.name)
+        .not('spotify_tempo', 'is', null)
+        .limit(1)
+        .single();
+
+      if (bpmError || !bpmData?.spotify_tempo) {
+        console.warn('❌ No BPM found in streaming_vendor_attributes table');
+        console.warn('📊 BPM Error details:', { bpmError, bpmData });
+        console.warn('🔍 This suggests AutomaticBPMCapture failed - check why spotify_tempo is NULL');
         return null;
       }
-      
-      // Use intelligent timing based on track structure (Spotify mode)
-      console.log('🔍 PLAYBACK STATE CHECK:', {
-        hasPlaybackState: !!playbackState,
-        hasProgressMs: !!playbackState?.progress_ms,
-        hasItem: !!playbackState?.item,
-        currentTrack: playbackState?.item?.name || 'None'
-      });
-      
-      if (playbackState && playbackState.item) {
-        
-        // Reset narrative states when track changes
-        console.log('🔍 TRACK ID COMPARISON:', {
-          currentTrackId,
-          playbackStateId: playbackState.item.id,
-          areEqual: currentTrackId === playbackState.item.id,
-          trackName: playbackState.item.name,
-          comparison: `"${currentTrackId}" !== "${playbackState.item.id}"`,
-          willTriggerChange: currentTrackId !== playbackState.item.id
-        });
-        
-        // NORMAL TRACK CHANGE: Only trigger on actual track changes
-        if (currentTrackId !== playbackState.item.id) {
-          console.log('🎵 TRACK CHANGE DETECTED! This should trigger Rapid Soundnet integration...');
-          console.log('  - Previous track ID:', currentTrackId);
-          console.log('  - New track ID:', playbackState.item.id);
-          console.log('  - New track name:', playbackState.item.name);
-          console.log('  - Is workout active?:', isWorkoutActive);
-          console.log('  - Is Spotify authenticated?:', isSpotifyAuthenticated);
-          
-          // CRITICAL: Start API call BEFORE state updates to prevent re-render interruption
-          console.log('🔍 [DEBUG] WORKOUT DETECTION DEBUG:', {
-            isWorkoutActive,
-            isSpotifyAuthenticated,
-            bothConditionsMet: isWorkoutActive && isSpotifyAuthenticated,
-            currentTrack: playbackState.item.name,
-            hasPlaybackState: !!playbackState,
-            hasItem: !!playbackState?.item
-          });
-          
-          if (!isWorkoutActive) {
-            console.error('❌ [DEBUG] WORKOUT IS NOT ACTIVE - Logging blocked');
-            console.error('❌ [DEBUG] Check if workout timer is running');
-          }
-          
-          if (!isSpotifyAuthenticated) {
-            console.error('❌ [DEBUG] SPOTIFY NOT AUTHENTICATED - Logging blocked');
-            console.error('❌ [DEBUG] Check Spotify connection status');
-          }
-          
-          // Update state after API call to prevent interruption
-          setCurrentTrackId(playbackState.item.id);
-          setNarrativeStates({
-            first_shown: false,
-            second_shown: false
-          });
-          
-          // Debug all conditions before checking
-          console.log('🔍 [DEBUG] CHECKING CONDITIONS:', {
-            hasPlaybackItem: !!playbackState?.item,
-            isSpotifyAuthenticated: isSpotifyAuthenticated,
-            isWorkoutActive: isWorkoutActive,
-            allConditionsMet: !!(playbackState?.item && isSpotifyAuthenticated && isWorkoutActive)
-          });
-          
-          // Start API call with proper conditions  
-          if (playbackState?.item && isSpotifyAuthenticated && isWorkoutActive) {
-            console.log('✅ [DEBUG] CONDITIONS MET - Starting track logging...');
-            
-            // Eliminated Web Audio analysis logging - no getDisplayMedia calls
-            const startTrackLogging = async () => {
-              try {
-                console.log('🎵 📊 Starting FALLBACK Spotify analysis logging for:', playbackState.item.name);
-                console.log('⚠️ ELIMINATING ALL Spotify API calls - using only RapidAPI');
-                
-                // Get enhanced track data including Rapid Soundnet fallbacks
-                console.log('🔍 Attempting to get audio features with Rapid Soundnet fallback...');
-                let audioFeatures = null;
-                let rapidSoundnetMetadata = null;
-                
-                try {
-                  // ELIMINATED: No Spotify API calls - RapidAPI only
-                  audioFeatures = null; // Force null to prevent 403 errors
-                  
-                  // Always try Rapid Soundnet for enhanced analysis (regardless of Spotify success)
-                  console.log('🚀 Getting Rapid Soundnet enhanced analysis for workout logging...');
-                  
-                  console.log('🔍 Testing Secure Rapid Soundnet service availability:', !!secureRapidSoundnetService);
-                  
-                  // FORCE FRESH API CALL - bypass cache for testing
-                  const rapidResult = await secureRapidSoundnetService.getTrackAnalysis(
-                    playbackState.item.name, 
-                    playbackState.item.artists.map(a => a.name).join(', '),
-                    true // allowFallback = true to enable intelligent fallbacks when API fails
-                  );
-                  
-                  console.log('🎯 Raw Rapid Soundnet API result:', rapidResult);
-                  
-                  // Store RapidAPI metadata for enhanced logging (always captured now)
-                  if (rapidResult) {
-                    rapidSoundnetMetadata = {
-                      dataSource: 'rapidapi',
-                      fromCache: false,
-                      fallbackType: 'api',
-                      rapidSoundnetData: rapidResult // STORE ALL DATA!
-                    };
-                    console.log('🎯 🎵 GOT COMPREHENSIVE RAPID SOUNDNET DATA:', {
-                      camelot: rapidResult.camelot,
-                      energy: rapidResult.energy,
-                      danceability: rapidResult.danceability,
-                      happiness: rapidResult.happiness,
-                      acousticness: rapidResult.acousticness,
-                      instrumentalness: rapidResult.instrumentalness,
-                      liveness: rapidResult.liveness,
-                      speechiness: rapidResult.speechiness,
-                      loudness: rapidResult.loudness,
-                      popularity: rapidResult.popularity,
-                      duration: rapidResult.duration,
-                      key: rapidResult.key,
-                      mode: rapidResult.mode,
-                      tempo: rapidResult.tempo
-                    });
-                  }
-                  
-                  // Use Spotify audio features if available, otherwise use RapidAPI as fallback
-                  if (!audioFeatures || !audioFeatures[0]) {
-                    if (rapidResult) {
-                      audioFeatures = [rapidResult];
-                      console.log('✅ Using RapidAPI audio features as fallback');
-                    }
-                  } else {
-                    console.log('✅ Got Spotify audio features:', audioFeatures[0]);
-                  }
-                } catch (error) {
-                  console.warn('⚠️ Audio features failed:', error);
-                }
 
-                // Create enhanced context with audio features and ALL Rapid Soundnet metadata
-                const context = {
-                  trackId: playbackState.item.id,
-                  trackName: playbackState.item.name,
-                  artistName: playbackState.item.artists.map(a => a.name).join(', '),
-                  positionMs: playbackState.progress_ms || 0,
-                  fitnessPhase: workoutPhases[currentPhase]?.name || `phase_${currentPhase}`,
-                  workoutIntensity: 7,
-                  audioFeatures: audioFeatures?.[0] || null,
-                  
-                  // Add ALL Rapid Soundnet metadata for comprehensive logging
-                  dataSource: rapidSoundnetMetadata?.dataSource || (audioFeatures?.[0] ? 'spotify' : 'none'),
-                  fromCache: rapidSoundnetMetadata?.fromCache || false,
-                  fallbackType: rapidSoundnetMetadata?.fallbackType || 'none',
-                  
-                  // Include ALL raw Rapid Soundnet data for analysis
-                  ...(rapidSoundnetMetadata?.rapidSoundnetData && {
-                    rapidSoundnetData: rapidSoundnetMetadata.rapidSoundnetData
-                  })
-                };
-                
-                console.log('🔥 [DEBUG] COMPREHENSIVE CONTEXT FOR LOGGING:', {
-                  trackName: context.trackName,
-                  hasAudioFeatures: !!context.audioFeatures,
-                  dataSource: context.dataSource,
-                  hasRapidSoundnetData: !!context.rapidSoundnetData,
-                  rapidSoundnetKeys: context.rapidSoundnetData ? Object.keys(context.rapidSoundnetData) : [],
-                  sessionId: spotifyAnalysisLogger.getCurrentSessionId(),
-                  isLogging: spotifyAnalysisLogger.isCurrentlyLogging(),
-                  timestamp: new Date().toISOString()
-                });
-                
-                // 🚨 REPLACED: Use enhanced sectional analysis instead of interval-based logging
-                console.log('🚨 TRIGGERING ENHANCED SECTIONAL ANALYSIS - Creating section-based rows with different attribute values! 🚨');
-                
-                // 🔍 DEBUG: Check what RapidAPI data we actually have
-                console.log('🔍 [DEBUG] RapidAPI metadata check:', {
-                  hasRapidSoundnetMetadata: !!rapidSoundnetMetadata,
-                  hasRapidSoundnetData: !!rapidSoundnetMetadata?.rapidSoundnetData,
-                  rapidSoundnetMetadataKeys: rapidSoundnetMetadata ? Object.keys(rapidSoundnetMetadata) : 'none',
-                  rapidSoundnetDataKeys: rapidSoundnetMetadata?.rapidSoundnetData ? Object.keys(rapidSoundnetMetadata.rapidSoundnetData) : 'none'
-                });
-                
-                // 🚨 ALWAYS try enhanced sectional analysis first, regardless of existing metadata
-                try {
-                  console.log('🚨 [FORCED] Attempting enhanced sectional analysis...');
-                  
-                  // Import enhanced sectional analysis service
-                  const { enhancedRapidSoundnetService } = await import('@/lib/enhanced-rapid-soundnet');
-                  
-                  console.log(`🎯 Starting SECTIONAL ANALYSIS for workout: ${context.trackName} by ${context.artistName}`);
-                  
-                  // 🚨 FIXED: Use cached RapidAPI data to avoid 429 rate limits
-                  console.log('🚨 Using cached RapidAPI data for sectional analysis (avoiding fresh API calls)');
-                  const analysis = await enhancedRapidSoundnetService.getDetailedTrackAnalysisFromCachedData(
-                    context.trackName, 
-                    context.artistName,
-                    rapidSoundnetMetadata?.rapidSoundnetData // Pass existing cached data
-                  );
-                  
-                  if (analysis) {
-                    console.log('✅ 🎵 Enhanced sectional analysis completed during workout:', {
-                      sectionsCreated: analysis.sections.length,
-                      expectedDatabaseRows: analysis.sections.length + 1,
-                      sectionPreview: analysis.sections.slice(0, 2)
-                    });
-                    console.log('✅ 🚨 SECTIONAL ANALYSIS SUCCESS - Database should now have section-based rows!');
-                  } else {
-                    console.warn('⚠️ Enhanced sectional analysis returned null, falling back to basic logging');
-                    spotifyAnalysisLogger.startTrackLogging(context);
-                  }
-                  
-                } catch (enhancedError) {
-                  console.error('❌ Enhanced sectional analysis error:', enhancedError);
-                  console.log('⚠️ Falling back to basic interval logging due to error');
-                  spotifyAnalysisLogger.startTrackLogging(context);
-                }
-                
-                console.log('✅ 🚀 Workout logging setup completed with sectional analysis priority');
-                
-              } catch (error) {
-                console.error('❌ Error in track logging setup:', error);
-              }
-            };
-            
-            startTrackLogging();
-          }
-        }
-        
-        const trackProgressSeconds = playbackState.progress_ms / 1000;
-        const track = currentTrackPhase?.track || playbackState.item;
-        const tempo = track?.audio_features?.tempo || 120;
-        
-        // Calculate precise bar timing (4 beats per bar)
-        const beatsPerSecond = tempo / 60;
-        const secondsPer4Bars = (4 * 4) / beatsPerSecond; // 16 beats = 4 bars
-        
-        // ADVANCED CHORUS DETECTION: Try multiple methods
-        const trackDuration = (track?.duration_ms || 180000) / 1000;
-        let chorusStartTime;
-        let chorusApproachTime;
-        
-        // Method 1: DISABLED - Spotify advanced audio analysis not available (403 errors)
-        // Using RapidAPI sectional analysis instead during workout logging
-        if (false) {
-          // This code path disabled to prevent 403 errors from Spotify advanced analysis API
-        }
-        
-        // Method 2: Improved estimation (only if precise analysis not available)
-        if (!chorusStartTime) {
-          if (trackDuration < 120) { // Short songs (< 2 min)
-            chorusStartTime = trackDuration * 0.35; // Chorus later in short songs
-          } else if (trackDuration < 240) { // Medium songs (2-4 min)
-            chorusStartTime = trackDuration * 0.28; // Typical pop structure
-          } else { // Long songs (> 4 min)
-            chorusStartTime = trackDuration * 0.22; // Earlier chorus in long songs
-          }
-          
-          // Method 3: Use tempo-based adjustments
-          if (tempo > 140) { // High-energy songs
-            chorusStartTime *= 0.9; // Chorus comes earlier
-          } else if (tempo < 80) { // Slow songs
-            chorusStartTime *= 1.1; // Chorus comes later
-          }
-          
-          chorusApproachTime = Math.max(secondsPer4Bars + 5, chorusStartTime - 7);
-        }
-        
-        const inFirstWindow = trackProgressSeconds >= secondsPer4Bars && trackProgressSeconds < chorusApproachTime;
-        const inSecondWindow = trackProgressSeconds >= chorusApproachTime && trackProgressSeconds < chorusStartTime + 3;
-        
-        // Check which narrative should show (with state tracking to prevent repeats)
-        if (inFirstWindow && !narrativeStates.first_shown) {
-          // Show first narrative: "We're just warming up the legs here"
-          const firstNarrative = databaseNarratives.find(n => n.text === "We're just warming up the legs here");
-          if (firstNarrative) {
-            setNarrativeStates(prev => ({ ...prev, first_shown: true }));
-            setDisplayedNarrative({ text: firstNarrative.text, timestamp: Date.now() });
-            return { text: firstNarrative.text };
-          }
-        } else if (inSecondWindow && !narrativeStates.second_shown) {
-          // Show second narrative: "Chorus in 7 seconds" (with 3-second buffer after chorus starts)
-          const secondNarrative = databaseNarratives.find(n => n.text === "Chorus in 7 seconds");
-          if (secondNarrative) {
-            setNarrativeStates(prev => ({ ...prev, second_shown: true }));
-            setDisplayedNarrative({ text: secondNarrative.text, timestamp: Date.now() });
-            return { text: secondNarrative.text };
-          }
-        }
-        
-        // Show persisted narrative for entire track/phase
-        if (displayedNarrative) {
-          return { text: displayedNarrative.text };
-        }
+      const bpm = bpmData.spotify_tempo;
+      console.log(`🎵 Found BPM in streaming_vendor_attributes: ${bpm}`);
+
+      // Map BPM to workout_track type using workout_phases table
+      const { data: phaseData, error: phaseError } = await supabase
+        .from('workout_phases')
+        .select('workout_track')
+        .lte('target_tempo_min', bpm)
+        .gte('target_tempo_max', bpm)
+        .limit(1)
+        .single();
+
+      if (phaseError || !phaseData?.workout_track) {
+        console.warn('No matching workout_track found for BPM:', bpm);
+        return null;
       }
+
+      const workoutTrack = phaseData.workout_track;
+      console.log(`🎯 Mapped BPM ${bpm} to workout_track: ${workoutTrack}`);
+
+      // Get current song section from streaming_vendor_attributes
+      const currentTime = playbackState.progress_ms / 1000;
+      const { data: sectionData, error: sectionError } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('section_type')
+        .eq('track_name', playbackState.item.name)
+        .eq('artist_name', playbackState.item.artists[0]?.name)
+        .eq('event_type', 'section_change')
+        .lte('timestamp_ms', playbackState.progress_ms)
+        .order('timestamp_ms', { ascending: false })
+        .limit(1)
+        .single();
+
+      const songComponent = sectionData?.section_type || 'verse';
+      console.log(`🎵 Current song component: ${songComponent}`);
+
+      // Get narrative from instruction_narratives table
+      const { data: narrativeData, error: narrativeError } = await supabase
+        .from('instruction_narratives')
+        .select('text')
+        .eq('workout_track', workoutTrack)
+        .eq('song_component', songComponent)
+        .limit(1)
+        .single();
+
+      if (narrativeError || !narrativeData?.text) {
+        console.warn(`No narrative found for ${workoutTrack} + ${songComponent}`);
+        return null;
+      }
+
+      console.log(`✅ Database narrative: ${narrativeData.text}`);
+      return { text: narrativeData.text, workoutTrack, songComponent, bpm };
+
+    } catch (error) {
+      console.error('Error fetching database narrative:', error);
+      return null;
     }
-    
-    return null;
   };
 
   return (
@@ -1426,16 +1225,50 @@ const MusicSync = () => {
                   <div className="space-y-3">
                     {/* Coaching Narrative Display */}
                     {(() => {
-                      // Try database narratives first, fallback to regular narratives
-                      const dbNarrative = getCurrentDatabaseNarrative();
-                      const fallbackNarrative = getCurrentNarrative();
-                      const narrativeToShow = dbNarrative ? dbNarrative.text : fallbackNarrative;
+                      // Use database narratives first, fallback to regular narratives
+                      const narrativeToShow = currentDatabaseNarrative?.text || getCurrentNarrative();
                       
                       return narrativeToShow ? (
-                        <div className="bg-cream/20 rounded-lg p-4 border border-cream/30 min-h-[60px] flex items-center justify-center">
-                          <p className="text-primary font-medium text-center leading-relaxed">
-                            {narrativeToShow}
-                          </p>
+                        <div className="relative">
+                          {/* Enhanced animation container */}
+                          <div 
+                            key={`${currentDatabaseNarrative?.text}-${Date.now()}`}
+                            className="pt-narrative-container animate-fadeInScale bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl transform transition-all duration-500"
+                          >
+                            {/* Workout track indicator */}
+                            {currentDatabaseNarrative?.workoutTrack && (
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-xs uppercase tracking-wide font-bold opacity-90 bg-white/20 px-2 py-1 rounded">
+                                  {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
+                                </span>
+                                {currentDatabaseNarrative.bpm && (
+                                  <span className="text-xs bg-white/20 px-2 py-1 rounded font-bold">
+                                    {Math.round(currentDatabaseNarrative.bpm)} BPM
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Main narrative text with enhanced styling */}
+                            <p className="text-xl font-bold text-center leading-relaxed animate-pulse">
+                              "{narrativeToShow}"
+                            </p>
+                            
+                            {/* Song component indicator */}
+                            {currentDatabaseNarrative?.songComponent && (
+                              <div className="mt-3 text-center">
+                                <span className="text-xs bg-white/30 px-2 py-1 rounded uppercase tracking-wide">
+                                  {currentDatabaseNarrative.songComponent.replace('_', ' ')}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {/* Animated bottom bar */}
+                            <div className="mt-4 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded animate-pulse" />
+                          </div>
+                          
+                          {/* Glow effect */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-xl animate-pulse -z-10" />
                         </div>
                       ) : null;
                     })()}
@@ -1836,7 +1669,7 @@ const MusicSync = () => {
                 <div className="flex justify-between">
                   <span className="text-cream/70">Duration:</span>
                   <span className="text-cream font-medium">
-                    ~{workoutPhases.reduce((total, phase) => total + parseInt(phase.duration), 0)} min
+                    ~{workoutPhases.reduce((total, phase) => total + parseInt(phase.duration || '0'), 0)} min
                   </span>
                 </div>
               </div>

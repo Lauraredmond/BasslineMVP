@@ -171,3 +171,22 @@ All colors MUST be HSL.
 .pt-narrative-text {
   animation: ptTextSlideIn 0.6s ease-out 0.2s both;
 }
+
+/* Enhanced PT Narrative Animations */
+@keyframes fadeInScale {
+  0% {
+    transform: scale(0.9) translateY(10px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fadeInScale {
+  animation: fadeInScale 0.6s ease-out forwards;
+}
