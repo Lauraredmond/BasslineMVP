@@ -492,10 +492,16 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
   useEffect(() => {
     try {
       if (currentTrack?.name && currentTrack.artists?.[0]?.name) {
-        const trackKey = `${currentTrack.name}_${currentTrack.artists[0].name}`;
+        // Clean track name by removing any suffixes like "(SUMMARY)"
+        const cleanTrackName = currentTrack.name.replace(/\s*\(.*?\)$/, '').trim();
+        const artistName = currentTrack.artists[0].name;
+        
+        const trackKey = `${cleanTrackName}_${artistName}`;
         if (trackKey !== lastFetchedTrack) {
           console.log('🔄 Track changed, fetching sectional data...');
-          fetchSectionalData(currentTrack.name, currentTrack.artists[0].name);
+          console.log(`🎯 Original track name: "${currentTrack.name}"`);
+          console.log(`🧹 Cleaned track name: "${cleanTrackName}"`);
+          fetchSectionalData(cleanTrackName, artistName);
           setLastFetchedTrack(trackKey);
         }
       }

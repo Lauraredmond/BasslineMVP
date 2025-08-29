@@ -267,12 +267,16 @@ export const DebugPanel: React.FC = () => {
       const testArtist = 'Foo Fighters';
       
       console.log(`🎯 Testing streaming vendor sections for: "${testTrack}" by "${testArtist}"`);
+      console.log('🌐 Function URL: /netlify/functions/get-streaming-vendor-sections');
       
       const response = await fetch('/netlify/functions/get-streaming-vendor-sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ trackName: testTrack, artistName: testArtist })
       });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (response.ok) {
         const data = await response.json();
