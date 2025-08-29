@@ -564,12 +564,18 @@ const MusicSync = () => {
 
           if (tempo) {
             console.log(`🎵 AUTO-CAPTURE BPM: ${tempo} (${source}) for "${state.item.name}"`);
+            console.log(`🔧 CALLING AutomaticBPMCapture.captureBPMForTrack...`);
+            
             AutomaticBPMCapture.captureBPMForTrack(
               state.item.name,
               state.item.artists?.[0]?.name || '',
               tempo,
               state.item.duration_ms
-            );
+            ).then(() => {
+              console.log(`✅ AutomaticBPMCapture completed for "${state.item.name}"`);
+            }).catch(error => {
+              console.error(`❌ AutomaticBPMCapture failed for "${state.item.name}":`, error);
+            });
           } else {
             console.warn('❌ No BPM available from Spotify OR RapidAPI');
           }
@@ -797,6 +803,8 @@ const MusicSync = () => {
 
     try {
       // Get BPM from streaming_vendor_attributes table
+      console.log(`🔍 DATABASE LOOKUP: Searching for BPM for "${playbackState.item.name}" by "${playbackState.item.artists[0]?.name}"`);
+      
       const { data: bpmData, error: bpmError } = await supabase
         .from('streaming_vendor_attributes')
         .select('spotify_tempo')
@@ -805,6 +813,8 @@ const MusicSync = () => {
         .not('spotify_tempo', 'is', null)
         .limit(1)
         .single();
+        
+      console.log(`📊 DATABASE BPM RESULT:`, { bpmData, bpmError });
 
       if (bpmError || !bpmData?.spotify_tempo) {
         console.warn('❌ No BPM found in streaming_vendor_attributes table');
@@ -1226,8 +1236,8 @@ const MusicSync = () => {
                   <div className="space-y-3">
                     {/* Coaching Narrative Display */}
                     {(() => {
-                      // Use database narratives first, fallback to regular narratives
-                      const narrativeToShow = currentDatabaseNarrative?.text || getCurrentNarrative();
+                      // ONLY show database narratives - no hardcoded fallbacks 
+                      const narrativeToShow = currentDatabaseNarrative?.text;
                       
                       return narrativeToShow ? (
                         <div className="relative">
