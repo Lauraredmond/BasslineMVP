@@ -40,7 +40,7 @@ CREATE TABLE workout_phases (
 CREATE TABLE instruction_narratives (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     workout_track VARCHAR(100) NOT NULL, -- 'sprint_intervals', 'climb', 'resistance', etc.
-    song_component VARCHAR(50) NOT NULL, -- 'intro', 'verse', 'pre_chorus', 'chorus', 'bridge', 'outro'
+    song_component VARCHAR(50) NOT NULL, -- 'intro', 'verse', 'verse_2', 'verse_3', 'pre_chorus', 'chorus', 'chorus_2', 'chorus_3', 'bridge', 'breakdown', 'end_of_bar', 'outro'
     text TEXT NOT NULL, -- The instruction narrative
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(workout_track, song_component) -- Each workout track has unique narratives per song component
@@ -298,4 +298,65 @@ INSERT INTO instruction_narratives (workout_track, song_component, text) VALUES
 ('warmup', 'pre_chorus', 'Gradually increasing - your body is getting ready for more intensity.'),
 ('warmup', 'chorus', 'Perfect warmup pace - you''re feeling good and ready to work harder.'),
 ('warmup', 'bridge', 'Final warmup phase - your body is primed and ready for action.'),
-('warmup', 'outro', 'Warmup complete - you''re ready to tackle the main workout!');
+('warmup', 'outro', 'Warmup complete - you''re ready to tackle the main workout!'),
+
+-- Additional song components for all workout tracks
+-- BREAKDOWN components
+('sprint_intervals', 'breakdown', 'Breakdown time! Let loose and sprint with the music breakdown!'),
+('climb', 'breakdown', 'Breakdown climb - power through this intense musical moment!'),
+('resistance', 'breakdown', 'Heavy resistance breakdown - this is your moment to dominate!'),
+('jumps', 'breakdown', 'Crazy jumps during breakdown - let the music move you!'),
+('recovery', 'breakdown', 'Easy breakdown - stay controlled during this musical intensity.'),
+('hills', 'breakdown', 'Hill breakdown - standing power through this epic moment!'),
+('cooldown', 'breakdown', 'Gentle breakdown - let the music wash over you as you cool down.'),
+('warmup', 'breakdown', 'Warmup breakdown - feel the music building your energy!'),
+
+-- END OF BAR components
+('sprint_intervals', 'end_of_bar', 'End of bar sprint - finish strong into the next phrase!'),
+('climb', 'end_of_bar', 'Bar ending climb - power through to the next musical phrase!'),
+('resistance', 'end_of_bar', 'Resistance bar ending - strong finish into the next section!'),
+('jumps', 'end_of_bar', 'Jump at bar end - transition smoothly to the next phrase!'),
+('recovery', 'end_of_bar', 'Bar end recovery - smooth transition, stay relaxed.'),
+('hills', 'end_of_bar', 'Hill bar ending - crest the phrase and prepare for the next!'),
+('cooldown', 'end_of_bar', 'Bar end cooldown - gentle transition to the next phrase.'),
+('warmup', 'end_of_bar', 'Bar end warmup - building smoothly to the next section!'),
+
+-- VERSE 2 components
+('sprint_intervals', 'verse_2', 'Second verse sprint! You''ve found your rhythm - now push harder!'),
+('climb', 'verse_2', 'Second climb verse - you know the drill, add more resistance!'),
+('resistance', 'verse_2', 'Verse 2 resistance - double down on that heavy resistance work!'),
+('jumps', 'verse_2', 'Second verse jumps - you''ve got the pattern, now perfect it!'),
+('recovery', 'verse_2', 'Second recovery verse - maintain that steady, controlled pace.'),
+('hills', 'verse_2', 'Hills verse 2 - another hill to conquer, you''ve got this!'),
+('cooldown', 'verse_2', 'Second cooldown verse - deeper into relaxation and recovery.'),
+('warmup', 'verse_2', 'Warmup verse 2 - your body is warming up nicely, keep building!'),
+
+-- VERSE 3 components
+('sprint_intervals', 'verse_3', 'Final verse sprint - this is where legends are made!'),
+('climb', 'verse_3', 'Third climb verse - summit time! Maximum resistance and power!'),
+('resistance', 'verse_3', 'Final resistance verse - show this workout who''s the boss!'),
+('jumps', 'verse_3', 'Third verse jumps - perfect execution, you''ve mastered this!'),
+('recovery', 'verse_3', 'Final recovery verse - well-earned rest, you''ve worked hard.'),
+('hills', 'verse_3', 'Hills verse 3 - final hill conquest, power over the top!'),
+('cooldown', 'verse_3', 'Final cooldown verse - complete relaxation, beautiful work today.'),
+('warmup', 'verse_3', 'Final warmup verse - fully warmed up and ready for action!'),
+
+-- CHORUS 2 components  
+('sprint_intervals', 'chorus_2', 'Second chorus sprint! Even faster now - you''re unstoppable!'),
+('climb', 'chorus_2', 'Chorus 2 climb - peak power! This is your mountain-crushing moment!'),
+('resistance', 'chorus_2', 'Second chorus resistance - maximum power through the music peak!'),
+('jumps', 'chorus_2', 'Chorus 2 jumps - explosive movement with the musical climax!'),
+('recovery', 'chorus_2', 'Second chorus recovery - controlled intensity, smart pacing.'),
+('hills', 'chorus_2', 'Hills chorus 2 - standing power! Drive through this musical peak!'),
+('cooldown', 'chorus_2', 'Chorus 2 cooldown - let the music''s energy gently carry you down.'),
+('warmup', 'chorus_2', 'Warmup chorus 2 - feeling the energy build, ready for more!'),
+
+-- CHORUS 3 components
+('sprint_intervals', 'chorus_3', 'Final chorus sprint - everything you''ve got! Sprint to glory!'),
+('climb', 'chorus_3', 'Ultimate chorus climb - this is your Everest moment! Conquer it!'),
+('resistance', 'chorus_3', 'Final chorus resistance - legendary effort! Power through!'),
+('jumps', 'chorus_3', 'Final chorus jumps - perfect execution meets musical perfection!'),
+('recovery', 'chorus_3', 'Final chorus recovery - well-deserved gentle pace after hard work.'),
+('hills', 'chorus_3', 'Final hills chorus - summit conquered! You are unstoppable!'),
+('cooldown', 'chorus_3', 'Final chorus cooldown - perfect peaceful finish to an amazing workout.'),
+('warmup', 'chorus_3', 'Final warmup chorus - completely ready! Let''s crush this workout!');
