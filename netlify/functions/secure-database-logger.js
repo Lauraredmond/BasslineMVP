@@ -50,13 +50,17 @@ exports.handler = async (event, context) => {
       
       // Special debug mode for streaming vendor attributes
       if (action === 'debug_streaming_vendor') {
-        console.log('🔍 DEBUG MODE: Checking streaming_vendor_attributes table...');
+        const trackName = requestBody.trackName || 'The Pretender';
+        const artistName = requestBody.artistName || 'Foo Fighters';
+        
+        console.log(`🔍 DEBUG MODE: Checking streaming_vendor_attributes table for: "${trackName}" by "${artistName}"`);
         
         const { data: vendorData, error } = await supabase
           .from('streaming_vendor_attributes')
           .select('*')
-          .eq('track_name', 'The Pretender')
-          .eq('artist_name', 'Foo Fighters')
+          .eq('track_name', trackName)
+          .eq('artist_name', artistName)
+          .not('section_type', 'is', null)
           .order('timestamp_ms');
         
         if (error) {

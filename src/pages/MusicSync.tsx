@@ -1413,14 +1413,6 @@ const MusicSync = () => {
                     </div>
                   )}
                   
-                  <div className="text-sm text-primary/70 mb-4">
-                    <p>Phase {currentPhase + 1} of {workoutPhases.length} • {workoutPhases[currentPhase]?.duration}</p>
-                    {workoutPlan && currentTrackPhase && (
-                      <p className="text-xs mt-1">
-                        Target: {currentTrackPhase.phase.targetTempo} BPM • {currentTrackPhase.phase.energyLevel} energy
-                      </p>
-                    )}
-                  </div>
                   <div className="space-y-3">
                     {/* Coaching Narrative Display */}
                     {(() => {

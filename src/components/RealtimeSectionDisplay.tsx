@@ -80,7 +80,11 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       const streamingVendorResponse = await fetch('/netlify/functions/secure-database-logger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'debug_streaming_vendor' })
+        body: JSON.stringify({ 
+          action: 'debug_streaming_vendor',
+          trackName: trackName,
+          artistName: artistName 
+        })
       });
 
       if (streamingVendorResponse.ok) {
