@@ -65,6 +65,8 @@ exports.handler = async (event, context) => {
           console.log('📊 Sample data in table:', allData);
         }
         
+        console.log(`🔍 Querying with exact values: track_name='${trackName}', artist_name='${artistName}'`);
+        
         const { data: vendorData, error } = await supabase
           .from('streaming_vendor_attributes')
           .select('*')
@@ -72,6 +74,13 @@ exports.handler = async (event, context) => {
           .eq('artist_name', artistName)
           .not('section_type', 'is', null)
           .order('timestamp_ms');
+          
+        console.log(`📊 Query result: ${vendorData?.length || 0} records found`);
+        if (vendorData?.length > 0) {
+          console.log('✅ FOUND YOUR DATA!', vendorData.map(d => `${d.section_type} @${Math.round(d.timestamp_ms/1000)}s`));
+        } else {
+          console.log('❌ NO DATA FOUND - Check if track/artist names match exactly');
+        }
         
         if (error) {
           return {
