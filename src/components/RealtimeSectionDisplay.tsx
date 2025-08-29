@@ -75,12 +75,12 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     try {
       console.log('🎯 Fetching sectional data for real-time display:', trackName);
       
-      // PRIORITY 1: Query streaming_vendor_attributes table first
+      // PRIORITY 1: Query streaming_vendor_attributes table first using working function
       console.log('🔍 Checking streaming_vendor_attributes table for manual section data...');
-      const streamingVendorResponse = await fetch('/netlify/functions/get-streaming-vendor-sections', {
+      const streamingVendorResponse = await fetch('/netlify/functions/secure-database-logger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackName, artistName })
+        body: JSON.stringify({ action: 'debug_streaming_vendor' })
       });
 
       if (streamingVendorResponse.ok) {
@@ -89,30 +89,63 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           console.log('✅ Found streaming vendor section data:', streamingData.sections.length, 'sections');
           console.log('🎯 Streaming vendor sections preview:', streamingData.sections.slice(0, 3));
           
-          // Validate and use streaming vendor sections
-          const validSections = streamingData.sections.filter(section => 
-            section && 
-            typeof section.sectionType === 'string' && 
-            typeof section.sectionStartTime === 'number' &&
-            typeof section.sectionEndTime === 'number'
-          );
+          // Transform secure function data format to component format
+          const transformedSections = streamingData.sections.map((row: any, index: number) => {
+            const startTimeSeconds = row.timestamp_ms / 1000;
+            const nextRow = streamingData.sections[index + 1];
+            const endTimeSeconds = nextRow ? nextRow.timestamp_ms / 1000 : startTimeSeconds + 30;
+            
+            // Include section number in the display
+            const sectionLabel = row.section_number && row.section_number > 1 ? 
+              `${row.section_type} ${row.section_number}` : 
+              row.section_type;
+            
+            return {
+              sectionIndex: index,
+              sectionType: sectionLabel,
+              sectionStartTime: startTimeSeconds,
+              sectionDuration: endTimeSeconds - startTimeSeconds,
+              sectionEndTime: endTimeSeconds,
+              sectionIndicator: `${sectionLabel} (${Math.round(startTimeSeconds)}s-${Math.round(endTimeSeconds)}s)`,
+              energy: row.energy_level || 75,
+              tempo: 120,
+              loudness: -6,
+              intensity: row.energy_level || 75,
+              timestampMs: row.timestamp_ms,
+              notes: row.notes,
+              dataSource: 'streaming_vendor_attributes',
+              sectionNumber: row.section_number,
+              rawSectionType: row.section_type
+            };
+          });
           
-          if (validSections.length > 0) {
-            console.log('✅ Using streaming_vendor_attributes sections:', validSections.map(s => ({
-              type: s.sectionType,
-              start: s.sectionStartTime,
-              end: s.sectionEndTime,
-              timestampMs: s.timestampMs
-            })));
-            setSections(validSections);
-            setError(null);
-            return;
-          }
+          console.log('✅ USING STREAMING_VENDOR_ATTRIBUTES DATA - YOUR MANUAL TIMING!');
+          console.log('📊 SECTIONS FROM YOUR SUPABASE TABLE:', transformedSections.map(s => ({
+            type: s.sectionType,
+            start: s.sectionStartTime,
+            end: s.sectionEndTime,
+            timestampMs: s.timestampMs
+          })));
+          
+          // Force a very obvious log when using your data
+          transformedSections.forEach(s => {
+            console.log(`🎯 MANUAL SECTION: ${s.sectionType} will show at ${s.sectionStartTime}s (timestamp_ms: ${s.timestampMs})`);
+          });
+          
+          setSections(transformedSections);
+          setError(null);
+          return;
+        } else {
+          console.log('❌ streaming_vendor_attributes function call failed or returned no data');
         }
+      } else {
+        console.log('❌ streaming_vendor_attributes function returned error status:', streamingVendorResponse.status);
+        console.log('❌ This means falling back to algorithms instead of your manual timing!');
       }
       
       // FALLBACK 1: Query the original analysis logs table
       console.log('🔍 No streaming vendor data found, checking analysis logs...');
+      console.log('⚠️ WARNING: Using algorithmic fallback instead of your manual timing data!');
       const response = await fetch('/netlify/functions/get-sectional-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
