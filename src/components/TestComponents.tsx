@@ -281,7 +281,22 @@ export const DebugPanel: React.FC = () => {
         if (data.sections && data.sections.length > 0) {
           const sectionsPreview = data.sections.map(s => `${s.sectionType} @${Math.round(s.timestampMs/1000)}s`).join(', ');
           console.log('✅ Found sections:', sectionsPreview);
-          alert(`✅ STREAMING VENDOR SECTIONS SUCCESS!\n\nTrack: ${testTrack}\nSections found: ${data.sections.length}\n\n📊 Sections:\n${data.sections.map(s => `• ${s.sectionType} at ${Math.round(s.timestampMs/1000)}s`).join('\n')}\n\n✅ Data source: streaming_vendor_attributes table`);
+          
+          // Show debug timing data if available
+          if (data.debug && data.debug.rawData) {
+            const timingReport = data.debug.rawData.map(s => 
+              `${s.section_type}${s.section_number ? ` ${s.section_number}` : ''}: ${s.timestamp_readable} (${s.timestamp_seconds}s)`
+            ).join('\n');
+            
+            const gapsReport = data.debug.analysis.timingGaps
+              .filter(gap => gap.gapSeconds)
+              .map(gap => `${gap.current} → ${gap.next}: ${gap.gapSeconds}s gap`)
+              .join('\n');
+            
+            alert(`🔍 DETAILED SUPABASE TIMING ANALYSIS\n\n📊 The Pretender Sections (${data.totalSections} total):\n${timingReport}\n\n⏱️ Section Gaps:\n${gapsReport}\n\n🎵 Section Types Found:\n${data.debug.analysis.sectionTypes.join(', ')}\n\n${data.debug.analysis.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\n${data.debug.rawData.some(s => s.notes && s.notes.includes('estimated')) ? '⚠️ Using ESTIMATED sample data!' : '✅ Using your manual timing data'}`);
+          } else {
+            alert(`✅ STREAMING VENDOR SECTIONS SUCCESS!\n\nTrack: ${testTrack}\nSections found: ${data.sections.length}\n\n📊 Sections:\n${data.sections.map(s => `• ${s.sectionType} at ${Math.round(s.timestampMs/1000)}s`).join('\n')}\n\n✅ Data source: streaming_vendor_attributes table`);
+          }
         } else {
           console.log('⚠️ No streaming vendor sections found');
           alert(`⚠️ No sections found in streaming_vendor_attributes table for "${testTrack}"\n\nThis is expected if manual section data hasn't been added yet.`);
