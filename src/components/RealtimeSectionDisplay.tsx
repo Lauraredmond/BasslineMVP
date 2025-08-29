@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { algorithmicSectionAnalyzer } from '@/lib/algorithmic-section-analyzer';
 import type { PredictedSection, SongMetadata } from '@/lib/algorithmic-section-analyzer';
 import { supabase } from '@/lib/supabase';
+import { AnimatedPTNarrative } from './AnimatedPTNarrative';
 
 interface SectionData {
   sectionIndex: number;
@@ -27,6 +28,9 @@ interface RealtimeSectionDisplayProps {
     name: string;
     artists: Array<{ name: string }>;
     duration_ms?: number; // Track duration for algorithmic analysis
+    audio_features?: {
+      tempo?: number;
+    };
   };
   currentPositionMs?: number;
   isPlaying?: boolean;
@@ -745,6 +749,20 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
             </div>
           </div>
         )}
+        
+        {/* 🏋️‍♀️ ANIMATED PT NARRATIVES - Shows instructor guidance based on current section */}
+        <AnimatedPTNarrative 
+          currentSection={currentSection}
+          currentTrack={currentTrack ? {
+            ...currentTrack,
+            tempo: spotifyMetadata?.tempo,
+            audio_features: {
+              ...currentTrack.audio_features,
+              tempo: currentTrack.audio_features?.tempo || spotifyMetadata?.tempo
+            }
+          } : undefined}
+        />
+        
       </div>
     );
   } catch (error) {

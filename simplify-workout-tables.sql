@@ -66,12 +66,14 @@ INSERT INTO workout_phases (workout_track, target_tempo_min, target_tempo_max) V
 INSERT INTO instruction_narratives (workout_track, song_component, text) VALUES
 
 -- SPRINT INTERVALS narratives
-('sprint_intervals', 'intro', 'Get ready to sprint! Find your baseline pace - we''re about to fly.'),
-('sprint_intervals', 'verse', 'Sprint time! Quick legs, strong core - let the beat drive you forward!'),
-('sprint_intervals', 'pre_chorus', 'Building to the big moment - increase your pace, feel the energy rising!'),
-('sprint_intervals', 'chorus', 'This is it! Maximum effort - sprint like you mean it! Quick legs!'),
-('sprint_intervals', 'bridge', 'Sustained power - hold that high intensity, you''ve got this!'),
-('sprint_intervals', 'outro', 'Final sprint home - give everything you''ve got left!'),
+('sprint_intervals', 'intro', 'Sprint track! Medium pace to start with.'),
+('sprint_intervals', 'verse', 'Start to build up speed with the music as it builds'),
+('sprint_intervals', 'pre_chorus', '80% of your capacity here'),
+('sprint_intervals', 'chorus', 'Maximum effort, dip the toes, tuck in, now sprint!'),
+('sprint_intervals', 'bridge', 'Ease it back'),
+('sprint_intervals', 'verse 2', 'Start to build up speed again'),
+('sprint_intervals', 'chorus 2', '100%, now drive!'),
+('sprint_intervals', 'outro', 'All the way to the end'),
 
 -- CLIMB narratives
 ('climb', 'intro', 'Time to climb! Add resistance and find your climbing rhythm.'),
@@ -82,12 +84,12 @@ INSERT INTO instruction_narratives (workout_track, song_component, text) VALUES
 ('climb', 'outro', 'Final push to the summit - you''ve almost conquered this climb!'),
 
 -- RESISTANCE narratives  
-('resistance', 'intro', 'Heavy resistance ahead - settle in and prepare for the grind.'),
-('resistance', 'verse', 'Feel that resistance - strong, controlled strokes. Let the bass drive your legs.'),
-('resistance', 'pre_chorus', 'Building intensity with resistance - stay strong, stay focused.'),
-('resistance', 'chorus', 'Maximum resistance! This is where champions are made - push through!'),
-('resistance', 'bridge', 'Sustained heavy resistance - mental toughness time. You''ve got this!'),
-('resistance', 'outro', 'Power through to the finish - show that resistance who''s boss!'),
+('resistance', 'intro', 'Heavy resistance ahead - this should be the heaviest resistance that you put on for the entire class.'),
+('resistance', 'verse 1', 'Quarter turn'),
+('resistance', 'verse 2', 'Quarter turn'),
+('resistance', 'verse 3', 'Quarter turn, you''re here for a while'),
+('resistance', 'verse 4', 'Quarter turn'),
+('resistance', 'outro', 'All the way'),
 
 -- JUMPS narratives
 ('jumps', 'intro', 'Get ready to jump! Up for 8, down for 8 - find your rhythm.'),
