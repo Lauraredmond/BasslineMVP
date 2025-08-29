@@ -18,6 +18,7 @@ import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 // Removed WebAudioAnalysisLogger - eliminated Web Audio capture
 import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
 import { RealtimeSectionDisplay } from "@/components/RealtimeSectionDisplay";
+import { AutomaticBPMCapture } from "@/lib/automatic-bpm-capture";
 import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
 import { databaseMigrator } from "@/lib/database-migrator";
 import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
@@ -532,6 +533,15 @@ const MusicSync = () => {
           }
         }
         setPlaybackState(state);
+        
+        // 🎵 AUTO-CAPTURE BPM: Store Spotify tempo when track plays
+        if (state?.item?.audio_features?.tempo) {
+          AutomaticBPMCapture.captureBPMForTrack(
+            state.item.name,
+            state.item.artists?.[0]?.name || '',
+            state.item.audio_features.tempo
+          );
+        }
         
         if (state) {
           setIsPlaying(state.is_playing);

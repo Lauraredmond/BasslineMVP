@@ -99,7 +99,14 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     }
     
     if (!tempo) {
-      console.log('⚠️ No BPM available, defaulting to recovery');
+      console.log('❌ CRITICAL: No BPM available for workout mapping!');
+      console.log('🔍 Available data:', { 
+        trackName: currentTrack?.name, 
+        dbBPM, 
+        spotifyBPM: currentTrack?.audio_features?.tempo,
+        fallbackBPM: currentTrack?.tempo 
+      });
+      console.log('⚠️ Defaulting to recovery - this is the bug!');
       return 'recovery';
     }
     

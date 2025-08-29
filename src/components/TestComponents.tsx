@@ -625,6 +625,32 @@ export const DebugPanel: React.FC = () => {
         </button>
         
         <button 
+          onClick={async () => {
+            try {
+              console.log('🔧 Running BPM data fix...');
+              const response = await fetch('/.netlify/functions/fix-bpm-data');
+              const result = await response.json();
+              console.log('✅ BPM fix result:', result);
+              alert(`✅ BPM FIX COMPLETE!\n\nColumn added: ${result.columnAdded}\nPretender updated: ${result.pretenderUpdated} records\n\nCheck console for details.`);
+            } catch (error) {
+              console.error('❌ BPM fix failed:', error);
+              alert('❌ BPM fix failed - check console for details');
+            }
+          }}
+          style={{
+            padding: '6px 10px',
+            background: '#fd7e14',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🎵 Fix BPM Data
+        </button>
+        
+        <button 
           onClick={exportLogs}
           style={{
             padding: '6px 10px',
