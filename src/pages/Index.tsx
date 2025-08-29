@@ -46,7 +46,7 @@ const Index = () => {
         </div>
 
         {/* Main Action Buttons - Updated hover states for better readability */}
-        <div className="space-y-4 mb-20">
+        <div className="space-y-4 mb-6">
           <Button 
             onClick={() => navigate('/music-sync')}
             className="w-full h-14 text-lg bg-energy-gradient shadow-button transition-smooth text-cream font-semibold hover:!bg-cream hover:!text-maroon"
@@ -72,7 +72,7 @@ const Index = () => {
             onClick={() => navigate('/audio-timestamping')}
             className="w-full h-14 text-lg bg-burgundy-dark shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-maroon border border-cream/30"
           >
-            🎤 Audio Timestamping Tool
+            Audio Timestamping Tool
           </Button>
         </div>
 

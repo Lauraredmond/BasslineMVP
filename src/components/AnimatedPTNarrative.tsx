@@ -219,7 +219,6 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
             {/* Header with Workout Track */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🏋️‍♀️</span>
                 <span className="text-xs uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
                 </span>
@@ -227,14 +226,12 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
               {(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo) && (
                 <span className="text-xs bg-white/20 px-2 py-1 rounded">
                   {Math.round(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo || 0)} BPM
-                  {detectedBPM && <span className="ml-1 text-green-300">📊</span>}
                 </span>
               )}
             </div>
             
             {/* Animated Narrative Text */}
             <div className="pt-narrative-text text-base font-semibold leading-relaxed">
-              <span className="text-2xl mr-2">💬</span>
               <span className="italic">"{narrative}"</span>
             </div>
             
@@ -242,13 +239,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
             <div className="mt-3 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded animate-pulse" />
           </div>
           
-          {/* Floating Animation Elements */}
-          {showNarrative && (
-            <>
-              <div className="absolute -top-2 -right-2 text-lg animate-bounce delay-300">💪</div>
-              <div className="absolute -bottom-2 -left-2 text-lg animate-bounce delay-700">🎵</div>
-            </>
-          )}
+          {/* Clean animations without emoticons */}
         </div>
       </div>
       

@@ -699,12 +699,8 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         <div className={getSectionStyling(currentSection.sectionType)}>
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">
-                {currentSection.sectionType === 'chorus' ? '🎤' :
-                 currentSection.sectionType === 'verse' ? '🎵' :
-                 currentSection.sectionType === 'intro' ? '🎶' :
-                 currentSection.sectionType === 'bridge' ? '🌉' :
-                 currentSection.sectionType === 'outro' ? '🎭' : '🎼'}
+              <span className="text-lg font-bold">
+                {currentSection.sectionType.toUpperCase()}
               </span>
               <span className="uppercase font-black text-xl tracking-wide">
                 {currentSection.sectionType || 'UNKNOWN'}
@@ -750,7 +746,7 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           </div>
         )}
         
-        {/* 🏋️‍♀️ ANIMATED PT NARRATIVES - Shows instructor guidance based on current section */}
+        {/* ANIMATED PT NARRATIVES - Shows instructor guidance based on current section */}
         <AnimatedPTNarrative 
           currentSection={currentSection}
           currentTrack={currentTrack ? {
