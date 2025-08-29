@@ -23,7 +23,7 @@ export class AutomaticBPMCapture {
     }
     
     try {
-      console.log(`🎵 UPDATING ONLY spotify_tempo: ${spotifyTempo} BPM for "${trackName}" by "${artistName}"`);
+      console.log(`🎵 NEW VERSION: UPDATING ONLY spotify_tempo: ${spotifyTempo} BPM for "${trackName}" by "${artistName}" (NO DELETES)`);
       
       // Check if records exist for this track
       const { data: existing } = await supabase
@@ -50,7 +50,7 @@ export class AutomaticBPMCapture {
           return;
         }
         
-        console.log(`✅ UPDATED spotify_tempo to ${spotifyTempo} for "${trackName}" (preserved all section data)`);
+        console.log(`✅ FIXED: ONLY updated spotify_tempo to ${spotifyTempo} for "${trackName}" (preserved all section data)`);
       } else {
         // Only create minimal record if NO records exist (rare case)
         const { data, error } = await supabase
