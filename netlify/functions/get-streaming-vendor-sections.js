@@ -140,6 +140,31 @@ exports.handler = async (event, context) => {
       };
     });
 
+    // Add debug information
+    const debugInfo = {
+      rawData: data.map(row => ({
+        section_type: row.section_type,
+        section_number: row.section_number,
+        timestamp_ms: row.timestamp_ms,
+        timestamp_seconds: Math.round(row.timestamp_ms / 1000),
+        timestamp_readable: `${Math.floor(row.timestamp_ms / 60000)}:${String(Math.floor((row.timestamp_ms % 60000) / 1000)).padStart(2, '0')}`,
+        notes: row.notes,
+        energy_level: row.energy_level
+      })),
+      analysis: {
+        hasPrechorus: data.some(row => row.section_type === 'pre-chorus' || row.section_type === 'prechorus'),
+        sectionTypes: [...new Set(data.map(row => row.section_type))],
+        timingGaps: data.map((row, index) => {
+          const next = data[index + 1];
+          return {
+            current: `${Math.floor(row.timestamp_ms / 60000)}:${String(Math.floor((row.timestamp_ms % 60000) / 1000)).padStart(2, '0')}`,
+            next: next ? `${Math.floor(next.timestamp_ms / 60000)}:${String(Math.floor((next.timestamp_ms % 60000) / 1000)).padStart(2, '0')}` : null,
+            gapSeconds: next ? Math.round((next.timestamp_ms - row.timestamp_ms) / 1000) : null
+          };
+        })
+      }
+    };
+
     return {
       statusCode: 200,
       headers,
@@ -148,7 +173,8 @@ exports.handler = async (event, context) => {
         trackName,
         artistName,
         totalSections: sections.length,
-        dataSource: 'streaming_vendor_attributes'
+        dataSource: 'streaming_vendor_attributes',
+        debug: debugInfo
       })
     };
 

@@ -301,27 +301,30 @@ export const DebugPanel: React.FC = () => {
     try {
       console.log('🔍 DEBUG: Checking actual Supabase timing data for The Pretender...');
       
-      const response = await fetch('/netlify/functions/debug-streaming-vendor-data', {
+      const response = await fetch('/netlify/functions/get-streaming-vendor-sections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+        body: JSON.stringify({ trackName: 'The Pretender', artistName: 'Foo Fighters' })
       });
       
       if (response.ok) {
         const data = await response.json();
         console.log('📊 RAW SUPABASE DATA:', data);
         
-        if (data.sections && data.sections.length > 0) {
-          const timingReport = data.sections.map(s => 
+        if (data.debug && data.debug.rawData) {
+          const timingReport = data.debug.rawData.map(s => 
             `${s.section_type}${s.section_number ? ` ${s.section_number}` : ''}: ${s.timestamp_readable} (${s.timestamp_seconds}s)`
           ).join('\n');
           
-          const gapsReport = data.analysis.timingGaps
+          const gapsReport = data.debug.analysis.timingGaps
             .filter(gap => gap.gapSeconds)
             .map(gap => `${gap.current} → ${gap.next}: ${gap.gapSeconds}s gap`)
             .join('\n');
           
-          alert(`🔍 ACTUAL SUPABASE TIMING DATA\n\n📊 The Pretender Sections (${data.totalRecords} total):\n${timingReport}\n\n⏱️ Section Gaps:\n${gapsReport}\n\n🎵 Section Types Found:\n${data.analysis.sectionTypes.join(', ')}\n\n${data.analysis.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\nThis shows your ACTUAL timing data vs estimated!`);
+          alert(`🔍 ACTUAL SUPABASE TIMING DATA\n\n📊 The Pretender Sections (${data.totalSections} total):\n${timingReport}\n\n⏱️ Section Gaps:\n${gapsReport}\n\n🎵 Section Types Found:\n${data.debug.analysis.sectionTypes.join(', ')}\n\n${data.debug.analysis.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\nThis shows your ACTUAL timing data vs estimated!`);
+        } else if (data.sections && data.sections.length > 0) {
+          const basicReport = data.sections.map(s => `${s.sectionType}: ${Math.round(s.timestampMs/1000)}s`).join('\n');
+          alert(`📊 BASIC TIMING DATA:\n${basicReport}\n\nFor detailed analysis, check console logs.`);
         } else {
           alert('❌ No data found in streaming_vendor_attributes table');
         }
