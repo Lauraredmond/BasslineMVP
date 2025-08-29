@@ -530,7 +530,37 @@ export const DebugPanel: React.FC = () => {
         </button>
 
         <button 
-          onClick={debugActualSupabaseData}
+          onClick={async () => {
+            try {
+              console.log('🔍 DEBUG: Checking actual Supabase data via working function...');
+              const response = await fetch('/netlify/functions/simple-database-logger', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ debug: 'streaming_vendor_sections' })
+              });
+              console.log('📡 Debug response status:', response.status);
+              
+              if (response.ok) {
+                const data = await response.json();
+                console.log('📊 SUPABASE STREAMING VENDOR DATA:', data);
+                
+                if (data.totalRecords > 0) {
+                  const timingReport = data.sections.map(s => 
+                    `${s.section_type}: ${s.timestamp_readable} (${Math.round(s.timestamp_ms/1000)}s)`
+                  ).join('\n');
+                  
+                  alert(`🔍 ACTUAL SUPABASE DATA FOUND!\n\n📊 The Pretender (${data.totalRecords} records):\n${timingReport}\n\n🎵 Section Types: ${data.sectionTypes.join(', ')}\n\n${data.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\n${data.sections.some(s => s.notes?.includes('estimated')) ? '⚠️ Using ESTIMATED data' : '✅ Using manual data'}`);
+                } else {
+                  alert('❌ No data in streaming_vendor_attributes table for The Pretender\n\nYou need to add your manual timing data first!');
+                }
+              } else {
+                alert(`❌ Debug call failed: ${response.status}`);
+              }
+            } catch (error) {
+              console.error('Debug error:', error);
+              alert(`❌ Debug failed: ${error.message}`);
+            }
+          }}
           style={{
             padding: '6px 10px',
             background: '#8b5cf6',
@@ -541,7 +571,7 @@ export const DebugPanel: React.FC = () => {
             fontSize: '12px'
           }}
         >
-          🔍 Debug Supabase Data
+          🔍 Check Supabase Data
         </button>
         
         <button 

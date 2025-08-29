@@ -22,6 +22,61 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    const body = JSON.parse(event.body || '{}');
+    
+    // Special debug mode for streaming vendor attributes
+    if (body.debug === 'streaming_vendor_sections') {
+      console.log('🔍 DEBUG MODE: Checking streaming_vendor_attributes table...');
+      
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      if (!supabaseUrl || !supabaseServiceKey) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: 'Missing Supabase config' })
+        };
+      }
+      
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      const { data, error } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('*')
+        .eq('track_name', 'The Pretender')
+        .eq('artist_name', 'Foo Fighters')
+        .order('timestamp_ms');
+      
+      if (error) {
+        return {
+          statusCode: 500,
+          headers,
+          body: JSON.stringify({ error: error.message })
+        };
+      }
+      
+      const debugData = data.map(row => ({
+        section_type: row.section_type,
+        timestamp_ms: row.timestamp_ms,
+        timestamp_readable: `${Math.floor(row.timestamp_ms / 60000)}:${String(Math.floor((row.timestamp_ms % 60000) / 1000)).padStart(2, '0')}`,
+        notes: row.notes
+      }));
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          message: 'Streaming vendor debug data',
+          totalRecords: data.length,
+          sections: debugData,
+          hasPrechorus: data.some(row => row.section_type?.includes('pre-chorus')),
+          sectionTypes: [...new Set(data.map(row => row.section_type))]
+        })
+      };
+    }
+    
     // Environment variables
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
