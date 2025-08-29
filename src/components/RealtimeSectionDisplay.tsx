@@ -84,14 +84,16 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       if (data && data.length > 0) {
         console.log('✅ FOUND YOUR DATA DIRECTLY!', data.map(d => `${d.section_type}${d.section_number ? ` ${d.section_number}` : ''} @${Math.round(d.timestamp_ms/1000)}s`));
         
-        // Transform to component format
+        // Transform to component format - sections are already ordered by timestamp_ms
         const sections = data.map((row, index) => {
           const startTimeSeconds = row.timestamp_ms / 1000;
           const nextRow = data[index + 1];
           const endTimeSeconds = nextRow ? nextRow.timestamp_ms / 1000 : startTimeSeconds + 30;
           
-          const sectionLabel = row.section_number && row.section_number > 1 ? 
-            `${row.section_type} ${row.section_number}` : 
+          // Count how many times this section type has appeared so far in chronological order
+          const sectionTypeCount = data.slice(0, index + 1).filter(r => r.section_type === row.section_type).length;
+          const sectionLabel = sectionTypeCount > 1 ? 
+            `${row.section_type} ${sectionTypeCount}` : 
             row.section_type;
           
           return {
