@@ -17,6 +17,8 @@ interface SectionData {
   narrative?: string;  // Workout instruction
   timestampMs?: number; // Original timestamp from streaming_vendor_attributes
   dataSource?: string; // Where this data came from
+  sectionNumber?: number; // Section number for repeated sections
+  rawSectionType?: string; // Original section type without number
 }
 
 interface RealtimeSectionDisplayProps {
@@ -615,7 +617,9 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
             <div className="grid grid-cols-1 gap-1 text-center">
               {sections.map((section, index) => (
                 <div key={index} className={`${section === currentSection ? 'text-primary font-bold' : ''}`}>
-                  {section.sectionType} @{Math.round(section.timestampMs / 1000)}s
+                  {section.rawSectionType || section.sectionType}
+                  {section.sectionNumber && section.sectionNumber > 1 && ` ${section.sectionNumber}`}
+                  {' '}@{Math.round(section.timestampMs / 1000)}s
                   {section.notes && section.notes.includes('estimated') && ' (estimated)'}
                 </div>
               ))}

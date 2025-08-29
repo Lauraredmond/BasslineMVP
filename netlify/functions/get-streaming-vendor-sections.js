@@ -64,7 +64,7 @@ exports.handler = async (event, context) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Query for section data from streaming_vendor_attributes table
+    // Query for ALL section data from streaming_vendor_attributes table
     let query = supabase
       .from('streaming_vendor_attributes')
       .select(`
@@ -82,7 +82,6 @@ exports.handler = async (event, context) => {
         created_at
       `)
       .eq('track_name', trackName)
-      .eq('event_type', 'section_change')
       .not('section_type', 'is', null)
       .order('timestamp_ms', { ascending: true });
 
@@ -123,20 +122,27 @@ exports.handler = async (event, context) => {
       const endTimeSeconds = nextRow ? nextRow.timestamp_ms / 1000 : startTimeSeconds + 30; // Default 30s if last section
       const durationSeconds = endTimeSeconds - startTimeSeconds;
       
+      // Include section number in the display
+      const sectionLabel = row.section_number && row.section_number > 1 ? 
+        `${row.section_type} ${row.section_number}` : 
+        row.section_type;
+      
       return {
         sectionIndex: index,
-        sectionType: row.section_type,
+        sectionType: sectionLabel, // Use section + number for display
         sectionStartTime: startTimeSeconds,
         sectionDuration: durationSeconds,
         sectionEndTime: endTimeSeconds,
-        sectionIndicator: `${row.section_type} (${Math.round(startTimeSeconds)}s-${Math.round(endTimeSeconds)}s)`,
+        sectionIndicator: `${sectionLabel} (${Math.round(startTimeSeconds)}s-${Math.round(endTimeSeconds)}s)`,
         energy: row.energy_level || 75,
         tempo: row.estimated_tempo || 120,
         loudness: -6, // Default loudness
         intensity: row.intensity_level || 75,
         timestampMs: row.timestamp_ms,
         notes: row.notes,
-        dataSource: 'streaming_vendor_attributes'
+        dataSource: 'streaming_vendor_attributes',
+        sectionNumber: row.section_number,
+        rawSectionType: row.section_type // Keep original for matching
       };
     });
 
