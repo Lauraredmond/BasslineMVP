@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { algorithmicSectionAnalyzer } from '@/lib/algorithmic-section-analyzer';
 import type { PredictedSection, SongMetadata } from '@/lib/algorithmic-section-analyzer';
+import { supabase } from '@/lib/supabase';
 
 interface SectionData {
   sectionIndex: number;
@@ -60,6 +61,69 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // DIRECT SUPABASE TEST - Bypass all Netlify functions
+  const fetchStreamingVendorDataDirectly = async (trackName: string, artistName: string) => {
+    try {
+      console.log('🎯 DIRECT SUPABASE TEST - Bypassing all Netlify functions');
+      console.log(`🔍 Querying streaming_vendor_attributes for: "${trackName}" by "${artistName}"`);
+      
+      const { data, error } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('*')
+        .eq('track_name', trackName)
+        .eq('artist_name', artistName)
+        .not('section_type', 'is', null)
+        .order('timestamp_ms');
+      
+      if (error) {
+        console.error('❌ Direct Supabase query failed:', error);
+        return [];
+      }
+      
+      console.log(`📊 DIRECT SUPABASE RESULT: ${data?.length || 0} records`);
+      if (data && data.length > 0) {
+        console.log('✅ FOUND YOUR DATA DIRECTLY!', data.map(d => `${d.section_type}${d.section_number ? ` ${d.section_number}` : ''} @${Math.round(d.timestamp_ms/1000)}s`));
+        
+        // Transform to component format
+        const sections = data.map((row, index) => {
+          const startTimeSeconds = row.timestamp_ms / 1000;
+          const nextRow = data[index + 1];
+          const endTimeSeconds = nextRow ? nextRow.timestamp_ms / 1000 : startTimeSeconds + 30;
+          
+          const sectionLabel = row.section_number && row.section_number > 1 ? 
+            `${row.section_type} ${row.section_number}` : 
+            row.section_type;
+          
+          return {
+            sectionIndex: index,
+            sectionType: sectionLabel,
+            sectionStartTime: startTimeSeconds,
+            sectionDuration: endTimeSeconds - startTimeSeconds,
+            sectionEndTime: endTimeSeconds,
+            sectionIndicator: `${sectionLabel} (${Math.round(startTimeSeconds)}s-${Math.round(endTimeSeconds)}s)`,
+            energy: row.energy_level || 75,
+            tempo: row.estimated_tempo || 120,
+            loudness: -6,
+            intensity: row.intensity_level || 75,
+            timestampMs: row.timestamp_ms,
+            notes: row.notes,
+            dataSource: 'streaming_vendor_attributes_DIRECT',
+            sectionNumber: row.section_number,
+            rawSectionType: row.section_type
+          };
+        });
+        
+        return sections;
+      } else {
+        console.log('❌ No data found in streaming_vendor_attributes table');
+        return [];
+      }
+    } catch (error) {
+      console.error('❌ Direct Supabase connection failed:', error);
+      return [];
+    }
+  };
+
   // Fetch sectional data for the current track
   const fetchSectionalData = async (trackName: string, artistName: string) => {
     if (!trackName || !artistName) {
@@ -75,8 +139,22 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     try {
       console.log('🎯 Fetching sectional data for real-time display:', trackName);
       
-      // PRIORITY 1: Query streaming_vendor_attributes table first using working function
-      console.log('🔍 Checking streaming_vendor_attributes table for manual section data...');
+      // PRIORITY 1: Try direct Supabase connection first
+      console.log('🔍 TESTING DIRECT SUPABASE CONNECTION FIRST...');
+      const directSupabaseData = await fetchStreamingVendorDataDirectly(trackName, artistName);
+      
+      if (directSupabaseData.length > 0) {
+        console.log('✅ SUCCESS! Using DIRECT Supabase streaming_vendor_attributes data');
+        console.log('🎯 YOUR TIMESTAMP DATA:', directSupabaseData.map(s => `${s.sectionType} @${s.sectionStartTime}s (ms:${s.timestampMs})`));
+        setSections(directSupabaseData);
+        setError(null);
+        return;
+      } else {
+        console.log('❌ Direct Supabase failed, trying Netlify function fallback...');
+      }
+      
+      // FALLBACK: Query streaming_vendor_attributes table via Netlify function
+      console.log('🔍 Checking streaming_vendor_attributes table via function...');
       const streamingVendorResponse = await fetch('/netlify/functions/secure-database-logger', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -182,8 +260,10 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       }
 
       // FALLBACK 2: Use algorithmic section analyzer
-      console.log('⚠️ No database sectional data found, using algorithmic analysis');
+      console.log('🚨🚨🚨 USING ALGORITHMIC FALLBACK - NOT YOUR SUPABASE DATA! 🚨🚨🚨');
+      console.log('⚠️ This explains why your timestamp_ms changes don\'t affect timing!');
       const algorithmicSections = await createAlgorithmicSections(trackName, artistName);
+      console.log('🤖 Algorithmic sections:', algorithmicSections.map(s => `${s.sectionType} (${s.sectionStartTime}s-${s.sectionEndTime}s)`));
       setSections(algorithmicSections);
       setError(null);
 
