@@ -17,16 +17,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-premium-texture flex flex-col">
       <div className="flex-1 px-4">
-        {/* Back Button */}
-        <Button
-          onClick={handleBack}
-          variant="ghost"
-          className="mb-1 p-2 hover:bg-burgundy-dark/20"
-        >
-          <ArrowLeft className="w-5 h-5 text-cream" />
-        </Button>
-        {/* Logo */}
-        <div className="text-center mb-4">
+        {/* Logo with Back Button */}
+        <div className="text-center mb-4 relative">
+          {/* Back Button - Positioned on the left */}
+          <Button
+            onClick={handleBack}
+            variant="ghost"
+            className="absolute left-0 top-0 p-2 hover:bg-burgundy-dark/20"
+          >
+            <ArrowLeft className="w-5 h-5 text-cream" />
+          </Button>
+          
           <div className="flex justify-center mb-2">
             <Logo size="xl" />
           </div>
