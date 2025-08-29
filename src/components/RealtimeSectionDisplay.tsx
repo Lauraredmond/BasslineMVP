@@ -15,6 +15,8 @@ interface SectionData {
   confidence?: number; // For algorithmic predictions
   intensity?: number;  // Workout intensity
   narrative?: string;  // Workout instruction
+  timestampMs?: number; // Original timestamp from streaming_vendor_attributes
+  dataSource?: string; // Where this data came from
 }
 
 interface RealtimeSectionDisplayProps {
@@ -71,7 +73,44 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     try {
       console.log('🎯 Fetching sectional data for real-time display:', trackName);
       
-      // Query the database for sectional analysis data for this track
+      // PRIORITY 1: Query streaming_vendor_attributes table first
+      console.log('🔍 Checking streaming_vendor_attributes table for manual section data...');
+      const streamingVendorResponse = await fetch('/netlify/functions/get-streaming-vendor-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackName, artistName })
+      });
+
+      if (streamingVendorResponse.ok) {
+        const streamingData = await streamingVendorResponse.json();
+        if (streamingData.sections && Array.isArray(streamingData.sections) && streamingData.sections.length > 0) {
+          console.log('✅ Found streaming vendor section data:', streamingData.sections.length, 'sections');
+          console.log('🎯 Streaming vendor sections preview:', streamingData.sections.slice(0, 3));
+          
+          // Validate and use streaming vendor sections
+          const validSections = streamingData.sections.filter(section => 
+            section && 
+            typeof section.sectionType === 'string' && 
+            typeof section.sectionStartTime === 'number' &&
+            typeof section.sectionEndTime === 'number'
+          );
+          
+          if (validSections.length > 0) {
+            console.log('✅ Using streaming_vendor_attributes sections:', validSections.map(s => ({
+              type: s.sectionType,
+              start: s.sectionStartTime,
+              end: s.sectionEndTime,
+              timestampMs: s.timestampMs
+            })));
+            setSections(validSections);
+            setError(null);
+            return;
+          }
+        }
+      }
+      
+      // FALLBACK 1: Query the original analysis logs table
+      console.log('🔍 No streaming vendor data found, checking analysis logs...');
       const response = await fetch('/netlify/functions/get-sectional-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,8 +120,8 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       if (response.ok) {
         const data = await response.json();
         if (data.sections && Array.isArray(data.sections) && data.sections.length > 0) {
-          console.log('✅ Found sectional data:', data.sections.length, 'sections');
-          console.log('🔍 Section data preview:', data.sections.slice(0, 3));
+          console.log('✅ Found analysis log sectional data:', data.sections.length, 'sections');
+          console.log('🔍 Analysis log section data preview:', data.sections.slice(0, 3));
           // Validate sections data before setting
           const validSections = data.sections.filter(section => 
             section && 
@@ -90,7 +129,7 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
             typeof section.sectionStartTime === 'number' &&
             typeof section.sectionEndTime === 'number'
           );
-          console.log('✅ Using sections:', validSections.map(s => ({
+          console.log('✅ Using analysis log sections:', validSections.map(s => ({
             type: s.sectionType,
             start: s.sectionStartTime,
             end: s.sectionEndTime
@@ -99,12 +138,12 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           setError(null);
           return;
         } else {
-          console.log('⚠️ API returned empty sections - database likely missing section_type data');
+          console.log('⚠️ Analysis logs API returned empty sections');
         }
       }
 
-      console.log('⚠️ No sectional data found, using algorithmic analysis');
-      // Enhanced Fallback: Use algorithmic section analyzer
+      // FALLBACK 2: Use algorithmic section analyzer
+      console.log('⚠️ No database sectional data found, using algorithmic analysis');
       const algorithmicSections = await createAlgorithmicSections(trackName, artistName);
       setSections(algorithmicSections);
       setError(null);
@@ -465,23 +504,23 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     }
   }, [currentTrack?.name, currentTrack?.artists?.[0]?.name, lastFetchedTrack]);
 
-  // Get section styling based on type
+  // Get section styling based on type - Enhanced with more prominent flashing
   const getSectionStyling = (sectionType: string) => {
-    const baseStyles = "px-4 py-2 rounded-lg font-medium text-sm transition-all duration-500 border-2";
+    const baseStyles = "px-6 py-3 rounded-xl font-bold text-lg transition-all duration-300 border-3 shadow-lg";
     
     switch (sectionType?.toLowerCase()) {
       case 'intro':
-        return `${baseStyles} bg-blue-500/20 border-blue-400 text-blue-100`;
+        return `${baseStyles} bg-blue-500/30 border-blue-300 text-blue-50 animate-pulse shadow-blue-500/50`;
       case 'verse':
-        return `${baseStyles} bg-green-500/20 border-green-400 text-green-100`;
+        return `${baseStyles} bg-green-500/30 border-green-300 text-green-50 animate-pulse shadow-green-500/50`;
       case 'chorus':
-        return `${baseStyles} bg-red-500/20 border-red-400 text-red-100 animate-pulse`;
+        return `${baseStyles} bg-red-500/40 border-red-300 text-red-50 animate-bounce shadow-red-500/70`;
       case 'bridge':
-        return `${baseStyles} bg-purple-500/20 border-purple-400 text-purple-100`;
+        return `${baseStyles} bg-purple-500/30 border-purple-300 text-purple-50 animate-pulse shadow-purple-500/50`;
       case 'outro':
-        return `${baseStyles} bg-orange-500/20 border-orange-400 text-orange-100`;
+        return `${baseStyles} bg-orange-500/30 border-orange-300 text-orange-50 animate-pulse shadow-orange-500/50`;
       default:
-        return `${baseStyles} bg-gray-500/20 border-gray-400 text-gray-100`;
+        return `${baseStyles} bg-gray-500/30 border-gray-300 text-gray-50 animate-pulse shadow-gray-500/50`;
     }
   };
 
@@ -523,25 +562,44 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       return null;
     }
 
-    // Valid render
+    // Valid render - Enhanced prominent section display
     return (
-      <div className={`flex items-center justify-center ${className}`}>
+      <div className={`flex flex-col items-center justify-center ${className}`}>
         <div className={getSectionStyling(currentSection.sectionType)}>
-          <div className="flex items-center gap-2">
-            <span className="text-lg">
-              {currentSection.sectionType === 'chorus' ? '🎤' :
-               currentSection.sectionType === 'verse' ? '🎵' :
-               currentSection.sectionType === 'intro' ? '🎶' :
-               currentSection.sectionType === 'bridge' ? '🌉' :
-               currentSection.sectionType === 'outro' ? '🎭' : '🎼'}
-            </span>
-            <span className="capitalize font-bold">
-              {currentSection.sectionType || 'unknown'}
-            </span>
-            <span className="text-xs opacity-80">
-              {Math.round(currentSection.sectionStartTime || 0)}s-{Math.round(currentSection.sectionEndTime || 0)}s
-            </span>
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">
+                {currentSection.sectionType === 'chorus' ? '🎤' :
+                 currentSection.sectionType === 'verse' ? '🎵' :
+                 currentSection.sectionType === 'intro' ? '🎶' :
+                 currentSection.sectionType === 'bridge' ? '🌉' :
+                 currentSection.sectionType === 'outro' ? '🎭' : '🎼'}
+              </span>
+              <span className="uppercase font-black text-xl tracking-wide">
+                {currentSection.sectionType || 'UNKNOWN'}
+              </span>
+            </div>
+            <div className="text-center">
+              <div className="text-sm opacity-90 font-medium">
+                {Math.round(currentSection.sectionStartTime || 0)}s - {Math.round(currentSection.sectionEndTime || 0)}s
+              </div>
+              {currentSection.timestampMs && (
+                <div className="text-xs opacity-70">
+                  @{Math.round(currentSection.timestampMs / 1000)}s
+                </div>
+              )}
+            </div>
           </div>
+        </div>
+        
+        {/* Data source indicator */}
+        <div className="text-xs text-cream/50 mt-1 text-center">
+          {currentSection.dataSource === 'streaming_vendor_attributes' ? 
+            '📊 Manual Section Data' : 
+            currentSection.confidence ? 
+            `🧠 AI Prediction (${Math.round((currentSection.confidence || 0.8) * 100)}%)` : 
+            '📈 Analysis Data'
+          }
         </div>
       </div>
     );

@@ -258,6 +258,45 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const testStreamingVendorSections = async () => {
+    try {
+      console.log('🧪 Testing Streaming Vendor Attributes Section Data...');
+      
+      // Test with The Pretender - should have sample data
+      const testTrack = 'The Pretender';
+      const testArtist = 'Foo Fighters';
+      
+      console.log(`🎯 Testing streaming vendor sections for: "${testTrack}" by "${testArtist}"`);
+      
+      const response = await fetch('/netlify/functions/get-streaming-vendor-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackName: testTrack, artistName: testArtist })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Streaming vendor sections response:', data);
+        
+        if (data.sections && data.sections.length > 0) {
+          const sectionsPreview = data.sections.map(s => `${s.sectionType} @${Math.round(s.timestampMs/1000)}s`).join(', ');
+          console.log('✅ Found sections:', sectionsPreview);
+          alert(`✅ STREAMING VENDOR SECTIONS SUCCESS!\n\nTrack: ${testTrack}\nSections found: ${data.sections.length}\n\n📊 Sections:\n${data.sections.map(s => `• ${s.sectionType} at ${Math.round(s.timestampMs/1000)}s`).join('\n')}\n\n✅ Data source: streaming_vendor_attributes table`);
+        } else {
+          console.log('⚠️ No streaming vendor sections found');
+          alert(`⚠️ No sections found in streaming_vendor_attributes table for "${testTrack}"\n\nThis is expected if manual section data hasn't been added yet.`);
+        }
+      } else {
+        console.error('❌ API request failed:', response.status);
+        alert(`❌ API request failed: ${response.status}\n\nCheck console for details.`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Streaming vendor sections test failed:', error);
+      alert(`❌ Test failed: ${error.message}`);
+    }
+  };
+
   const testSpotifyAudioAnalysis = async () => {
     try {
       console.log('🧪 Testing Spotify Audio Analysis API Access...');
@@ -413,6 +452,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           🧠 Test Algorithmic Analyzer
+        </button>
+        
+        <button 
+          onClick={testStreamingVendorSections}
+          style={{
+            padding: '6px 10px',
+            background: '#ff6b35',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          📊 Test Vendor Sections
         </button>
         
         <button 

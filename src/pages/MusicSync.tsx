@@ -1375,21 +1375,30 @@ const MusicSync = () => {
                     {workoutPlan && currentTrackPhase ? currentTrackPhase.phase.name : workoutPhases[currentPhase]?.name}
                   </h3>
                   
-                  {/* 🎵 Real-time Section Display - Shows current section (intro, verse, chorus, etc.) */}
-                  <RealtimeSectionDisplay
-                    currentTrack={playbackState?.item}
-                    currentPositionMs={playbackState?.progress_ms}
-                    isPlaying={isPlaying}
-                    className="mb-4"
-                    spotifyMetadata={{
-                      tempo: playbackState?.item?.tempo,
-                      energy: playbackState?.item?.energy,
-                      danceability: playbackState?.item?.danceability,
-                      key: playbackState?.item?.key,
-                      mode: playbackState?.item?.mode
-                    }}
-                    rapidApiData={undefined}
-                  />
+                  {/* 🎵 ENHANCED Real-time Section Display - Shows section_type from streaming_vendor_attributes */}
+                  <div className="mb-6">
+                    <RealtimeSectionDisplay
+                      currentTrack={playbackState?.item}
+                      currentPositionMs={playbackState?.progress_ms}
+                      isPlaying={isPlaying}
+                      className="mb-4"
+                      spotifyMetadata={{
+                        tempo: playbackState?.item?.tempo,
+                        energy: playbackState?.item?.energy,
+                        danceability: playbackState?.item?.danceability,
+                        key: playbackState?.item?.key,
+                        mode: playbackState?.item?.mode
+                      }}
+                      rapidApiData={undefined}
+                    />
+                    
+                    {/* Section type flash indicator */}
+                    <div className="text-center">
+                      <p className="text-cream/60 text-xs">
+                        🎯 Live Section Detection • Synced to Track Position
+                      </p>
+                    </div>
+                  </div>
                   
                   {/* 🔍 API Data Debug Panel - Only show when ?debug=true */}
                   {new URLSearchParams(window.location.search).get('debug') === 'true' && (
