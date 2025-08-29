@@ -33,7 +33,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { trackName, artistName, sessionId, events } = JSON.parse(event.body);
+    const { trackName, artistName, sessionId, events, spotifyTempo } = JSON.parse(event.body);
 
     console.log(`📝 Saving audio timestamps for: ${trackName} by ${artistName}`);
     console.log(`🎯 Session ID: ${sessionId}`);
@@ -66,6 +66,7 @@ exports.handler = async (event, context) => {
       data_source: event.data_source || 'manual_capture',
       capture_session_id: event.capture_session_id || sessionId,
       captured_by: event.captured_by || 'manual_audio_capture',
+      spotify_tempo: spotifyTempo || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));

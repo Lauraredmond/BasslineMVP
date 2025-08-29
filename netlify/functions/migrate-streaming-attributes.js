@@ -74,6 +74,7 @@ exports.handler = async (event, context) => {
         -- Track metadata
         track_duration_ms BIGINT,
         spotify_track_id VARCHAR(100),
+        spotify_tempo REAL,
         
         -- Unique constraint
         UNIQUE(track_name, artist_name, timestamp_ms, event_type)

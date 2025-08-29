@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS streaming_vendor_attributes (
   -- Track metadata
   track_duration_ms BIGINT, -- Total track duration
   spotify_track_id VARCHAR(100), -- If available
+  spotify_tempo REAL, -- BPM from Spotify audio_features API
   
   -- Indexing
   UNIQUE(track_name, artist_name, timestamp_ms, event_type)

@@ -29,7 +29,15 @@ interface CaptureSession {
   audioBlob?: Blob;
 }
 
-export const AudioTimestampCapture: React.FC = () => {
+interface AudioTimestampCaptureProps {
+  spotifyTempo?: number;
+  trackInfo?: {
+    name: string;
+    artist: string;
+  };
+}
+
+export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ spotifyTempo, trackInfo }) => {
   // Audio recording state
   const [isRecording, setIsRecording] = useState(false);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
@@ -39,8 +47,8 @@ export const AudioTimestampCapture: React.FC = () => {
   
   // Session state
   const [currentSession, setCurrentSession] = useState<CaptureSession | null>(null);
-  const [trackName, setTrackName] = useState('The Pretender');
-  const [artistName, setArtistName] = useState('Foo Fighters');
+  const [trackName, setTrackName] = useState(trackInfo?.name || 'The Pretender');
+  const [artistName, setArtistName] = useState(trackInfo?.artist || 'Foo Fighters');
   
   // Event capture state - Focus only on section changes (bar changes are too granular for manual capture)
   const [eventType, setEventType] = useState<'section_change' | 'custom'>('section_change');
@@ -270,6 +278,7 @@ export const AudioTimestampCapture: React.FC = () => {
         trackName: currentSession.trackName,
         artistName: currentSession.artistName,
         sessionId: currentSession.id,
+        spotifyTempo: spotifyTempo,
         events: currentSession.events.map(event => ({
           timestamp_ms: event.timestamp,
           event_type: event.eventType,
@@ -373,6 +382,15 @@ export const AudioTimestampCapture: React.FC = () => {
                 />
               </div>
             </div>
+
+            {/* Spotify Tempo Info */}
+            {spotifyTempo && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="text-sm text-green-800">
+                  🎵 <strong>Spotify Audio Features:</strong> {Math.round(spotifyTempo)} BPM
+                </div>
+              </div>
+            )}
 
             {/* Recording Controls */}
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">

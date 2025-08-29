@@ -1,8 +1,32 @@
 import { AudioTimestampCapture } from '@/components/AudioTimestampCapture';
 import { BottomNavigation } from '@/components/BottomNavigation';
 import { Header } from '@/components/Header';
+import { useState, useEffect } from 'react';
 
 const AudioTimestamping = () => {
+  // Check if we have current track data with Spotify tempo in session storage
+  const [spotifyTempo, setSpotifyTempo] = useState<number | undefined>();
+  const [trackInfo, setTrackInfo] = useState<{name: string, artist: string} | undefined>();
+
+  useEffect(() => {
+    // Check for current track data that might have Spotify tempo
+    const currentTrackData = sessionStorage.getItem('currentTrack');
+    if (currentTrackData) {
+      try {
+        const track = JSON.parse(currentTrackData);
+        if (track.audio_features?.tempo) {
+          setSpotifyTempo(track.audio_features.tempo);
+          setTrackInfo({
+            name: track.name,
+            artist: track.artists?.[0]?.name || ''
+          });
+        }
+      } catch (e) {
+        console.log('No current track data available');
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-premium-texture flex flex-col">
       <Header title="Audio Timestamping" />
@@ -19,7 +43,10 @@ const AudioTimestamping = () => {
             </p>
           </div>
           
-          <AudioTimestampCapture />
+          <AudioTimestampCapture 
+            spotifyTempo={spotifyTempo}
+            trackInfo={trackInfo}
+          />
         </div>
       </div>
 
