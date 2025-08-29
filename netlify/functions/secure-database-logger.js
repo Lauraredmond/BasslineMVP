@@ -47,6 +47,56 @@ exports.handler = async (event, context) => {
     if (event.httpMethod === 'POST') {
       const requestBody = JSON.parse(event.body);
       const { action, data } = requestBody;
+      
+      // Special debug mode for streaming vendor attributes
+      if (action === 'debug_streaming_vendor') {
+        console.log('🔍 DEBUG MODE: Checking streaming_vendor_attributes table...');
+        
+        const { data: vendorData, error } = await supabase
+          .from('streaming_vendor_attributes')
+          .select('*')
+          .eq('track_name', 'The Pretender')
+          .eq('artist_name', 'Foo Fighters')
+          .order('timestamp_ms');
+        
+        if (error) {
+          return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: error.message })
+          };
+        }
+        
+        const debugData = vendorData.map(row => ({
+          section_type: row.section_type,
+          section_number: row.section_number,
+          timestamp_ms: row.timestamp_ms,
+          timestamp_readable: `${Math.floor(row.timestamp_ms / 60000)}:${String(Math.floor((row.timestamp_ms % 60000) / 1000)).padStart(2, '0')}`,
+          notes: row.notes,
+          energy_level: row.energy_level
+        }));
+        
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            success: true,
+            message: 'Streaming vendor debug data',
+            totalRecords: vendorData.length,
+            sections: debugData,
+            hasPrechorus: vendorData.some(row => row.section_type?.includes('pre-chorus')),
+            sectionTypes: [...new Set(vendorData.map(row => row.section_type))],
+            timingGaps: debugData.map((row, index) => {
+              const next = debugData[index + 1];
+              return {
+                current: row.timestamp_readable,
+                next: next?.timestamp_readable,
+                gapSeconds: next ? Math.round((next.timestamp_ms - row.timestamp_ms) / 1000) : null
+              };
+            })
+          })
+        };
+      }
 
       switch (action) {
         case 'introspect_table':
