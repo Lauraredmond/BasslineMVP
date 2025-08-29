@@ -297,6 +297,44 @@ export const DebugPanel: React.FC = () => {
     }
   };
 
+  const debugActualSupabaseData = async () => {
+    try {
+      console.log('🔍 DEBUG: Checking actual Supabase timing data for The Pretender...');
+      
+      const response = await fetch('/netlify/functions/debug-streaming-vendor-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 RAW SUPABASE DATA:', data);
+        
+        if (data.sections && data.sections.length > 0) {
+          const timingReport = data.sections.map(s => 
+            `${s.section_type}${s.section_number ? ` ${s.section_number}` : ''}: ${s.timestamp_readable} (${s.timestamp_seconds}s)`
+          ).join('\n');
+          
+          const gapsReport = data.analysis.timingGaps
+            .filter(gap => gap.gapSeconds)
+            .map(gap => `${gap.current} → ${gap.next}: ${gap.gapSeconds}s gap`)
+            .join('\n');
+          
+          alert(`🔍 ACTUAL SUPABASE TIMING DATA\n\n📊 The Pretender Sections (${data.totalRecords} total):\n${timingReport}\n\n⏱️ Section Gaps:\n${gapsReport}\n\n🎵 Section Types Found:\n${data.analysis.sectionTypes.join(', ')}\n\n${data.analysis.hasPrechorus ? '✅ Has pre-chorus' : '❌ No pre-chorus found'}\n\nThis shows your ACTUAL timing data vs estimated!`);
+        } else {
+          alert('❌ No data found in streaming_vendor_attributes table');
+        }
+      } else {
+        alert(`❌ Failed to fetch debug data: ${response.status}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Debug data fetch failed:', error);
+      alert(`❌ Debug failed: ${error.message}`);
+    }
+  };
+
   const testSpotifyAudioAnalysis = async () => {
     try {
       console.log('🧪 Testing Spotify Audio Analysis API Access...');
@@ -467,6 +505,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           📊 Test Vendor Sections
+        </button>
+
+        <button 
+          onClick={debugActualSupabaseData}
+          style={{
+            padding: '6px 10px',
+            background: '#8b5cf6',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          🔍 Debug Supabase Data
         </button>
         
         <button 
