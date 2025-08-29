@@ -607,6 +607,21 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
             '📈 Analysis Data'
           }
         </div>
+        
+        {/* Debug: Show all available sections when using vendor data */}
+        {currentSection.dataSource === 'streaming_vendor_attributes' && sections.length > 0 && (
+          <div className="mt-3 p-2 bg-black/30 rounded text-xs text-cream/70 max-w-lg">
+            <div className="text-center font-semibold mb-1">🔍 Your Supabase Timing Data:</div>
+            <div className="grid grid-cols-1 gap-1 text-center">
+              {sections.map((section, index) => (
+                <div key={index} className={`${section === currentSection ? 'text-primary font-bold' : ''}`}>
+                  {section.sectionType} @{Math.round(section.timestampMs / 1000)}s
+                  {section.notes && section.notes.includes('estimated') && ' (estimated)'}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   } catch (error) {
