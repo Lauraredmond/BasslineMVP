@@ -24,8 +24,6 @@ import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 
 const MusicSync = () => {
-  // 🚨 DEPLOYMENT TEST - This message should appear immediately on page load
-  console.log('🚨🚨🚨 DEPLOYMENT TEST SUCCESS - Latest MusicSync code is LIVE! Time:', new Date().toLocaleTimeString());
   
   // 🔧 TEMPORARY: Expose migration functions for debugging
   useEffect(() => {
@@ -1084,9 +1082,6 @@ const MusicSync = () => {
                       <p className="text-orange-800 font-medium text-sm">
                         ⚠️ Enhanced Analysis Temporarily Disabled
                       </p>
-                      <p className="text-orange-600 text-xs">
-                        Using basic analysis to prevent API rate limit errors. Enhanced analysis available via debug panel.
-                      </p>
                     </div>
                   </div>
                   <Button
@@ -1964,9 +1959,8 @@ const MusicSync = () => {
         </div>
       )}
 
-      {/* Debug Components (only show in development or when ?debug=true) */}
-      <QuickTestButton />
-      {(process.env.NODE_ENV === 'development' || new URLSearchParams(window.location.search).get('debug') === 'true') && (
+      {/* Debug Components (only show when explicitly requested with ?debug=true) */}
+      {new URLSearchParams(window.location.search).get('debug') === 'true' && (
         <DebugPanel />
       )}
     </div>

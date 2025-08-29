@@ -76,11 +76,13 @@ const Index = () => {
           </Button>
         </div>
 
-        {/* Database Test Component */}
-        <DatabaseTest />
-
-        {/* Automatic Warmup Narratives */}
-        <WorkoutNarrativeTest />
+        {/* Debug Components (only show when explicitly requested) */}
+        {new URLSearchParams(window.location.search).get('debug') === 'true' && (
+          <>
+            <DatabaseTest />
+            <WorkoutNarrativeTest />
+          </>
+        )}
       </div>
 
       <BottomNavigation />
