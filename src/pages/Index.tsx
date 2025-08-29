@@ -18,7 +18,7 @@ const Index = () => {
     <div className="min-h-screen bg-premium-texture flex flex-col">
       <div className="flex-1 px-4">
         {/* Logo with Back Button */}
-        <div className="text-center mb-4 relative">
+        <div className="text-center mb-4 relative mt-3">
           {/* Back Button - Positioned on the left */}
           <Button
             onClick={handleBack}
