@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LocalTimestampStorage } from '@/lib/local-timestamp-storage';
+import { SpotifyBPMFetcher } from '@/lib/spotify-bpm-fetcher';
 
 interface TimestampEvent {
   id: string;
@@ -49,6 +50,8 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   const [currentSession, setCurrentSession] = useState<CaptureSession | null>(null);
   const [trackName, setTrackName] = useState(trackInfo?.name || 'The Pretender');
   const [artistName, setArtistName] = useState(trackInfo?.artist || 'Foo Fighters');
+  const [fetchedBPM, setFetchedBPM] = useState<number | null>(null);
+  const [isLoadingBPM, setIsLoadingBPM] = useState(false);
   
   // Event capture state - Focus only on section changes (bar changes are too granular for manual capture)
   const [eventType, setEventType] = useState<'section_change' | 'custom'>('section_change');
@@ -278,7 +281,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
         trackName: currentSession.trackName,
         artistName: currentSession.artistName,
         sessionId: currentSession.id,
-        spotifyTempo: spotifyTempo,
+        spotifyTempo: fetchedBPM || spotifyTempo,
         events: currentSession.events.map(event => ({
           timestamp_ms: event.timestamp,
           event_type: event.eventType,
@@ -383,14 +386,45 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
               </div>
             </div>
 
-            {/* Spotify Tempo Info */}
-            {spotifyTempo && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="text-sm text-green-800">
-                  🎵 <strong>Spotify Audio Features:</strong> {Math.round(spotifyTempo)} BPM
+            {/* BPM Fetch & Display */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-blue-800">🎵 <strong>Song BPM:</strong></span>
+                  {(fetchedBPM || spotifyTempo) ? (
+                    <span className="text-sm font-bold text-blue-900">
+                      {Math.round(fetchedBPM || spotifyTempo)} BPM 
+                      <span className="ml-2 text-xs">
+                        → {SpotifyBPMFetcher.getWorkoutTrackFromBPM(fetchedBPM || spotifyTempo).replace('_', ' ')}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-sm text-blue-600">Not detected</span>
+                  )}
                 </div>
+                
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    if (!trackName || !artistName) return;
+                    setIsLoadingBPM(true);
+                    try {
+                      const bpmData = await SpotifyBPMFetcher.fetchBPMForTrack(trackName, artistName);
+                      if (bpmData.found) {
+                        setFetchedBPM(bpmData.spotify_tempo);
+                      }
+                    } catch (error) {
+                      console.error('Failed to fetch BPM:', error);
+                    }
+                    setIsLoadingBPM(false);
+                  }}
+                  disabled={isLoadingBPM || !trackName || !artistName}
+                >
+                  {isLoadingBPM ? '⏳' : '🔍'} Fetch BPM
+                </Button>
               </div>
-            )}
+            </div>
 
             {/* Recording Controls */}
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">

@@ -31,6 +31,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
   const [workoutTrack, setWorkoutTrack] = useState<string>('');
   const [animationKey, setAnimationKey] = useState<number>(0);
   const [showNarrative, setShowNarrative] = useState<boolean>(false);
+  const [detectedBPM, setDetectedBPM] = useState<number | null>(null);
 
   // Map section_type to song_component
   const mapSectionToComponent = (sectionType: string, sectionNumber?: number): string => {
@@ -58,19 +59,88 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     return section;
   };
 
-  // Determine workout track based on BPM
-  const getWorkoutTrackFromTempo = (tempo?: number): string => {
-    if (!tempo) return 'recovery';
+  // Get BPM from streaming_vendor_attributes table for the current track
+  const fetchTrackBPM = async (trackName: string, artistName: string): Promise<number | null> => {
+    try {
+      console.log(`🎵 Fetching BPM for: "${trackName}" by "${artistName}"`);
+      
+      const { data, error } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('spotify_tempo')
+        .eq('track_name', trackName)
+        .eq('artist_name', artistName)
+        .not('spotify_tempo', 'is', null)
+        .limit(1)
+        .single();
+
+      if (error || !data?.spotify_tempo) {
+        console.log('⚠️ No BPM found in streaming_vendor_attributes, using fallback');
+        return null;
+      }
+
+      console.log(`✅ Found BPM in database: ${data.spotify_tempo}`);
+      return data.spotify_tempo;
+    } catch (err) {
+      console.error('❌ Error fetching BPM:', err);
+      return null;
+    }
+  };
+
+  // Intelligent workout track mapping based on BPM ranges from workout_phases table
+  const getWorkoutTrackFromTempo = async (tempo?: number): Promise<string> => {
+    // If no tempo, try to get it from database first
+    if (!tempo && currentTrack) {
+      const dbBPM = await fetchTrackBPM(
+        currentTrack.name,
+        currentTrack.artists?.[0]?.name || ''
+      );
+      setDetectedBPM(dbBPM);
+      tempo = dbBPM || undefined;
+    }
     
-    if (tempo >= 120 && tempo <= 140) return 'sprint_intervals';
-    if (tempo >= 80 && tempo <= 100) return 'climb';
-    if (tempo >= 85 && tempo <= 110) return 'resistance';
-    if (tempo >= 110 && tempo <= 130) return 'jumps';
-    if (tempo >= 95 && tempo <= 115) return 'hills';
-    if (tempo >= 60 && tempo <= 85) return 'cooldown';
-    if (tempo >= 70 && tempo <= 95) return 'warmup';
+    if (!tempo) {
+      console.log('⚠️ No BPM available, defaulting to recovery');
+      return 'recovery';
+    }
     
-    return 'recovery'; // Default
+    console.log(`🎯 Mapping BPM ${tempo} to workout track`);
+    
+    // Updated BPM ranges to handle high-energy rock songs like The Pretender (172 BPM)
+    if (tempo >= 160) {
+      console.log(`✅ Mapped to sprint_intervals (160+ BPM) - High energy like The Pretender ${tempo}`);
+      return 'sprint_intervals';
+    }
+    if (tempo >= 140 && tempo < 160) {
+      console.log('✅ Mapped to sprint_intervals (140-159 BPM)');
+      return 'sprint_intervals';  
+    }
+    if (tempo >= 120 && tempo < 140) {
+      console.log('✅ Mapped to jumps (120-139 BPM)');
+      return 'jumps';
+    }
+    if (tempo >= 95 && tempo < 120) {
+      console.log('✅ Mapped to hills (95-119 BPM)');
+      return 'hills';
+    }
+    if (tempo >= 85 && tempo < 95) {
+      console.log('✅ Mapped to resistance (85-94 BPM)');
+      return 'resistance';
+    }
+    if (tempo >= 80 && tempo < 85) {
+      console.log('✅ Mapped to climb (80-84 BPM)');
+      return 'climb';
+    }
+    if (tempo >= 70 && tempo < 80) {
+      console.log('✅ Mapped to warmup (70-79 BPM)');
+      return 'warmup';
+    }
+    if (tempo >= 60 && tempo < 70) {
+      console.log('✅ Mapped to cooldown (60-69 BPM)');
+      return 'cooldown';
+    }
+    
+    console.log(`⚠️ BPM ${tempo} doesn't fit standard ranges, using recovery`);
+    return 'recovery';
   };
 
   // Fetch narrative from database
@@ -101,25 +171,28 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
   useEffect(() => {
     if (!currentSection?.sectionType) return;
 
-    const tempo = currentTrack?.audio_features?.tempo || currentTrack?.tempo;
-    const newWorkoutTrack = getWorkoutTrackFromTempo(tempo);
-    const songComponent = mapSectionToComponent(
-      currentSection.rawSectionType || currentSection.sectionType, 
-      currentSection.sectionNumber
-    );
+    const updateNarrative = async () => {
+      const tempo = currentTrack?.audio_features?.tempo || currentTrack?.tempo;
+      const newWorkoutTrack = await getWorkoutTrackFromTempo(tempo);
+      const songComponent = mapSectionToComponent(
+        currentSection.rawSectionType || currentSection.sectionType, 
+        currentSection.sectionNumber
+      );
 
-    setWorkoutTrack(newWorkoutTrack);
+      setWorkoutTrack(newWorkoutTrack);
 
-    fetchNarrative(newWorkoutTrack, songComponent).then(narrativeText => {
+      const narrativeText = await fetchNarrative(newWorkoutTrack, songComponent);
       setShowNarrative(false); // Start exit animation
       
       setTimeout(() => {
         setNarrative(narrativeText);
         setAnimationKey(prev => prev + 1);
         setShowNarrative(true); // Start enter animation
-      }, 300); // Half of exit animation duration
-    });
-  }, [currentSection?.sectionType, currentSection?.sectionNumber, currentTrack?.audio_features?.tempo]);
+      }, 300);
+    };
+
+    updateNarrative();
+  }, [currentSection?.sectionType, currentSection?.sectionNumber, currentTrack?.name, currentTrack?.artists]);
 
   if (!narrative || !currentSection) return null;
 
@@ -144,9 +217,10 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
                   {workoutTrack.replace('_', ' ')}
                 </span>
               </div>
-              {(currentTrack?.audio_features?.tempo || currentTrack?.tempo) && (
+              {(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo) && (
                 <span className="text-xs bg-white/20 px-2 py-1 rounded">
-                  {Math.round(currentTrack?.audio_features?.tempo || currentTrack?.tempo || 0)} BPM
+                  {Math.round(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo || 0)} BPM
+                  {detectedBPM && <span className="ml-1 text-green-300">📊</span>}
                 </span>
               )}
             </div>

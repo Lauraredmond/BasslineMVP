@@ -49,14 +49,14 @@ ADD COLUMN IF NOT EXISTS workout_track VARCHAR(100) NOT NULL DEFAULT 'sprint_int
 -- ============================================================================
 
 INSERT INTO workout_phases (workout_track, target_tempo_min, target_tempo_max) VALUES
-('sprint_intervals', 120, 140),
-('climb', 80, 100),
-('resistance', 85, 110),
-('jumps', 110, 130),
-('recovery', 70, 90),
-('hills', 95, 115),
-('cooldown', 60, 85),
-('warmup', 70, 95);
+('sprint_intervals', 140, 200), -- High energy songs like The Pretender (172 BPM)
+('jumps', 120, 139),
+('hills', 95, 119), 
+('resistance', 85, 94),
+('climb', 80, 84),
+('warmup', 70, 79),
+('cooldown', 60, 69),
+('recovery', 70, 90); -- Flexible recovery range
 
 -- ============================================================================
 -- STEP 4: Insert simplified instruction_narratives data 

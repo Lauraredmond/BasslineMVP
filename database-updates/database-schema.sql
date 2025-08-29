@@ -222,16 +222,17 @@ INSERT INTO workout_types (name, workout_track, description, default_duration) V
 ('circuits', 'Circuits', 'High-intensity circuit training with varied exercises', 1800),
 ('hiit', 'HIIT', 'High-Intensity Interval Training for maximum calorie burn', 1200);
 
--- Insert simplified workout phases (workout_track -> BPM ranges)
+-- Insert simplified workout phases (workout_track -> BPM ranges) 
+-- Updated ranges to handle high-energy rock songs like The Pretender (172 BPM)
 INSERT INTO workout_phases (workout_track, target_tempo_min, target_tempo_max) VALUES
-('sprint_intervals', 120, 140),
-('climb', 80, 100),
-('resistance', 85, 110),
-('jumps', 110, 130),
-('recovery', 70, 90),
-('hills', 95, 115),
-('cooldown', 60, 85),
-('warmup', 70, 95);
+('sprint_intervals', 140, 200), -- High energy songs like The Pretender (172 BPM)
+('jumps', 120, 139),
+('hills', 95, 119), 
+('resistance', 85, 94),
+('climb', 80, 84),
+('warmup', 70, 79),
+('cooldown', 60, 69),
+('recovery', 70, 90); -- Flexible recovery range
 
 -- Insert simplified instruction narratives (workout_track + song_component -> narrative)
 INSERT INTO instruction_narratives (workout_track, song_component, text) VALUES
