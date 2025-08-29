@@ -860,8 +860,10 @@ const MusicSync = () => {
         .limit(1)
         .single();
 
-      const songComponent = sectionData?.section_type || 'verse';
-      console.log(`🎵 Current song component: ${songComponent}`);
+      const rawSongComponent = sectionData?.section_type || 'verse';
+      // Normalize song component to match instruction_narratives format  
+      const songComponent = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
+      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent}`);
 
       // Get narrative from instruction_narratives table
       const { data: narrativeData, error: narrativeError } = await supabase
