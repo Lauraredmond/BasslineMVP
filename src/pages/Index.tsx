@@ -26,8 +26,8 @@ const Index = () => {
           <ArrowLeft className="w-5 h-5 text-cream" />
         </Button>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-2">
             <Logo size="xl" />
           </div>
           <p className="text-lg text-cream font-medium">
@@ -36,7 +36,7 @@ const Index = () => {
         </div>
 
         {/* Hero Image */}
-        <div className="relative w-full h-64 rounded-xl overflow-hidden mb-8 shadow-glow">
+        <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4 shadow-glow">
           <img 
             src={heroEmpoweredWoman} 
             alt="Empowered woman at the height of her fitness journey" 
@@ -46,7 +46,7 @@ const Index = () => {
         </div>
 
         {/* Main Action Buttons - Updated hover states for better readability */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-4">
           <Button 
             onClick={() => navigate('/music-sync')}
             className="w-full h-14 text-lg bg-energy-gradient shadow-button transition-smooth text-cream font-semibold hover:!bg-cream hover:!text-maroon"
