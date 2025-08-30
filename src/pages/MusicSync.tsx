@@ -854,11 +854,31 @@ const MusicSync = () => {
 
       // Get current song section from streaming_vendor_attributes
       const currentTime = playbackState.progress_ms / 1000;
+      const trackName = playbackState.item.name;
+      const artistName = playbackState.item.artists[0]?.name;
+      
+      console.log(`🔍 Looking for section data: "${trackName}" by "${artistName}" at ${playbackState.progress_ms}ms`);
+      
+      // First check if any data exists for this track
+      const { data: trackExists, error: trackExistsError } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('track_name, artist_name, section_type, section_number, timestamp_ms')
+        .eq('track_name', trackName)
+        .eq('artist_name', artistName)
+        .limit(5);
+        
+      if (trackExists && trackExists.length > 0) {
+        console.log(`✅ Found ${trackExists.length} entries for "${trackName}" by "${artistName}":`, trackExists);
+      } else {
+        console.warn(`❌ No entries found in streaming_vendor_attributes for "${trackName}" by "${artistName}"`);
+        return null;
+      }
+      
       const { data: sectionData, error: sectionError } = await supabase
         .from('streaming_vendor_attributes')
-        .select('section_type')
-        .eq('track_name', playbackState.item.name)
-        .eq('artist_name', playbackState.item.artists[0]?.name)
+        .select('section_type, section_number')
+        .eq('track_name', trackName)
+        .eq('artist_name', artistName)
         .eq('event_type', 'section_change')
         .lte('timestamp_ms', playbackState.progress_ms)
         .order('timestamp_ms', { ascending: false })
@@ -866,21 +886,45 @@ const MusicSync = () => {
         .single();
 
       const rawSongComponent = sectionData?.section_type || 'verse';
-      // Normalize song component to match instruction_narratives format  
-      const songComponent = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
-      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent}`);
+      const sectionNumber = sectionData?.section_number || 1;
+      
+      // Determine the correct song component based on section_number from database
+      const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
+      let songComponent = baseSection;
+      
+      // For verses and choruses beyond the first occurrence, use numbered narratives
+      if ((baseSection === 'verse' || baseSection === 'chorus') && sectionNumber > 1) {
+        songComponent = `${baseSection}_${sectionNumber}`;
+      }
+      
+      console.log(`🎵 Current song component: ${rawSongComponent} (section ${sectionNumber}) → normalized: ${songComponent}`);
 
-      // Get narrative from instruction_narratives table
-      const { data: narrativeData, error: narrativeError } = await supabase
+      // Get narrative from instruction_narratives table with fallback
+      let { data: narrativeData, error: narrativeError } = await supabase
         .from('instruction_narratives')
         .select('text')
         .eq('workout_track', workoutTrack)
         .eq('song_component', songComponent)
         .limit(1)
         .single();
+      
+      // If numbered section not found, fallback to base section
+      if (narrativeError && songComponent.includes('_')) {
+        console.log(`🔄 Numbered section ${songComponent} not found, trying base section ${baseSection}`);
+        const { data: baseData, error: baseError } = await supabase
+          .from('instruction_narratives')
+          .select('text')
+          .eq('workout_track', workoutTrack)
+          .eq('song_component', baseSection)
+          .limit(1)
+          .single();
+        
+        narrativeData = baseData;
+        narrativeError = baseError;
+      }
 
       if (narrativeError || !narrativeData?.text) {
-        console.warn(`No narrative found for ${workoutTrack} + ${songComponent}`);
+        console.warn(`❌ No narrative found for ${workoutTrack} + ${songComponent} (or base ${baseSection})`);
         return null;
       }
 
@@ -1261,18 +1305,9 @@ const MusicSync = () => {
                             {/* Workout track indicator */}
                             {currentDatabaseNarrative?.workoutTrack && (
                               <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-4">
-                                  <div className="relative">
-                                    <img 
-                                      src={basslineLogoYellowTransparent} 
-                                      alt="Bassline Logo" 
-                                      className="h-16 w-16 drop-shadow-lg filter brightness-110"
-                                    />
-                                  </div>
-                                  <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-4 py-2 rounded-lg">
-                                    {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
-                                  </span>
-                                </div>
+                                <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-4 py-2 rounded-lg">
+                                  {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
+                                </span>
                                 {currentDatabaseNarrative.bpm && (
                                   <span className="text-lg bg-white/20 px-4 py-2 rounded-lg font-semibold">
                                     {Math.round(currentDatabaseNarrative.bpm)} BPM
