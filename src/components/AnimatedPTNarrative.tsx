@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import basslineLogoYellow from '../assets/bassline-logo-yellow.png';
 
 interface PTNarrativeProps {
   currentSection?: {
@@ -212,13 +213,18 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       >
         <div className="relative">
           {/* Animated Background Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg" />
           
           {/* Main Content */}
           <div className="relative bg-gradient-to-r from-primary/95 to-primary/80 text-white p-5 rounded-xl border-3 border-primary/60 shadow-2xl">
             {/* Header with Workout Track */}
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
+                <img 
+                  src={basslineLogoYellow} 
+                  alt="Bassline" 
+                  className="h-4 w-4 opacity-70"
+                />
                 <span className="text-xs uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
                 </span>
@@ -236,7 +242,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
             </div>
             
             {/* Animated Bottom Bar */}
-            <div className="mt-3 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded animate-pulse" />
+            <div className="mt-3 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded" />
           </div>
           
           {/* Clean animations without emoticons */}

@@ -51,7 +51,7 @@ const Header = ({
             className="transition-transform hover:scale-105"
             title="Go to Home"
           >
-            <Logo size={logoSize} showTooltip={false} />
+            <Logo size={logoSize} showTooltip={true} />
           </button>
         )}
         {title && (
