@@ -31,12 +31,6 @@ const BottomNavigation = () => {
       path: '/support' 
     },
     { 
-      id: 'analytics', 
-      label: 'Analytics', 
-      icon: '📊', 
-      path: '/analytics' 
-    },
-    { 
       id: 'founder', 
       label: 'Founder', 
       icon: '📖', 

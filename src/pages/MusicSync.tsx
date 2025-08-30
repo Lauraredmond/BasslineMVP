@@ -1253,7 +1253,7 @@ const MusicSync = () => {
                         mode: playbackState?.item?.mode
                       }}
                       rapidApiData={undefined}
-                      hidePTNarrative={true}
+                      hidePTNarrative={false}
                     />
                     
                   </div>
