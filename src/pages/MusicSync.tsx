@@ -902,7 +902,7 @@ const MusicSync = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     <div>
                       <p className="text-orange-800 font-medium text-sm">
                         ⚠️ Enhanced Analysis Temporarily Disabled
@@ -1129,7 +1129,7 @@ const MusicSync = () => {
                     {[...Array(8)].map((_, i) => (
                       <div
                         key={i}
-                        className="w-1 bg-energy-gradient rounded-full animate-pulse"
+                        className="w-1 bg-energy-gradient rounded-full"
                         style={{
                           height: `${Math.random() * 20 + 10}px`,
                           animationDelay: `${i * 0.1}s`
@@ -1250,7 +1250,7 @@ const MusicSync = () => {
                           {/* Enhanced animation container */}
                           <div 
                             key={`${currentDatabaseNarrative?.text}-${Date.now()}`}
-                            className="pt-narrative-container animate-fadeInScale bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl transform transition-all duration-500"
+                            className="pt-narrative-container bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl"
                           >
                             {/* Workout track indicator */}
                             {currentDatabaseNarrative?.workoutTrack && (
@@ -1294,7 +1294,7 @@ const MusicSync = () => {
                     <div className="bg-burgundy-dark/30 rounded-lg p-5 border border-cream/30">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 bg-energy-gradient rounded-full flex items-center justify-center animate-pulse ${isPlaying ? 'shadow-glow' : ''}`}>
+                      <div className={`w-10 h-10 bg-energy-gradient rounded-full flex items-center justify-center ${isPlaying ? 'shadow-glow' : ''}`}>
                         <span className="text-cream text-lg">{isPlaying ? '▶️' : '⏸️'}</span>
                       </div>
                       <div className="flex-1">
@@ -1365,7 +1365,7 @@ const MusicSync = () => {
                       <div
                         key={i}
                         className={`w-1 bg-energy-gradient rounded-full transition-all duration-300 ${
-                          isPlaying ? 'animate-pulse' : 'opacity-50'
+                          isPlaying ? '' : 'opacity-50'
                         }`}
                         style={{
                           height: `${Math.random() * 20 + 10}px`,

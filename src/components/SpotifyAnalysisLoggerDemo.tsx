@@ -232,7 +232,7 @@ export const SpotifyAnalysisLoggerDemo: React.FC = () => {
               )}
               
               {isLogging && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800 animate-pulse">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
                   Recording Analysis Data...
                 </Badge>
               )}

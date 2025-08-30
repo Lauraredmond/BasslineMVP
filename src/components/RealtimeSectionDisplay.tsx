@@ -643,17 +643,17 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
     
     switch (sectionType?.toLowerCase()) {
       case 'intro':
-        return `${baseStyles} bg-blue-500/30 border-blue-300 text-blue-50 animate-pulse shadow-blue-500/50`;
+        return `${baseStyles} bg-blue-500/30 border-blue-300 text-blue-50 shadow-blue-500/50`;
       case 'verse':
-        return `${baseStyles} bg-green-500/30 border-green-300 text-green-50 animate-pulse shadow-green-500/50`;
+        return `${baseStyles} bg-green-500/30 border-green-300 text-green-50 shadow-green-500/50`;
       case 'chorus':
-        return `${baseStyles} bg-red-500/40 border-red-300 text-red-50 animate-bounce shadow-red-500/70`;
+        return `${baseStyles} bg-red-500/40 border-red-300 text-red-50 shadow-red-500/70`;
       case 'bridge':
-        return `${baseStyles} bg-purple-500/30 border-purple-300 text-purple-50 animate-pulse shadow-purple-500/50`;
+        return `${baseStyles} bg-purple-500/30 border-purple-300 text-purple-50 shadow-purple-500/50`;
       case 'outro':
-        return `${baseStyles} bg-orange-500/30 border-orange-300 text-orange-50 animate-pulse shadow-orange-500/50`;
+        return `${baseStyles} bg-orange-500/30 border-orange-300 text-orange-50 shadow-orange-500/50`;
       default:
-        return `${baseStyles} bg-gray-500/30 border-gray-300 text-gray-50 animate-pulse shadow-gray-500/50`;
+        return `${baseStyles} bg-gray-500/30 border-gray-300 text-gray-50 shadow-gray-500/50`;
     }
   };
 

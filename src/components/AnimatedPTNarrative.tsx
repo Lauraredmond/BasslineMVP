@@ -30,7 +30,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
 }) => {
   const [narrative, setNarrative] = useState<string>('');
   const [workoutTrack, setWorkoutTrack] = useState<string>('');
-  const [animationKey, setAnimationKey] = useState<number>(0);
+  // Animation key removed to prevent pulsing effects
   const [showNarrative, setShowNarrative] = useState<boolean>(false);
   const [detectedBPM, setDetectedBPM] = useState<number | null>(null);
 
@@ -194,7 +194,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       
       setTimeout(() => {
         setNarrative(narrativeText);
-        setAnimationKey(prev => prev + 1);
+        // Animation key increment removed
         setShowNarrative(true); // Start enter animation
       }, 300);
     };
@@ -207,10 +207,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
   return (
     <div className="mt-4">
       {/* PT Narrative Display with Animations */}
-      <div 
-        key={animationKey}
-        className={`${showNarrative ? 'pt-narrative-enter' : ''}`}
-      >
+      <div className="">
         <div className="relative">
           {/* Animated Background Glow */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg" />

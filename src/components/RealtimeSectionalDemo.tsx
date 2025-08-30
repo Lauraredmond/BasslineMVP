@@ -343,7 +343,7 @@ const RealtimeSectionalDemo: React.FC = () => {
                             Section {entry.sectionIndex}: {entry.sectionType}
                           </Badge>
                           {entry.isCurrentlyPlaying && (
-                            <Badge className="bg-green-600 text-white animate-pulse">
+                            <Badge className="bg-green-600 text-white">
                               NOW PLAYING
                             </Badge>
                           )}

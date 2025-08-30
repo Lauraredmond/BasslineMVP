@@ -35,7 +35,7 @@ const FounderStory = () => {
         <div className="space-y-6">
           <div className="bg-card-texture rounded-xl p-6 shadow-glow animate-fade-in hover-scale relative overflow-hidden">
             <div className="absolute top-2 right-2">
-              <Sparkles className="w-4 h-4 text-energy-gradient animate-pulse" />
+              <Sparkles className="w-4 h-4 text-energy-gradient " />
             </div>
             <p className="text-foreground/80 leading-relaxed mb-4">
               I created this 1-2-3 step fitness app to help people discover accessibility, variety, and consistency in fitness. By combining human support, diverse exercise formats, and music as a core motivator, the platform is built to make fitness more enjoyable — and ultimately, more sustainable.
@@ -47,7 +47,7 @@ const FounderStory = () => {
 
           <div className="bg-card-texture rounded-xl p-6 shadow-glow animate-fade-in hover-scale relative overflow-hidden">
             <div className="absolute top-2 right-2">
-              <Heart className="w-4 h-4 text-energy-gradient animate-pulse" />
+              <Heart className="w-4 h-4 text-energy-gradient " />
             </div>
             <p className="text-foreground/80 leading-relaxed mb-4">
               When I was in school, I used to feel incredibly nervous on physical education (PE) days. Everyone in my class was super sporty — but I just wasn't. It wasn't something I could laugh off either. It was excruciatingly embarrassing for me, and I dreaded those days. Because sports were the only fitness channel offered in school, I gave up on all forms of exercise as soon as I left at 18.
@@ -57,7 +57,7 @@ const FounderStory = () => {
               <span className="relative inline-block mx-1">
                 <span className="bg-energy-gradient bg-clip-text text-transparent font-semibold">I signed up for the college gym and tried a cardio class.</span>
                 <div className="absolute -top-1 -right-1">
-                  <Zap className="w-3 h-3 text-energy-gradient animate-pulse" />
+                  <Zap className="w-3 h-3 text-energy-gradient " />
                 </div>
               </span>
             </p>
@@ -76,25 +76,25 @@ const FounderStory = () => {
             </h3>
             <div className="space-y-3">
               <div className="flex items-start space-x-3 animate-scale-in">
-                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 animate-pulse"></div>
+                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 "></div>
                 <p className="text-foreground/80 leading-relaxed">
                   <strong>1968</strong> – Dr. Kenneth H. Cooper introduces aerobics to the world, shifting fitness from punishment to prevention.
                 </p>
               </div>
               <div className="flex items-start space-x-3 animate-scale-in">
-                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 animate-pulse"></div>
+                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 "></div>
                 <p className="text-foreground/80 leading-relaxed">
                   <strong>1970s–80s</strong> – Dance workouts, jogging culture, and group fitness explode — exercise becomes social and joyful.
                 </p>
               </div>
               <div className="flex items-start space-x-3 animate-scale-in">
-                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 animate-pulse"></div>
+                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 "></div>
                 <p className="text-foreground/80 leading-relaxed">
                   <strong>1990s–2000s</strong> – The rise of fitness DVDs, YouTube trainers, and boutique gyms makes fitness more personal and varied.
                 </p>
               </div>
               <div className="flex items-start space-x-3 animate-scale-in">
-                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 animate-pulse"></div>
+                <div className="w-3 h-3 rounded-full bg-energy-gradient mt-2 "></div>
                 <p className="text-foreground/80 leading-relaxed">
                   <strong>Today</strong> – Apps like Bassline take it further — turning music and movement into an addictive ritual that anyone can enjoy.
                 </p>
@@ -104,7 +104,7 @@ const FounderStory = () => {
 
           <div className="bg-card-texture rounded-xl p-6 shadow-glow animate-fade-in hover-scale relative overflow-hidden">
             <div className="absolute top-2 right-2">
-              <Heart className="w-4 h-4 text-energy-gradient animate-pulse" />
+              <Heart className="w-4 h-4 text-energy-gradient " />
             </div>
             <div className="absolute inset-0 bg-energy-gradient/5 opacity-50"></div>
             <div className="relative z-10">
