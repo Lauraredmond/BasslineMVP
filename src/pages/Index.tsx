@@ -46,6 +46,24 @@ const Index = () => {
           <div className="absolute inset-0 bg-hero-gradient opacity-20"></div>
         </div>
 
+        {/* Artistic Mission Statement */}
+        <div className="mb-8 px-2">
+          <p className="text-cream/90 text-center leading-relaxed font-serif italic text-lg tracking-wide">
+            <span className="block text-2xl font-light mb-2 bg-gradient-to-r from-yellow-200 via-cream to-yellow-100 bg-clip-text text-transparent drop-shadow-sm">
+              "Bassline is a music-powered platform,
+            </span>
+            <span className="block text-xl font-light mb-1 text-cream/80">
+              aiming to engage you with exercise
+            </span>
+            <span className="block text-xl font-light mb-1 text-cream/80">
+              in whatever format you want,
+            </span>
+            <span className="block text-2xl font-light bg-gradient-to-r from-yellow-200 via-cream to-yellow-100 bg-clip-text text-transparent drop-shadow-sm">
+              set to your own, fully-personalised soundtrack."
+            </span>
+          </p>
+        </div>
+
         {/* Main Action Buttons - Updated hover states for better readability */}
         <div className="space-y-3 mb-4">
           <Button 

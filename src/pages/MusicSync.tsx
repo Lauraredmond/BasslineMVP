@@ -1248,17 +1248,6 @@ const MusicSync = () => {
                       
                       return narrativeToShow ? (
                         <div className="relative">
-                          {/* Artistic Background with Large Transparent Yellow Logo */}
-                          <div className="absolute -top-10 -right-10 opacity-60 z-10">
-                            <div className="relative">
-                              <img 
-                                src={basslineLogoYellowTransparent} 
-                                alt="Bassline Background" 
-                                className="h-56 w-56 transform rotate-12 drop-shadow-2xl filter brightness-110"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300/20 via-transparent to-yellow-400/10 rounded-full blur-xl"></div>
-                            </div>
-                          </div>
                           
                           {/* Enhanced animation container */}
                           <div 
