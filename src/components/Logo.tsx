@@ -29,13 +29,13 @@ const Logo = ({ className = "", size = "md", showTooltip = true }: LogoProps) =>
       />
       
       {showTooltip && showCredit && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-burgundy-dark/90 text-cream text-xs rounded-lg shadow-lg border border-cream/20 whitespace-nowrap z-50">
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/90 text-white text-sm rounded-lg shadow-xl border border-white/30 whitespace-nowrap z-[9999]">
           <div className="text-center">
             <div className="font-medium">Logo by Cian Ryan</div>
-            <div className="text-cream/70 text-xs">Creative Design</div>
+            <div className="text-white/70 text-xs">Creative Design</div>
           </div>
           {/* Tooltip arrow */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-burgundy-dark/90"></div>
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
         </div>
       )}
     </div>
