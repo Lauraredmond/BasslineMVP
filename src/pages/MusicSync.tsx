@@ -18,7 +18,7 @@ import { supabase } from "@/lib/supabase";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
 import { spotifyAnalysisLogger } from "@/lib/spotify-analysis-logger";
 // Removed WebAudioAnalysisLogger - eliminated Web Audio capture
-import { SpotifyAnalysisViewer } from "@/components/SpotifyAnalysisViewer";
+// Removed SpotifyAnalysisViewer - eliminated Analysis tab
 import { RealtimeSectionDisplay } from "@/components/RealtimeSectionDisplay";
 import { AutomaticBPMCapture } from "@/lib/automatic-bpm-capture";
 import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
@@ -57,6 +57,10 @@ const MusicSync = () => {
   }, [isWorkoutActive]);
   const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [currentNarrative, setCurrentNarrative] = useState<number>(0);
+  
+  // Track section occurrences for numbered narratives
+  const [sectionOccurrences, setSectionOccurrences] = useState<{[key: string]: number}>({});
+  const [lastProcessedTrack, setLastProcessedTrack] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [phaseProgress, setPhaseProgress] = useState<number>(0);
   const [showWorkoutCompleteModal, setShowWorkoutCompleteModal] = useState<boolean>(false);
@@ -862,21 +866,65 @@ const MusicSync = () => {
         .single();
 
       const rawSongComponent = sectionData?.section_type || 'verse';
-      // Normalize song component to match instruction_narratives format  
-      const songComponent = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
-      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent}`);
+      
+      // Reset section occurrences when track changes
+      const currentTrackKey = `${track}-${artist}`;
+      if (currentTrackKey !== lastProcessedTrack) {
+        setSectionOccurrences({});
+        setLastProcessedTrack(currentTrackKey);
+      }
+      
+      // Track section occurrences for numbered narratives
+      const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
+      const currentCount = (sectionOccurrences[baseSection] || 0) + 1;
+      
+      // Update section occurrence count
+      setSectionOccurrences(prev => ({
+        ...prev,
+        [baseSection]: currentCount
+      }));
+      
+      // Determine numbered section for specific narratives
+      let songComponent = baseSection;
+      if ((baseSection === 'verse' || baseSection === 'chorus') && currentCount > 1) {
+        songComponent = `${baseSection}_${currentCount}`;
+      }
+      
+      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent} (occurrence: ${currentCount})`);
 
-      // Get narrative from instruction_narratives table
-      const { data: narrativeData, error: narrativeError } = await supabase
+      // Get narrative from instruction_narratives table with fallback logic
+      let narrativeData = null;
+      let narrativeError = null;
+      
+      // Try the numbered section first (e.g., verse_2, chorus_3)
+      const { data: specificData, error: specificError } = await supabase
         .from('instruction_narratives')
         .select('text')
         .eq('workout_track', workoutTrack)
         .eq('song_component', songComponent)
         .limit(1)
         .single();
+      
+      narrativeData = specificData;
+      narrativeError = specificError;
+      
+      // Fallback to base section if numbered section doesn't exist
+      if (narrativeError && songComponent.includes('_')) {
+        console.log(`🔄 Numbered section ${songComponent} not found, trying base section ${baseSection}`);
+        const { data: baseData, error: baseError } = await supabase
+          .from('instruction_narratives')
+          .select('text')
+          .eq('workout_track', workoutTrack)
+          .eq('song_component', baseSection)
+          .limit(1)
+          .single();
+        
+        narrativeData = baseData;
+        narrativeError = baseError;
+      }
 
       if (narrativeError || !narrativeData?.text) {
-        console.warn(`No narrative found for ${workoutTrack} + ${songComponent}`);
+        console.warn(`❌ No narrative found for ${workoutTrack} + ${songComponent} (or base ${baseSection})`);
         return null;
       }
 
@@ -1816,7 +1864,7 @@ const MusicSync = () => {
                 </Button>
               </div>
               <div className="flex-1 overflow-hidden">
-                <SpotifyAnalysisViewer autoStart={true} />
+                {/* Analysis viewer removed per user request */}
               </div>
             </div>
           </div>
