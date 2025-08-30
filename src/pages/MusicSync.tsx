@@ -58,9 +58,9 @@ const MusicSync = () => {
   const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [currentNarrative, setCurrentNarrative] = useState<number>(0);
   
-  // Track section occurrences for numbered narratives
-  const [sectionOccurrences, setSectionOccurrences] = useState<{[key: string]: number}>({});
-  const [lastProcessedTrack, setLastProcessedTrack] = useState<string>('');
+  // Track section occurrences for numbered narratives (using ref to avoid async issues)
+  const sectionOccurrencesRef = useRef<{[key: string]: number}>({});
+  const lastProcessedTrackRef = useRef<string>('');
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [phaseProgress, setPhaseProgress] = useState<number>(0);
   const [showWorkoutCompleteModal, setShowWorkoutCompleteModal] = useState<boolean>(false);
@@ -869,20 +869,17 @@ const MusicSync = () => {
       
       // Reset section occurrences when track changes
       const currentTrackKey = `${track}-${artist}`;
-      if (currentTrackKey !== lastProcessedTrack) {
-        setSectionOccurrences({});
-        setLastProcessedTrack(currentTrackKey);
+      if (currentTrackKey !== lastProcessedTrackRef.current) {
+        sectionOccurrencesRef.current = {};
+        lastProcessedTrackRef.current = currentTrackKey;
       }
       
       // Track section occurrences for numbered narratives
       const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
-      const currentCount = (sectionOccurrences[baseSection] || 0) + 1;
+      const currentCount = (sectionOccurrencesRef.current[baseSection] || 0) + 1;
       
       // Update section occurrence count
-      setSectionOccurrences(prev => ({
-        ...prev,
-        [baseSection]: currentCount
-      }));
+      sectionOccurrencesRef.current[baseSection] = currentCount;
       
       // Determine numbered section for specific narratives
       let songComponent = baseSection;
