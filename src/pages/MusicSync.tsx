@@ -12,6 +12,7 @@ import { Header } from "@/components/Header";
 import { spotifyService, SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPlaybackState, formatTrackUri } from "@/lib/spotify";
 import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/musicAnalysis";
 import { narrativeEngine } from "@/lib/narrative-engine";
+import basslineLogoYellow from '../assets/bassline-logo-yellow.png';
 import { dbAdmin } from "@/lib/database-admin";
 import { supabase } from "@/lib/supabase";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
@@ -1247,17 +1248,37 @@ const MusicSync = () => {
                       
                       return narrativeToShow ? (
                         <div className="relative">
+                          {/* Artistic Background with Yellow Logo */}
+                          <div className="absolute top-4 right-4 opacity-40 z-10">
+                            <div className="bg-yellow-400/20 p-3 rounded-xl">
+                              <img 
+                                src={basslineLogoYellow} 
+                                alt="Bassline Background" 
+                                className="h-20 w-20 transform rotate-12"
+                              />
+                            </div>
+                          </div>
+                          
                           {/* Enhanced animation container */}
                           <div 
                             key={`${currentDatabaseNarrative?.text}-${Date.now()}`}
-                            className="pt-narrative-container bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl"
+                            className="pt-narrative-container bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl relative overflow-hidden"
                           >
                             {/* Workout track indicator */}
                             {currentDatabaseNarrative?.workoutTrack && (
                               <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs uppercase tracking-wide font-bold opacity-90 bg-white/20 px-2 py-1 rounded">
-                                  {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                  <div className="bg-yellow-400 p-2 rounded-lg">
+                                    <img 
+                                      src={basslineLogoYellow} 
+                                      alt="Bassline Logo" 
+                                      className="h-8 w-8"
+                                    />
+                                  </div>
+                                  <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-3 py-2 rounded">
+                                    {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
+                                  </span>
+                                </div>
                                 {currentDatabaseNarrative.bpm && (
                                   <span className="text-xs bg-white/20 px-2 py-1 rounded font-bold">
                                     {Math.round(currentDatabaseNarrative.bpm)} BPM
