@@ -211,11 +211,11 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
         <div className="relative">
           {/* Artistic Background with Yellow Logo */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl" />
-          <div className="absolute top-4 right-4 opacity-10">
+          <div className="absolute top-4 right-4 opacity-30">
             <img 
               src={basslineLogoYellow} 
               alt="Bassline Background" 
-              className="h-24 w-24 transform rotate-12"
+              className="h-32 w-32 transform rotate-12 drop-shadow-2xl"
             />
           </div>
           
@@ -227,7 +227,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
                 <img 
                   src={basslineLogoYellow} 
                   alt="Bassline" 
-                  className="h-8 w-8 opacity-90 drop-shadow-lg"
+                  className="h-12 w-12 opacity-100 drop-shadow-xl"
                 />
                 <span className="text-lg uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
