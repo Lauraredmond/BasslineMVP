@@ -206,6 +206,11 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
 
   return (
     <div className="mt-4">
+      {/* TESTING: This should be visible */}
+      <div className="bg-red-500 text-white p-4 mb-2 text-center font-bold">
+        🚨 ANIMATEDPTNARRATIVE COMPONENT IS RENDERING 🚨
+      </div>
+      
       {/* PT Narrative Display with Animations */}
       <div className="">
         <div className="relative">
@@ -232,15 +237,16 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
                 <div className="bg-yellow-400 p-2 rounded-lg">
+                  <div className="text-black font-bold text-xs">LOGO HERE:</div>
                   <img 
                     src={basslineLogoYellow} 
                     alt="Bassline Logo" 
                     className="h-16 w-16"
                     onError={(e) => {
-                      console.error('Failed to load yellow logo:', e);
-                      e.currentTarget.style.display = 'none';
+                      console.error('❌ HEADER LOGO FAILED TO LOAD:', basslineLogoYellow);
+                      e.currentTarget.outerHTML = '<div class="h-16 w-16 bg-red-500 flex items-center justify-center text-white font-bold">FAIL</div>';
                     }}
-                    onLoad={() => console.log('Yellow logo loaded successfully')}
+                    onLoad={() => console.log('✅ HEADER LOGO LOADED:', basslineLogoYellow)}
                   />
                 </div>
                 <span className="text-lg uppercase tracking-wide font-bold opacity-90">
