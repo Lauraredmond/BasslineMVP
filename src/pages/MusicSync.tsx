@@ -1212,7 +1212,7 @@ const MusicSync = () => {
                         mode: playbackState?.item?.mode
                       }}
                       rapidApiData={undefined}
-                      hidePTNarrative={false}
+                      hidePTNarrative={true}
                     />
                     
                   </div>
@@ -1268,7 +1268,6 @@ const MusicSync = () => {
                                       alt="Bassline Logo" 
                                       className="h-16 w-16 drop-shadow-lg filter brightness-110"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/30 to-yellow-500/20 rounded-lg blur-sm -z-10"></div>
                                   </div>
                                   <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-4 py-2 rounded-lg">
                                     {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
