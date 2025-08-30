@@ -165,7 +165,7 @@ All colors MUST be HSL.
 }
 
 .pt-narrative-glow {
-  animation: ptGlowPulse 2s ease-in-out infinite;
+  /* Pulsing animation removed */
 }
 
 .pt-narrative-text {

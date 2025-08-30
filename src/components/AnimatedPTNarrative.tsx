@@ -209,7 +209,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       {/* PT Narrative Display with Animations */}
       <div 
         key={animationKey}
-        className={`${showNarrative ? 'pt-narrative-enter pt-narrative-glow' : ''}`}
+        className={`${showNarrative ? 'pt-narrative-enter' : ''}`}
       >
         <div className="relative">
           {/* Animated Background Glow */}
