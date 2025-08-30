@@ -211,24 +211,38 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
         <div className="relative">
           {/* Artistic Background with Yellow Logo */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl" />
-          <div className="absolute top-4 right-4 opacity-30">
-            <img 
-              src={basslineLogoYellow} 
-              alt="Bassline Background" 
-              className="h-32 w-32 transform rotate-12 drop-shadow-2xl"
-            />
+          <div className="absolute top-6 right-6 opacity-50">
+            <div className="bg-yellow-400/20 p-4 rounded-xl">
+              <img 
+                src={basslineLogoYellow} 
+                alt="Bassline Background" 
+                className="h-40 w-40 transform rotate-12 drop-shadow-2xl"
+                onError={(e) => {
+                  console.error('Failed to load background yellow logo:', e);
+                  e.currentTarget.parentElement.innerHTML = '<div class="text-yellow-400 text-6xl">N</div>';
+                }}
+                onLoad={() => console.log('Background yellow logo loaded successfully')}
+              />
+            </div>
           </div>
           
           {/* Main Content */}
           <div className="relative bg-gradient-to-r from-primary/95 to-primary/80 text-white p-12 rounded-2xl border-4 border-primary/60 shadow-2xl overflow-hidden">
             {/* Header with Workout Track */}
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <img 
-                  src={basslineLogoYellow} 
-                  alt="Bassline" 
-                  className="h-12 w-12 opacity-100 drop-shadow-xl"
-                />
+              <div className="flex items-center gap-4">
+                <div className="bg-yellow-400 p-2 rounded-lg">
+                  <img 
+                    src={basslineLogoYellow} 
+                    alt="Bassline Logo" 
+                    className="h-16 w-16"
+                    onError={(e) => {
+                      console.error('Failed to load yellow logo:', e);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    onLoad={() => console.log('Yellow logo loaded successfully')}
+                  />
+                </div>
                 <span className="text-lg uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
                 </span>
