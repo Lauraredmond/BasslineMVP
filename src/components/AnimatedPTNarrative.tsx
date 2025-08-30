@@ -209,37 +209,44 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       {/* PT Narrative Display with Animations */}
       <div className="">
         <div className="relative">
-          {/* Animated Background Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-lg" />
+          {/* Artistic Background with Yellow Logo */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl" />
+          <div className="absolute top-4 right-4 opacity-10">
+            <img 
+              src={basslineLogoYellow} 
+              alt="Bassline Background" 
+              className="h-24 w-24 transform rotate-12"
+            />
+          </div>
           
           {/* Main Content */}
-          <div className="relative bg-gradient-to-r from-primary/95 to-primary/80 text-white p-5 rounded-xl border-3 border-primary/60 shadow-2xl">
+          <div className="relative bg-gradient-to-r from-primary/95 to-primary/80 text-white p-12 rounded-2xl border-4 border-primary/60 shadow-2xl overflow-hidden">
             {/* Header with Workout Track */}
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <img 
                   src={basslineLogoYellow} 
                   alt="Bassline" 
-                  className="h-4 w-4 opacity-70"
+                  className="h-8 w-8 opacity-90 drop-shadow-lg"
                 />
-                <span className="text-xs uppercase tracking-wide font-bold opacity-90">
+                <span className="text-lg uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
                 </span>
               </div>
               {(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo) && (
-                <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                <span className="text-lg bg-white/20 px-4 py-2 rounded-lg font-semibold">
                   {Math.round(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo || 0)} BPM
                 </span>
               )}
             </div>
             
             {/* Animated Narrative Text */}
-            <div className="pt-narrative-text text-base font-semibold leading-relaxed">
+            <div className="pt-narrative-text text-2xl font-bold leading-relaxed">
               <span className="italic">"{narrative}"</span>
             </div>
             
             {/* Animated Bottom Bar */}
-            <div className="mt-3 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded" />
+            <div className="mt-6 h-2 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded-full" />
           </div>
           
           {/* Clean animations without emoticons */}
