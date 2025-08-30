@@ -866,62 +866,21 @@ const MusicSync = () => {
         .single();
 
       const rawSongComponent = sectionData?.section_type || 'verse';
-      
-      // Reset section occurrences when track changes
-      const currentTrackKey = `${track}-${artist}`;
-      if (currentTrackKey !== lastProcessedTrackRef.current) {
-        sectionOccurrencesRef.current = {};
-        lastProcessedTrackRef.current = currentTrackKey;
-      }
-      
-      // Track section occurrences for numbered narratives
-      const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
-      const currentCount = (sectionOccurrencesRef.current[baseSection] || 0) + 1;
-      
-      // Update section occurrence count
-      sectionOccurrencesRef.current[baseSection] = currentCount;
-      
-      // Determine numbered section for specific narratives
-      let songComponent = baseSection;
-      if ((baseSection === 'verse' || baseSection === 'chorus') && currentCount > 1) {
-        songComponent = `${baseSection}_${currentCount}`;
-      }
-      
-      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent} (occurrence: ${currentCount})`);
+      // Normalize song component to match instruction_narratives format  
+      const songComponent = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
+      console.log(`🎵 Current song component: ${rawSongComponent} → normalized: ${songComponent}`);
 
-      // Get narrative from instruction_narratives table with fallback logic
-      let narrativeData = null;
-      let narrativeError = null;
-      
-      // Try the numbered section first (e.g., verse_2, chorus_3)
-      const { data: specificData, error: specificError } = await supabase
+      // Get narrative from instruction_narratives table
+      const { data: narrativeData, error: narrativeError } = await supabase
         .from('instruction_narratives')
         .select('text')
         .eq('workout_track', workoutTrack)
         .eq('song_component', songComponent)
         .limit(1)
         .single();
-      
-      narrativeData = specificData;
-      narrativeError = specificError;
-      
-      // Fallback to base section if numbered section doesn't exist
-      if (narrativeError && songComponent.includes('_')) {
-        console.log(`🔄 Numbered section ${songComponent} not found, trying base section ${baseSection}`);
-        const { data: baseData, error: baseError } = await supabase
-          .from('instruction_narratives')
-          .select('text')
-          .eq('workout_track', workoutTrack)
-          .eq('song_component', baseSection)
-          .limit(1)
-          .single();
-        
-        narrativeData = baseData;
-        narrativeError = baseError;
-      }
 
       if (narrativeError || !narrativeData?.text) {
-        console.warn(`❌ No narrative found for ${workoutTrack} + ${songComponent} (or base ${baseSection})`);
+        console.warn(`No narrative found for ${workoutTrack} + ${songComponent}`);
         return null;
       }
 
@@ -1297,12 +1256,12 @@ const MusicSync = () => {
                           {/* Enhanced animation container */}
                           <div 
                             key={`${currentDatabaseNarrative?.text}-${Date.now()}`}
-                            className="pt-narrative-container bg-gradient-to-r from-primary/95 to-primary/80 text-white p-6 rounded-xl border-2 border-primary/60 shadow-2xl relative overflow-hidden"
+                            className="pt-narrative-container bg-gradient-to-r from-primary/95 to-primary/80 text-white p-12 rounded-2xl border-4 border-primary/60 shadow-2xl relative overflow-hidden"
                           >
                             {/* Workout track indicator */}
                             {currentDatabaseNarrative?.workoutTrack && (
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-4">
                                   <div className="relative">
                                     <img 
                                       src={basslineLogoYellowTransparent} 
@@ -1311,12 +1270,12 @@ const MusicSync = () => {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/30 to-yellow-500/20 rounded-lg blur-sm -z-10"></div>
                                   </div>
-                                  <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-3 py-2 rounded">
+                                  <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-4 py-2 rounded-lg">
                                     {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
                                   </span>
                                 </div>
                                 {currentDatabaseNarrative.bpm && (
-                                  <span className="text-xs bg-white/20 px-2 py-1 rounded font-bold">
+                                  <span className="text-lg bg-white/20 px-4 py-2 rounded-lg font-semibold">
                                     {Math.round(currentDatabaseNarrative.bpm)} BPM
                                   </span>
                                 )}
@@ -1331,14 +1290,14 @@ const MusicSync = () => {
                             {/* Song component indicator */}
                             {currentDatabaseNarrative?.songComponent && (
                               <div className="mt-3 text-center">
-                                <span className="text-xs bg-white/30 px-2 py-1 rounded uppercase tracking-wide">
+                                <span className="text-sm bg-white/30 px-3 py-2 rounded-lg uppercase tracking-wide">
                                   {currentDatabaseNarrative.songComponent.replace('_', ' ')}
                                 </span>
                               </div>
                             )}
                             
                             {/* Static bottom bar */}
-                            <div className="mt-4 h-1 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded" />
+                            <div className="mt-6 h-2 bg-gradient-to-r from-white/0 via-white/80 to-white/0 rounded-full" />
                           </div>
                           
                           {/* Static glow effect */}
