@@ -12,7 +12,7 @@ import { Header } from "@/components/Header";
 import { spotifyService, SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPlaybackState, formatTrackUri } from "@/lib/spotify";
 import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/musicAnalysis";
 import { narrativeEngine } from "@/lib/narrative-engine";
-import basslineLogoYellow from '../assets/bassline-logo-yellow.png';
+import basslineLogoYellowTransparent from '../assets/bassline-logo-yellow-transparent.png';
 import { dbAdmin } from "@/lib/database-admin";
 import { supabase } from "@/lib/supabase";
 import { advancedMusicAnalysis } from "@/lib/advanced-music-analysis";
@@ -1248,14 +1248,15 @@ const MusicSync = () => {
                       
                       return narrativeToShow ? (
                         <div className="relative">
-                          {/* Artistic Background with Yellow Logo */}
-                          <div className="absolute top-4 right-4 opacity-40 z-10">
-                            <div className="bg-yellow-400/20 p-3 rounded-xl">
+                          {/* Artistic Background with Large Transparent Yellow Logo */}
+                          <div className="absolute -top-10 -right-10 opacity-60 z-10">
+                            <div className="relative">
                               <img 
-                                src={basslineLogoYellow} 
+                                src={basslineLogoYellowTransparent} 
                                 alt="Bassline Background" 
-                                className="h-20 w-20 transform rotate-12"
+                                className="h-56 w-56 transform rotate-12 drop-shadow-2xl filter brightness-110"
                               />
+                              <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300/20 via-transparent to-yellow-400/10 rounded-full blur-xl"></div>
                             </div>
                           </div>
                           
@@ -1268,12 +1269,13 @@ const MusicSync = () => {
                             {currentDatabaseNarrative?.workoutTrack && (
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-3">
-                                  <div className="bg-yellow-400 p-2 rounded-lg">
+                                  <div className="relative">
                                     <img 
-                                      src={basslineLogoYellow} 
+                                      src={basslineLogoYellowTransparent} 
                                       alt="Bassline Logo" 
-                                      className="h-8 w-8"
+                                      className="h-16 w-16 drop-shadow-lg filter brightness-110"
                                     />
+                                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/30 to-yellow-500/20 rounded-lg blur-sm -z-10"></div>
                                   </div>
                                   <span className="text-lg uppercase tracking-wide font-bold opacity-90 bg-white/20 px-3 py-2 rounded">
                                     {currentDatabaseNarrative.workoutTrack.replace('_', ' ')}
