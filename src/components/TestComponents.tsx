@@ -2,11 +2,13 @@ import React from 'react';
 import { testSuite, errorHandler } from '@/lib/integration-test-suite';
 import type { TestSuite, TestResult } from '@/lib/integration-test-suite';
 import { spotifyService } from '@/lib/spotify';
+import { DatabaseSchemaInspector } from './DatabaseSchemaInspector';
 
 export const DebugPanel: React.FC = () => {
   const [testResults, setTestResults] = React.useState<TestSuite | null>(null);
   const [healthResults, setHealthResults] = React.useState<any>(null);
   const [isRunning, setIsRunning] = React.useState(false);
+  const [showSchemaInspector, setShowSchemaInspector] = React.useState(false);
 
   const runFullTests = async () => {
     setIsRunning(true);
@@ -664,6 +666,21 @@ export const DebugPanel: React.FC = () => {
         >
           📊 Export Logs
         </button>
+        
+        <button 
+          onClick={() => setShowSchemaInspector(!showSchemaInspector)}
+          style={{
+            padding: '6px 10px',
+            background: showSchemaInspector ? '#6610f2' : '#6f42c1',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        >
+          {showSchemaInspector ? '🗄️ Hide Schema' : '🗄️ DB Schema'}
+        </button>
       </div>
 
       {testResults && (
@@ -695,6 +712,12 @@ export const DebugPanel: React.FC = () => {
               </ul>
             </div>
           )}
+        </div>
+      )}
+      
+      {showSchemaInspector && (
+        <div style={{ marginTop: '12px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+          <DatabaseSchemaInspector />
         </div>
       )}
       
