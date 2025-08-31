@@ -1,0 +1,6 @@
+column_name,data_type
+id,uuid
+workout_track,character varying
+target_tempo_min,integer
+target_tempo_max,integer
+created_at,timestamp with time zone

@@ -46,6 +46,17 @@ export const DebugPanel: React.FC = () => {
     a.click();
   };
 
+  const verifyDatabaseSchema = async () => {
+    try {
+      const { verifyTableSchemas } = await import('@/lib/database-test');
+      const result = await verifyTableSchemas();
+      console.log('🗄️ Schema Verification:', result);
+      setHealthResults(result);
+    } catch (error) {
+      console.error('Schema verification failed:', error);
+    }
+  };
+
   const testEnhancedAnalysis = async () => {
     try {
       console.log('🧪 🚨 TESTING ENHANCED SECTIONAL ANALYSIS - This should create section-based rows, not interval-based! 🚨');
@@ -680,6 +691,21 @@ export const DebugPanel: React.FC = () => {
           }}
         >
           {showSchemaInspector ? '🗄️ Hide Schema' : '🗄️ DB Schema'}
+        </button>
+        <button
+          onClick={verifyDatabaseSchema}
+          style={{
+            padding: '4px 8px',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            background: '#28a745',
+            color: 'white',
+            marginLeft: '4px'
+          }}
+        >
+          ✅ Verify Schema
         </button>
       </div>
 

@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { advancedMusicAnalysis, MusicalStructure } from './advanced-music-analysis'
+import { spotifyService } from './spotify'
 
 export interface NarrativeCue {
   id: string
@@ -232,6 +233,67 @@ export class NarrativeEngine {
     return {
       text: nextCue.text,
       timeUntil: nextCue.triggerTime! - elapsedSeconds
+    }
+  }
+
+  // Get narrative for current Spotify track using database joins
+  async getCurrentTrackNarrative(): Promise<string | null> {
+    try {
+      const trackMetadata = await spotifyService.getCurrentTrackMetadata();
+      if (!trackMetadata) return null;
+
+      // Step 1: Get track sections from streaming_vendor_attributes
+      const { data: sections, error: svaError } = await supabase
+        .from('streaming_vendor_attributes')
+        .select('section_type, section_number, timestamp_ms')
+        .or(`spotify_track_id.eq.${trackMetadata.track_id},and(track_name.ilike.${trackMetadata.name},artist_name.ilike.${trackMetadata.artist})`)
+        .eq('event_type', 'section_change')
+        .order('timestamp_ms');
+
+      if (svaError || !sections?.length) return null;
+
+      // Step 2: Find current section based on progress_ms
+      let currentSection = null;
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const nextSection = sections[i + 1];
+        const sectionStart = section.timestamp_ms;
+        const sectionEnd = nextSection ? nextSection.timestamp_ms : trackMetadata.duration_ms;
+        
+        if (trackMetadata.progress_ms >= sectionStart && trackMetadata.progress_ms < sectionEnd) {
+          currentSection = section;
+          break;
+        }
+      }
+
+      if (!currentSection) return null;
+
+      // Step 3: Determine workout_track (hardcoded for The Pretender and Slide Away)
+      let workoutTrack: string;
+      if (trackMetadata.name.toLowerCase().includes('pretender')) {
+        workoutTrack = 'sprint_intervals';
+      } else if (trackMetadata.name.toLowerCase().includes('slide away')) {
+        workoutTrack = 'climb';
+      } else {
+        return null; // Only configured tracks emit narratives
+      }
+
+      const workoutPhase = { workout_track: workoutTrack };
+
+      // Step 4: Get narrative from instruction_narratives
+      const { data: narrative, error: inError } = await supabase
+        .from('instruction_narratives')
+        .select('text')
+        .eq('workout_track', workoutPhase.workout_track)
+        .eq('song_component', currentSection.section_type)
+        .single();
+
+      if (inError || !narrative) return null;
+
+      return narrative.text;
+    } catch (error) {
+      console.error('Error getting current track narrative:', error);
+      return null;
     }
   }
 

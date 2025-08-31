@@ -831,25 +831,16 @@ const MusicSync = () => {
       const bpm = bpmData.spotify_tempo;
       console.log(`🎵 Found BPM in streaming_vendor_attributes: ${bpm}`);
 
-      // Map BPM to workout_track type using workout_phases table  
-      console.log(`🔍 Looking for workout_track where ${bpm} is between target_tempo_min and target_tempo_max`);
-      
-      const { data: phaseData, error: phaseError } = await supabase
-        .from('workout_phases')
-        .select('workout_track, target_tempo_min, target_tempo_max')
-        .lte('target_tempo_min', bpm)  // target_tempo_min <= bpm
-        .gte('target_tempo_max', bpm)  // target_tempo_max >= bpm  
-        .limit(1)
-        .single();
-        
-      console.log(`📊 WORKOUT_PHASES RESULT:`, { phaseData, phaseError });
-
-      if (phaseError || !phaseData?.workout_track) {
-        console.warn('No matching workout_track found for BPM:', bpm);
+      // Hardcoded track mappings for The Pretender and Slide Away
+      let workoutTrack: string;
+      if (playbackState.item.name.toLowerCase().includes('pretender')) {
+        workoutTrack = 'sprint_intervals';
+      } else if (playbackState.item.name.toLowerCase().includes('slide away')) {
+        workoutTrack = 'climb';
+      } else {
+        console.warn('Track not configured for database narratives:', playbackState.item.name);
         return null;
       }
-
-      const workoutTrack = phaseData.workout_track;
       console.log(`🎯 Mapped BPM ${bpm} to workout_track: ${workoutTrack}`);
 
       // Get current song section from streaming_vendor_attributes

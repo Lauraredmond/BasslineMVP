@@ -20,19 +20,64 @@ export async function testDatabaseConnection() {
   }
 }
 
+// Verify exact schema for three key tables
+export async function verifyTableSchemas() {
+  try {
+    // Test streaming_vendor_attributes structure
+    const { data: svaData, error: svaError } = await supabase
+      .from('streaming_vendor_attributes')
+      .select('*')
+      .limit(1)
+
+    // Test instruction_narratives structure  
+    const { data: inData, error: inError } = await supabase
+      .from('instruction_narratives')
+      .select('*')
+      .limit(1)
+
+    // Test workout_phases structure
+    const { data: wpData, error: wpError } = await supabase
+      .from('workout_phases')
+      .select('*')
+      .limit(1)
+
+    // Test data for The Pretender and Slide Away
+    const { data: pretenderData, error: pretenderError } = await supabase
+      .from('streaming_vendor_attributes')
+      .select('track_name, artist_name, section_type, section_number, timestamp_ms, spotify_track_id')
+      .ilike('track_name', '%pretender%')
+
+    const { data: slideAwayData, error: slideAwayError } = await supabase
+      .from('streaming_vendor_attributes')
+      .select('track_name, artist_name, section_type, section_number, timestamp_ms, spotify_track_id')
+      .ilike('track_name', '%slide%away%')
+
+    return {
+      schemas: {
+        streaming_vendor_attributes: { data: svaData, error: svaError },
+        instruction_narratives: { data: inData, error: inError },
+        workout_phases: { data: wpData, error: wpError }
+      },
+      testData: {
+        pretender: { data: pretenderData, error: pretenderError },
+        slideAway: { data: slideAwayData, error: slideAwayError }
+      }
+    }
+  } catch (error) {
+    console.error('Schema verification failed:', error)
+    return { error: error.message }
+  }
+}
+
 // Fetch spinning workout phases for testing
 export async function getSpinningPhases() {
   const { data, error } = await supabase
     .from('workout_phases')
-    .select(`
-      *,
-      workout_types(name, workout_track)
-    `)
-    .eq('workout_types.name', 'spinning')
-    .order('sort_order')
+    .select('*')
+    .order('target_tempo_min')
   
   if (error) {
-    console.error('Error fetching spinning phases:', error)
+    console.error('Error fetching workout phases:', error)
     return []
   }
   

@@ -1,0 +1,22 @@
+column_name,data_type
+id,uuid
+track_name,character varying
+artist_name,character varying
+timestamp_ms,bigint
+event_type,character varying
+section_type,character varying
+section_number,integer
+bar_number,integer
+beat_number,integer
+estimated_tempo,numeric
+energy_level,integer
+intensity_level,integer
+data_source,character varying
+capture_session_id,uuid
+notes,text
+captured_by,character varying
+created_at,timestamp with time zone
+updated_at,timestamp with time zone
+track_duration_ms,bigint
+spotify_track_id,character varying
+spotify_tempo,real

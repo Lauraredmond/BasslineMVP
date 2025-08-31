@@ -15,6 +15,8 @@ import PersonalProfile from "./pages/PersonalProfile";
 import Analytics from "./pages/Analytics";
 import CustomerSupport from "./pages/CustomerSupport";
 import Community from "./pages/Community";
+import CommunitySupport from "./pages/community-support";
+import ProfilePrivacyTrust from "./pages/profile-privacy-trust";
 import SpotifyCallback from "./pages/SpotifyCallback";
 import AudioTimestamping from "./pages/AudioTimestamping";
 import NotFound from "./pages/NotFound";
@@ -40,6 +42,8 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/support" element={<CustomerSupport />} />
           <Route path="/community" element={<Community />} />
+          <Route path="/community-support" element={<CommunitySupport />} />
+          <Route path="/profile-privacy-trust" element={<ProfilePrivacyTrust />} />
           <Route path="/callback" element={<SpotifyCallback />} />
           <Route path="/audio-timestamping" element={<AudioTimestamping />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

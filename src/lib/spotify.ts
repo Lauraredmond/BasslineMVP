@@ -1075,6 +1075,36 @@ class SpotifyService {
   async forceRapidSoundnetAnalysis(trackName: string, artistName?: string): Promise<SpotifyAudioFeatures | null> {
     return this.getRapidSoundnetAudioFeatures(trackName, artistName);
   }
+
+  // Get current track metadata for narrative matching
+  async getCurrentTrackMetadata(): Promise<{
+    track_id?: string;
+    track_uri?: string;
+    name: string;
+    artist: string;
+    progress_ms: number;
+    duration_ms: number;
+  } | null> {
+    try {
+      const playbackState = await this.getCurrentPlayback();
+      
+      if (!playbackState?.item || !playbackState.is_playing) {
+        return null;
+      }
+
+      return {
+        track_id: playbackState.item.id,
+        track_uri: `spotify:track:${playbackState.item.id}`,
+        name: playbackState.item.name,
+        artist: playbackState.item.artists[0]?.name || '',
+        progress_ms: playbackState.progress_ms || 0,
+        duration_ms: playbackState.item.duration_ms
+      };
+    } catch (error) {
+      console.error('Error getting current track metadata:', error);
+      return null;
+    }
+  }
 }
 
 export const spotifyService = new SpotifyService();

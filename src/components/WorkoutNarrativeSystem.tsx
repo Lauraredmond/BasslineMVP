@@ -115,15 +115,15 @@ export const WorkoutNarrativeSystem = ({
     
     console.log('🎵 Starting warmup phase timer')
     
-    intervalRef.current = setInterval(() => {
+    intervalRef.current = setInterval(async () => {
       const now = Date.now()
       const elapsed = (now - phaseStartTime.current) / 1000
       setElapsedTime(elapsed)
       
-      // Check for narrative triggers
-      const narrative = narrativeEngine.checkTriggers(now)
-      if (narrative) {
-        console.log('🎵 Narrative triggered:', narrative)
+      // Check for narrative triggers using database-driven approach
+      const narrative = await narrativeEngine.getCurrentTrackNarrative()
+      if (narrative && narrative !== currentNarrative) {
+        console.log('🎵 Database narrative triggered:', narrative)
         setCurrentNarrative(narrative)
         onNarrativeTriggered?.(narrative)
         
@@ -132,7 +132,7 @@ export const WorkoutNarrativeSystem = ({
           setCurrentNarrative(null)
         }, 5000)
       }
-    }, 100) // Check every 100ms for precise timing
+    }, 1000) // Check every 1 second for Spotify track progress
   }
 
   const stopPhaseTimer = () => {

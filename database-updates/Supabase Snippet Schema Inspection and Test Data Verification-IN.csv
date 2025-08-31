@@ -1,0 +1,6 @@
+column_name,data_type
+id,uuid
+text,text
+song_component,character varying
+created_at,timestamp with time zone
+workout_track,character varying
