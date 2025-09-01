@@ -9,7 +9,7 @@
    - Added `getCurrentTrackMetadata()` to SpotifyService (frontend TypeScript)
    - Created `getCurrentTrackNarrative()` in narrative-engine.ts (frontend TypeScript) 
    - Modified `getCurrentDatabaseNarrative()` in MusicSync.tsx (frontend TypeScript)
-   - Track mappings: "The Pretender" ’ sprint_intervals, "Slide Away" ’ climb
+   - Track mappings: "The Pretender" ï¿½ sprint_intervals, "Slide Away" ï¿½ climb
    - Fixed hardcoded BPM issue per user feedback
 
 2. **Navigation Consolidation** - Reduced 6 tabs to 5 without breaking functionality
@@ -25,8 +25,8 @@
    - Modal shows philosophy and testimonials sections with graceful empty states
 
 **Failed/Corrected:**
-- Initial tempo hardcoding rejected ’ implemented dynamic detection
-- Wrong "Slide Away" ’ jumps mapping ’ corrected to climb mapping
+- Initial tempo hardcoding rejected ï¿½ implemented dynamic detection
+- Wrong "Slide Away" ï¿½ jumps mapping ï¿½ corrected to climb mapping
 - BPM-based workout selection overridden with hardcoded track mappings per user request
 
 **Files Modified:**
@@ -35,3 +35,35 @@
 - No Netlify functions modified this session
 
 **Deployed:** GitHub push successful to BasslineMVP repo at 20:48
+
+## 2025-09-01 17:54
+
+### Session Summary - Dynamic Workout Phase to Song Allocation System
+
+**Completed Tasks:**
+1. **Session Locking Infrastructure** - Implemented persistent workout session snapshots
+   - Created `database-updates/create-session-tables.sql` with workout_sessions and session_phase_tracks tables
+   - Built `src/lib/session-lock.ts` with lockSessionForToday() and getSessionSnapshot() functions (frontend TypeScript)
+   - Deterministic track selection using user_id:date:routine_id seed for reproducible mappings
+   - Idempotent session creation - reuses existing sessions for same user+date
+
+2. **Three Entry Point Integration** - Wired session locking to all user flows
+   - Modified `src/pages/CreateRegularPlan.tsx` - locks session when plan day matches today (frontend TypeScript)
+   - Modified `src/pages/FormatSelection.tsx` - locks session immediately on format confirmation (frontend TypeScript)  
+   - Modified `src/pages/MusicSync.tsx` - locks session on mount if not already locked (frontend TypeScript)
+   - Added hasLockedToday state guard to prevent duplicate session creation
+
+3. **Dynamic Track Mapping** - Replaced hardcoded Pretender/Slide Away allocations
+   - BPM-based phase matching: sprint_intervals (140-200), climb (80-84), resistance (85-94), etc.
+   - Section map precomputation from streaming_vendor_attributes for narrative timing
+   - Fallback handling for tracks without sufficient metadata
+
+**Failed/Corrected:**
+- None - implementation followed specification exactly
+
+**Files Modified:**
+- Frontend TypeScript: 4 files (session-lock.ts new, CreateRegularPlan.tsx, FormatSelection.tsx, MusicSync.tsx)
+- Database: 1 new table creation SQL
+- No Netlify functions modified this session
+
+**Deployed:** GitHub push successful to BasslineMVP repo at 17:54

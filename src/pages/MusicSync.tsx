@@ -100,6 +100,7 @@ const MusicSync = () => {
   
   // Session locking state
   const [sessionLocked, setSessionLocked] = useState(false);
+  const [sessionSnapshot, setSessionSnapshot] = useState<any>(null);
   
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
@@ -467,13 +468,14 @@ const MusicSync = () => {
         if (existingSnapshot) {
           console.log('✅ Session already locked, using existing snapshot');
           setSessionLocked(true);
+          setSessionSnapshot(existingSnapshot);
           return;
         }
         
         // If no session exists, lock one based on current context
         const routineKey = workoutData.workoutType === 'spontaneous' ? 'spontaneous' : 'existing_plan';
         
-        await lockSessionForToday({
+        const newSnapshot = await lockSessionForToday({
           userId: 'anonymous_user',
           routine_key: routineKey,
           format: workoutFormat,
@@ -481,6 +483,7 @@ const MusicSync = () => {
         });
         
         setSessionLocked(true);
+        setSessionSnapshot(newSnapshot);
         console.log('🔒 Session locked on MusicSync mount');
         
       } catch (error) {
@@ -840,6 +843,32 @@ const MusicSync = () => {
     return narratives[currentNarrative] || narratives[0];
   };
   
+  // Get workout track from session snapshot for current playing track
+  const getWorkoutTrackFromSession = (trackName: string, artistName: string): string | null => {
+    if (!sessionSnapshot?.phases) return null;
+    
+    // Find the phase in the session snapshot that matches this track
+    const matchingPhase = sessionSnapshot.phases.find((phase: any) => 
+      phase.track_name === trackName && phase.artist_name === artistName
+    );
+    
+    if (matchingPhase) {
+      // Convert phase_key back to workout_track format
+      const phaseKey = matchingPhase.phase_key;
+      const workoutTrackMap: Record<string, string> = {
+        'warm_up': 'warmup',
+        'sprint': 'sprint_intervals', 
+        'rolling_hills': 'hills',
+        'resistance_track': 'resistance',
+        'sprint_jumps': 'jumps',
+        'cool_down': 'cooldown'
+      };
+      return workoutTrackMap[phaseKey] || 'resistance';
+    }
+    
+    return null;
+  };
+
   // Get current database-driven narrative based on streaming_vendor_attributes table
   const getCurrentDatabaseNarrative = async () => {
     if (!playbackState?.item) return null;
@@ -869,17 +898,33 @@ const MusicSync = () => {
       const bpm = bpmData.spotify_tempo;
       console.log(`🎵 Found BPM in streaming_vendor_attributes: ${bpm}`);
 
-      // Hardcoded track mappings for The Pretender and Slide Away
-      let workoutTrack: string;
-      if (playbackState.item.name.toLowerCase().includes('pretender')) {
-        workoutTrack = 'sprint_intervals';
-      } else if (playbackState.item.name.toLowerCase().includes('slide away')) {
-        workoutTrack = 'climb';
+      // First try to get workout track from session snapshot
+      let workoutTrack = getWorkoutTrackFromSession(playbackState.item.name, playbackState.item.artists[0]?.name);
+      
+      if (!workoutTrack) {
+        // Fallback to dynamic BPM-based workout track determination
+        if (bpm >= 140 && bpm <= 200) {
+          workoutTrack = 'sprint_intervals';
+        } else if (bpm >= 120 && bpm <= 139) {
+          workoutTrack = 'jumps';
+        } else if (bpm >= 95 && bpm <= 119) {
+          workoutTrack = 'hills';
+        } else if (bpm >= 85 && bpm <= 94) {
+          workoutTrack = 'resistance';
+        } else if (bpm >= 80 && bpm <= 84) {
+          workoutTrack = 'climb';
+        } else if (bpm >= 70 && bpm <= 79) {
+          workoutTrack = 'warmup';
+        } else if (bpm >= 60 && bpm <= 69) {
+          workoutTrack = 'cooldown';
+        } else {
+          console.warn(`⚠️ BPM ${bpm} outside known ranges for track: ${playbackState.item.name}`);
+          workoutTrack = 'resistance'; // Default fallback
+        }
+        console.log(`🎯 Dynamic BPM mapping: ${bpm} BPM → workout_track: ${workoutTrack}`);
       } else {
-        console.warn('Track not configured for database narratives:', playbackState.item.name);
-        return null;
+        console.log(`🎯 Session snapshot mapping: "${playbackState.item.name}" → workout_track: ${workoutTrack}`);
       }
-      console.log(`🎯 Mapped BPM ${bpm} to workout_track: ${workoutTrack}`);
 
       // Get current song section from streaming_vendor_attributes
       const currentTime = playbackState.progress_ms / 1000;
@@ -896,37 +941,43 @@ const MusicSync = () => {
         .eq('artist_name', artistName)
         .limit(5);
         
+      let songComponent = 'verse'; // Default section
+      
       if (trackExists && trackExists.length > 0) {
         console.log(`✅ Found ${trackExists.length} entries for "${trackName}" by "${artistName}":`, trackExists);
-      } else {
-        console.warn(`❌ No entries found in streaming_vendor_attributes for "${trackName}" by "${artistName}"`);
-        return null;
-      }
-      
-      const { data: sectionData, error: sectionError } = await supabase
-        .from('streaming_vendor_attributes')
-        .select('section_type, section_number')
-        .eq('track_name', trackName)
-        .eq('artist_name', artistName)
-        .eq('event_type', 'section_change')
-        .lte('timestamp_ms', playbackState.progress_ms)
-        .order('timestamp_ms', { ascending: false })
-        .limit(1)
-        .single();
+        
+        // Try to get current section from streaming_vendor_attributes
+        const { data: sectionData, error: sectionError } = await supabase
+          .from('streaming_vendor_attributes')
+          .select('section_type, section_number')
+          .eq('track_name', trackName)
+          .eq('artist_name', artistName)
+          .eq('event_type', 'section_change')
+          .lte('timestamp_ms', playbackState.progress_ms)
+          .order('timestamp_ms', { ascending: false })
+          .limit(1)
+          .single();
 
-      const rawSongComponent = sectionData?.section_type || 'verse';
-      const sectionNumber = sectionData?.section_number || 1;
-      
-      // Determine the correct song component based on section_number from database
-      const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
-      let songComponent = baseSection;
-      
-      // For verses and choruses beyond the first occurrence, use numbered narratives
-      if ((baseSection === 'verse' || baseSection === 'chorus') && sectionNumber > 1) {
-        songComponent = `${baseSection}_${sectionNumber}`;
+        if (sectionData?.section_type) {
+          const rawSongComponent = sectionData.section_type;
+          const sectionNumber = sectionData.section_number || 1;
+          
+          // Determine the correct song component based on section_number from database
+          const baseSection = rawSongComponent.replace('-', '_'); // pre-chorus → pre_chorus
+          songComponent = baseSection;
+          
+          // For verses and choruses beyond the first occurrence, use numbered narratives
+          if ((baseSection === 'verse' || baseSection === 'chorus') && sectionNumber > 1) {
+            songComponent = `${baseSection}_${sectionNumber}`;
+          }
+          
+          console.log(`🎵 Found section data: ${rawSongComponent} (section ${sectionNumber}) → normalized: ${songComponent}`);
+        } else {
+          console.log(`🔍 No section data found for current timestamp, using default: ${songComponent}`);
+        }
+      } else {
+        console.log(`🔍 No entries found in streaming_vendor_attributes for "${trackName}" by "${artistName}", using default section: ${songComponent}`);
       }
-      
-      console.log(`🎵 Current song component: ${rawSongComponent} (section ${sectionNumber}) → normalized: ${songComponent}`);
 
       // Get narrative from instruction_narratives table with fallback
       let { data: narrativeData, error: narrativeError } = await supabase

@@ -186,23 +186,38 @@ async function selectTrackForPhase(phase: WorkoutPhase, seed: string): Promise<a
     const minBpm = parseInt(tempoMatch[1]);
     const maxBpm = parseInt(tempoMatch[2]);
 
-    // Find tracks with suitable BPM from streaming_vendor_attributes
+    // Find tracks with suitable BPM from streaming_vendor_attributes, get distinct tracks
     const { data: tracks, error } = await supabase
       .from('streaming_vendor_attributes')
       .select('track_name, artist_name, spotify_track_id, spotify_tempo')
       .gte('spotify_tempo', minBpm)
       .lte('spotify_tempo', maxBpm)
-      .not('spotify_tempo', 'is', null)
-      .limit(50);
+      .not('spotify_tempo', 'is', null);
 
     if (error || !tracks || tracks.length === 0) {
-      console.warn(`No tracks found for BPM range ${minBpm}-${maxBpm}`);
+      console.warn(`No tracks found for BPM range ${minBpm}-${maxBpm}, phase: ${phase.name}`);
+      return null;
+    }
+
+    // Get unique tracks (remove duplicates from multiple timestamp entries)
+    const uniqueTracks = tracks.reduce((acc: any[], track) => {
+      const exists = acc.find(t => t.track_name === track.track_name && t.artist_name === track.artist_name);
+      if (!exists) {
+        acc.push(track);
+      }
+      return acc;
+    }, []);
+
+    if (uniqueTracks.length === 0) {
+      console.warn(`No unique tracks found for BPM range ${minBpm}-${maxBpm}, phase: ${phase.name}`);
       return null;
     }
 
     // Deterministic selection using seed
     const seedHash = hashString(seed);
-    const selectedTrack = tracks[Math.abs(seedHash) % tracks.length];
+    const selectedTrack = uniqueTracks[Math.abs(seedHash) % uniqueTracks.length];
+
+    console.log(`🎵 Selected track for ${phase.name}: "${selectedTrack.track_name}" by ${selectedTrack.artist_name} (${selectedTrack.spotify_tempo} BPM)`);
 
     return {
       track_id: selectedTrack.spotify_track_id,
