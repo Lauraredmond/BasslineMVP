@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { lockSessionForToday } from "@/lib/session-lock";
 
 const CreateRegularPlan = () => {
   const navigate = useNavigate();
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [dayWorkouts, setDayWorkouts] = useState<Record<string, { format: string; intensity: string }>>({});
+  const [hasLockedToday, setHasLockedToday] = useState(false);
 
   const days = [
     { id: 'monday', label: 'Monday', short: 'Mon' },
@@ -63,7 +65,28 @@ const CreateRegularPlan = () => {
     }));
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    // Check if today matches a planned workout and lock if needed
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const todayWorkout = selectedDays.find(day => day === today);
+    
+    if (todayWorkout && !hasLockedToday) {
+      const todaySettings = dayWorkouts[todayWorkout];
+      if (todaySettings?.format && todaySettings?.intensity) {
+        try {
+          await lockSessionForToday({
+            userId: 'anonymous_user', // Using anonymous for MVP
+            routine_key: 'planned_workout',
+            format: todaySettings.format,
+            intensity: todaySettings.intensity
+          });
+          setHasLockedToday(true);
+        } catch (error) {
+          console.error('Failed to lock session for today:', error);
+        }
+      }
+    }
+    
     navigate('/music-sync', { state: { selectedDays, dayWorkouts } });
   };
 

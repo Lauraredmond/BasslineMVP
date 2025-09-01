@@ -17,8 +17,10 @@ General rules (apply to every task):
    - A short plan (bullets).
    - Diffs or targeted snippets only (no full rewrites unless I ask).
    - Test/verification steps to confirm the change works and avoids breaking existing code.
-   - Log a one-liner of what failed in the previous task to the log file, with timestamp, so as to maintain record of what we've tried historically and what hasn't worked
+   - Log a one-liner of what failed in the previous task to the log file (log.md), with timestamp, so as to maintain record of what we've tried historically and what hasn't worked
+   - Log brief bullets of what was carried out in the current task to (log.md)
    - provide tech detail, including code files updated and tell me if it's front end typescript or netlify serverless functions (or otherwise) executing the changes made
+   - Always deploy changes to Github "BasslineMVP" folder after performing each update using deploy-with-debug.sh shell script
 
 Optional (when relevant):
 - Highlight risks if my request could impact other modules.

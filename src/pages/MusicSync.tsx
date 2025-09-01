@@ -25,6 +25,7 @@ import { secureRapidSoundnetService } from "@/lib/rapid-soundnet-secure";
 import { databaseMigrator } from "@/lib/database-migrator";
 import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
+import { lockSessionForToday, getSessionSnapshot } from "@/lib/session-lock";
 
 const MusicSync = () => {
   
@@ -96,6 +97,9 @@ const MusicSync = () => {
   
   // Workout start timestamp for fallback timing
   const [workoutStartTime, setWorkoutStartTime] = useState<number | null>(null);
+  
+  // Session locking state
+  const [sessionLocked, setSessionLocked] = useState(false);
   
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
@@ -452,6 +456,40 @@ const MusicSync = () => {
       setIsLoadingPlaylists(false);
     }
   };
+
+  // Check and lock session on mount if needed
+  useEffect(() => {
+    const checkAndLockSession = async () => {
+      try {
+        // Check if session already exists
+        const existingSnapshot = await getSessionSnapshot('anonymous_user');
+        
+        if (existingSnapshot) {
+          console.log('✅ Session already locked, using existing snapshot');
+          setSessionLocked(true);
+          return;
+        }
+        
+        // If no session exists, lock one based on current context
+        const routineKey = workoutData.workoutType === 'spontaneous' ? 'spontaneous' : 'existing_plan';
+        
+        await lockSessionForToday({
+          userId: 'anonymous_user',
+          routine_key: routineKey,
+          format: workoutFormat,
+          intensity: workoutIntensity
+        });
+        
+        setSessionLocked(true);
+        console.log('🔒 Session locked on MusicSync mount');
+        
+      } catch (error) {
+        console.error('Failed to lock session on mount:', error);
+      }
+    };
+    
+    checkAndLockSession();
+  }, [workoutFormat, workoutIntensity, workoutData.workoutType]);
 
   // Check authentication status (callback is handled by SpotifyCallback.tsx)
   useEffect(() => {

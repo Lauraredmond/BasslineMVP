@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { lockSessionForToday } from "@/lib/session-lock";
 
 const FormatSelection = () => {
   const navigate = useNavigate();
@@ -28,7 +29,19 @@ const FormatSelection = () => {
     { id: 'high', label: 'High', color: 'bg-red-100 text-red-700 border-red-200' }
   ];
 
-  const handleStartWorkout = () => {
+  const handleStartWorkout = async () => {
+    // Lock session immediately on format selection
+    try {
+      await lockSessionForToday({
+        userId: 'anonymous_user', // Using anonymous for MVP
+        routine_key: 'spontaneous',
+        format: selectedFormat,
+        intensity: selectedIntensity
+      });
+    } catch (error) {
+      console.error('Failed to lock session:', error);
+    }
+    
     navigate('/music-sync', { 
       state: { 
         workoutType: 'spontaneous',
