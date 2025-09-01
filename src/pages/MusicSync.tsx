@@ -205,22 +205,20 @@ const MusicSync = () => {
   };
 
   const getNowPlayingSongs = () => {
+    // Use live Spotify playback state first
+    if (playbackState?.item) {
+      const artists = playbackState.item.artists?.map(a => a.name).join(', ') || 'Unknown Artist';
+      return `${artists} – ${playbackState.item.name}`;
+    }
+    
     // Use actual track info if available from workout plan
     if (workoutPlan && currentTrackPhase) {
       const track = currentTrackPhase.track;
       return `${track.artists.map(a => a.name).join(', ')} – ${track.name}`;
     }
     
-    // Fallback to static songs
-    const songs = [
-      "Kylie Minogue – My Oh My",
-      "Sabrina Carpenter – Busy Woman", 
-      "Spice Girls – Spice Up Your Life",
-      "Sam Cooke – Twisting the Night Away",
-      "Dua Lipa – Physical",
-      "Whitney Houston – I Wanna Dance with Somebody"
-    ];
-    return songs[currentPhase] || songs[0];
+    // Last resort fallback
+    return "No track playing";
   };
 
   const getWorkoutPhases = (format: string) => {
@@ -529,10 +527,54 @@ const MusicSync = () => {
       // Also refresh devices periodically
       refreshSpotifyDevices();
       
+      // Start monitoring playback immediately when authenticated
+      console.log('🔄 [AUTO START] Starting playback monitoring due to authentication');
+      
+      // Get initial playback state immediately
+      spotifyService.getCurrentPlayback().then(state => {
+        if (state) {
+          console.log('🔄 [INITIAL FETCH] Got initial playback state:', state?.item?.name);
+          setPlaybackState(state);
+          setIsPlaying(state.is_playing);
+        }
+      }).catch(error => {
+        console.error('🚨 [INITIAL FETCH] Failed to get initial playback state:', error);
+      });
+      
+      startPlaybackMonitoring();
+      
       const deviceRefreshInterval = setInterval(refreshSpotifyDevices, 10000); // Every 10 seconds
-      return () => clearInterval(deviceRefreshInterval);
+      return () => {
+        clearInterval(deviceRefreshInterval);
+        stopPlaybackMonitoring();
+      };
     }
   }, [selectedService, isSpotifyAuthenticated]);
+  
+  // Auto-start monitoring when Spotify is authenticated (regardless of service selection)
+  useEffect(() => {
+    if (isSpotifyAuthenticated && !playbackMonitoringRef.current) {
+      console.log('🔄 [FALLBACK START] Auto-starting playback monitoring for authenticated Spotify');
+      
+      // Get initial state
+      spotifyService.getCurrentPlayback().then(state => {
+        if (state) {
+          console.log('🔄 [FALLBACK FETCH] Got playback state:', state?.item?.name);
+          setPlaybackState(state);
+          setIsPlaying(state.is_playing);
+          
+          // Auto-select Spotify service if not already selected
+          if (!selectedService) {
+            setSelectedService('spotify');
+          }
+        }
+      }).catch(error => {
+        console.error('🚨 [FALLBACK FETCH] Failed:', error);
+      });
+      
+      startPlaybackMonitoring();
+    }
+  }, [isSpotifyAuthenticated, selectedService]);
 
   // Playback monitoring
   const playbackMonitoringRef = useRef<NodeJS.Timeout | null>(null);
@@ -545,13 +587,19 @@ const MusicSync = () => {
     playbackMonitoringRef.current = setInterval(async () => {
       try {
         const state = await spotifyService.getCurrentPlayback();
-        console.log('🔍 [DEBUG] Spotify polling result:', {
+        console.log('🔍 [PLAYBACK POLL] Spotify polling result:', {
+          timestamp: new Date().toISOString(),
           hasState: !!state,
           hasItem: !!state?.item,
           trackName: state?.item?.name,
+          trackId: state?.item?.id,
+          artistName: state?.item?.artists?.[0]?.name,
           isPlaying: state?.is_playing,
+          progressMs: state?.progress_ms,
+          deviceId: state?.device?.id,
+          deviceName: state?.device?.name,
+          selectedDevice,
           isWorkoutActive,
-          hasWorkoutTimer: !!workoutStartTime,
           currentPhase
         });
         
@@ -579,6 +627,18 @@ const MusicSync = () => {
             // This will trigger the logging that should have happened in track change detection
           }
         }
+        
+        // Add detailed logging before setting state
+        if (state?.item) {
+          console.log('🎵 [STATE UPDATE] Setting new playback state:', {
+            newTrack: state.item.name,
+            newArtist: state.item.artists?.[0]?.name,
+            newId: state.item.id,
+            previousTrack: playbackState?.item?.name,
+            stateChanged: playbackState?.item?.id !== state.item.id
+          });
+        }
+        
         setPlaybackState(state);
         
         // 🎵 AUTO-CAPTURE BPM: Store tempo from Spotify API or RapidAPI when track plays
@@ -650,7 +710,14 @@ const MusicSync = () => {
           }
         }
       } catch (error) {
-        console.error('Error monitoring playback:', error);
+        console.error('🚨 [PLAYBACK ERROR] Error monitoring playback:', error);
+        
+        // Check if it's an auth error
+        if (error instanceof Error && (error.message.includes('401') || error.message.includes('403'))) {
+          console.error('🔑 [AUTH ERROR] Authentication failed, stopping monitoring');
+          setIsSpotifyAuthenticated(false);
+          stopPlaybackMonitoring();
+        }
       }
     }, 2000); // Check every 2 seconds
   };
@@ -662,10 +729,30 @@ const MusicSync = () => {
     }
   };
   
-  // Cleanup on unmount
+  // Cleanup on unmount and add page visibility listeners
   useEffect(() => {
-    return () => stopPlaybackMonitoring();
-  }, []);
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isSpotifyAuthenticated && selectedDevice) {
+        console.log('🔄 [VISIBILITY] Page focused, forcing playback refresh');
+        // Force immediate refresh when page becomes visible
+        spotifyService.getCurrentPlayback().then(state => {
+          if (state) {
+            console.log('🔄 [FOCUS REFRESH] Updated playback state:', state?.item?.name);
+            setPlaybackState(state);
+          }
+        }).catch(error => {
+          console.error('Error refreshing on focus:', error);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      stopPlaybackMonitoring();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSpotifyAuthenticated, selectedDevice]);
 
   // Fetch database narrative when track or position changes
   useEffect(() => {
