@@ -67,3 +67,12 @@
 - No Netlify functions modified this session
 
 **Deployed:** GitHub push successful to BasslineMVP repo at 17:54
+
+**Follow-up Fix - 18:05:**
+- Fixed hardcoded track mappings in getCurrentDatabaseNarrative() in MusicSync.tsx
+- Replaced hardcoded "Pretender"→sprint_intervals with dynamic BPM-based mapping
+- Added session snapshot integration to prefer session-locked tracks over BPM fallback
+- Fixed tracks without section data to still get PT narratives via BPM ranges
+- Frontend TypeScript: 2 files (session-lock.ts, MusicSync.tsx)
+
+**Deployed:** GitHub push successful to BasslineMVP repo at 18:05

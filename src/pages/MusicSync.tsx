@@ -858,7 +858,7 @@ const MusicSync = () => {
       const workoutTrackMap: Record<string, string> = {
         'warm_up': 'warmup',
         'sprint': 'sprint_intervals', 
-        'rolling_hills': 'hills',
+        'climb': 'climb',
         'resistance_track': 'resistance',
         'sprint_jumps': 'jumps',
         'cool_down': 'cooldown'
@@ -908,10 +908,8 @@ const MusicSync = () => {
         } else if (bpm >= 120 && bpm <= 139) {
           workoutTrack = 'jumps';
         } else if (bpm >= 95 && bpm <= 119) {
-          workoutTrack = 'hills';
-        } else if (bpm >= 85 && bpm <= 94) {
           workoutTrack = 'resistance';
-        } else if (bpm >= 80 && bpm <= 84) {
+        } else if (bpm >= 80 && bpm <= 94) {
           workoutTrack = 'climb';
         } else if (bpm >= 70 && bpm <= 79) {
           workoutTrack = 'warmup';

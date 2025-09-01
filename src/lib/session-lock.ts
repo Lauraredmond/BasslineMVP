@@ -162,8 +162,8 @@ function getWorkoutPhasesForRoutine(routineKey: string, format?: string): Workou
     return [
       { name: 'Warm Up', duration: 300, targetTempo: '70-79', energyLevel: 'low' },
       { name: 'Sprint', duration: 180, targetTempo: '140-200', energyLevel: 'high' },
-      { name: 'Rolling Hills', duration: 480, targetTempo: '95-119', energyLevel: 'medium' },
-      { name: 'Resistance Track', duration: 360, targetTempo: '85-94', energyLevel: 'medium' },
+      { name: 'Climb', duration: 480, targetTempo: '80-94', energyLevel: 'medium' },
+      { name: 'Resistance Track', duration: 360, targetTempo: '95-119', energyLevel: 'medium' },
       { name: 'Sprint Jumps', duration: 240, targetTempo: '120-139', energyLevel: 'high' },
       { name: 'Cool Down', duration: 300, targetTempo: '60-69', energyLevel: 'low' }
     ];
