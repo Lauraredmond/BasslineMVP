@@ -672,11 +672,8 @@ const MusicSync = () => {
           return;
         }
         
-        // Check if window is focused (add focus tracking)
-        if (document.hasFocus && !document.hasFocus()) {
-          console.log('⏸️ [OPTIMIZATION] Skipping poll - window not focused');
-          return;
-        }
+        // Music-sync exception: allow polling when unfocused for real-time sync
+        // (Only skip on hidden/offline, not focus loss)
       }
 
       try {
