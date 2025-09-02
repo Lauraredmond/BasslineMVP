@@ -289,6 +289,13 @@ class EnhancedRapidSoundnetService {
       console.log('🌐 Calling enhanced Netlify function with params:', params.toString());
       
       // Call our enhanced Netlify function that gets full API response
+      // Feature flag: disable enhanced RapidAPI calls
+      const rapidApiEnabled = import.meta.env.VITE_FEATURE_RAPIDAPI === 'true';
+      if (!rapidApiEnabled) {
+        console.log('🚫 Enhanced RapidAPI disabled via feature flag VITE_FEATURE_RAPIDAPI');
+        throw new Error('Enhanced RapidAPI disabled');
+      }
+
       const response = await fetch(`/.netlify/functions/enhanced-rapidapi-analysis?${params}`);
       
       if (!response.ok) {

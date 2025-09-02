@@ -26,6 +26,7 @@ import { databaseMigrator } from "@/lib/database-migrator";
 import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 import { lockSessionForToday, getSessionSnapshot } from "@/lib/session-lock";
+import { tempoResolver } from "@/lib/tempo-resolver";
 
 const MusicSync = () => {
   
@@ -43,7 +44,61 @@ const MusicSync = () => {
       return result;
     };
     
-    console.log('🔧 Migration functions available: window.runMigration() and window.testTable()');
+    (window as any).fixMissingBPMs = async () => {
+      console.log('🔧 Fixing missing BPM data...');
+      await AutomaticBPMCapture.forceUpdateTrackBPM('Slide Away', 'Oasis', 94);
+      await AutomaticBPMCapture.forceUpdateTrackBPM('The Pretender', 'Foo Fighters', 172);
+      await AutomaticBPMCapture.forceUpdateTrackBPM('Sandstorm', 'Darude', 136);
+      await AutomaticBPMCapture.forceUpdateTrackBPM('Death in Vegas', 'Dirge', 85);
+      console.log('✅ Missing BPM data updated');
+    };
+    
+    (window as any).testTempoResolver = async () => {
+      console.log('🎯 Testing tempo resolver...');
+      
+      // Test with known tracks
+      const slideAwayResult = await tempoResolver.resolveTempo({
+        trackName: 'Slide Away',
+        artistName: 'Oasis'
+      });
+      console.log('Slide Away result:', slideAwayResult);
+      
+      const pretenderResult = await tempoResolver.resolveTempo({
+        trackName: 'The Pretender', 
+        artistName: 'Foo Fighters'
+      });
+      console.log('The Pretender result:', pretenderResult);
+      
+      // Test cache stats
+      console.log('Cache stats:', tempoResolver.getCacheStats());
+      
+      return { slideAwayResult, pretenderResult };
+    };
+    
+    (window as any).validateTempoCorrections = async () => {
+      console.log('🔧 Testing tempo correction logic...');
+      
+      // Test half-tempo correction (should double 47 to 94)
+      const halfTempoTest = await tempoResolver.resolveTempo({
+        trackName: 'Test Half Tempo',
+        artistName: 'Test Artist',
+        previousTempo: 150 // High previous tempo to trigger correction
+      });
+      
+      // Test double-tempo correction (should halve 300 to 150)  
+      const doubleTempoTest = await tempoResolver.resolveTempo({
+        trackName: 'Test Double Tempo',
+        artistName: 'Test Artist',
+        previousTempo: 80 // Low previous tempo to trigger correction
+      });
+      
+      console.log('Half-tempo test:', halfTempoTest);
+      console.log('Double-tempo test:', doubleTempoTest);
+      
+      return { halfTempoTest, doubleTempoTest };
+    };
+    
+    console.log('🔧 Functions available: window.runMigration(), window.testTable(), window.fixMissingBPMs(), window.testTempoResolver(), window.validateTempoCorrections()');
   }, []);
   
   const location = useLocation();
@@ -585,7 +640,23 @@ const MusicSync = () => {
     }
     
     playbackMonitoringRef.current = setInterval(async () => {
+      // Skip polling if page is hidden to save bandwidth
+      if (document.hidden) {
+        console.log('⏸️ [OPTIMIZATION] Skipping Spotify poll - page hidden');
+        return;
+      }
+
       try {
+        // Observability: Log function usage (DEBUG only)
+        if (import.meta.env.VITE_DEBUG_FUNCTIONS === 'true') {
+          console.log('📊 [FUNCTION_USAGE] getCurrentPlayback called', {
+            timestamp: new Date().toISOString(),
+            userId: 'anonymous',
+            function: 'spotify.getCurrentPlayback',
+            fromCache: false
+          });
+        }
+
         const state = await spotifyService.getCurrentPlayback();
         console.log('🔍 [PLAYBACK POLL] Spotify polling result:', {
           timestamp: new Date().toISOString(),
@@ -641,49 +712,38 @@ const MusicSync = () => {
         
         setPlaybackState(state);
         
-        // 🎵 AUTO-CAPTURE BPM: Store tempo from Spotify API or RapidAPI when track plays
+        // 🎯 CENTRALIZED TEMPO RESOLUTION: Use new tempo resolver
         const shouldCaptureBPM = async () => {
           if (!state?.item) return;
 
-          let tempo = state.item.audio_features?.tempo;
-          let source = 'spotify_api';
-
-          // If Spotify audio_features failed (403 error), use RapidAPI tempo
-          if (!tempo) {
-            try {
-              console.log('🔄 Spotify BPM unavailable, fetching from RapidAPI...');
-              const rapidResult = await secureRapidSoundnetService.getTrackAnalysis(
-                state.item.name,
-                state.item.artists?.[0]?.name || '',
-                true
-              );
-              
-              if (rapidResult?.tempo) {
-                tempo = rapidResult.tempo;
-                source = 'rapidapi';
-                console.log(`✅ Using RapidAPI BPM: ${tempo} for "${state.item.name}"`);
-              }
-            } catch (error) {
-              console.warn('⚠️ Failed to get RapidAPI tempo:', error);
-            }
-          }
-
-          if (tempo) {
-            console.log(`🎵 AUTO-CAPTURE BPM: ${tempo} (${source}) for "${state.item.name}"`);
-            console.log(`🔧 CALLING AutomaticBPMCapture.captureBPMForTrack...`);
-            
-            AutomaticBPMCapture.captureBPMForTrack(
-              state.item.name,
-              state.item.artists?.[0]?.name || '',
-              tempo,
-              state.item.duration_ms
-            ).then(() => {
-              console.log(`✅ AutomaticBPMCapture completed for "${state.item.name}"`);
-            }).catch(error => {
-              console.error(`❌ AutomaticBPMCapture failed for "${state.item.name}":`, error);
+          try {
+            const tempoResult = await tempoResolver.resolveTempo({
+              trackId: state.item.id,
+              trackName: state.item.name,
+              artistName: state.item.artists?.[0]?.name || ''
             });
-          } else {
-            console.warn('❌ No BPM available from Spotify OR RapidAPI');
+            
+            if (tempoResult) {
+              console.log(`🎵 RESOLVED TEMPO: ${tempoResult.bpm} BPM (${tempoResult.source}, confidence: ${tempoResult.confidence})`);
+              
+              // Update database if tempo was resolved from external sources
+              if (tempoResult.source !== 'database') {
+                AutomaticBPMCapture.captureBPMForTrack(
+                  state.item.name,
+                  state.item.artists?.[0]?.name || '',
+                  tempoResult.bpm,
+                  state.item.duration_ms
+                ).then(() => {
+                  console.log(`✅ Updated database with resolved tempo: ${tempoResult.bpm} BPM`);
+                }).catch(error => {
+                  console.error(`❌ Failed to update database with tempo:`, error);
+                });
+              }
+            } else {
+              console.warn('❌ Tempo resolver returned null - no tempo available');
+            }
+          } catch (error) {
+            console.error('❌ Tempo resolution failed:', error);
           }
         };
 
@@ -719,7 +779,7 @@ const MusicSync = () => {
           stopPlaybackMonitoring();
         }
       }
-    }, 2000); // Check every 2 seconds
+    }, 5000); // Check every 5 seconds (reduced from 2s for bandwidth savings)
   };
   
   const stopPlaybackMonitoring = () => {
@@ -805,33 +865,45 @@ const MusicSync = () => {
     let narrativeInterval: NodeJS.Timeout;
     let progressInterval: NodeJS.Timeout;
 
-    if (workoutPlan && currentTrackPhase && playbackState) {
-      // Intelligent timing based on track tempo and structure
-      const track = currentTrackPhase.track;
-      const tempo = track.audio_features?.tempo || 120;
-      const beatsPerSecond = tempo / 60;
-      
-      // Change narrative every 8-16 beats (more musical timing)
-      const narrativeBeatInterval = Math.random() > 0.5 ? 8 : 16;
-      const narrativeTimeInterval = (narrativeBeatInterval / beatsPerSecond) * 1000;
-      
-      narrativeInterval = setInterval(() => {
-        setCurrentNarrative(prev => {
-          const maxNarratives = currentTrackPhase.phase.narratives.length;
-          return (prev + 1) % maxNarratives;
-        });
-      }, Math.max(3000, Math.min(8000, narrativeTimeInterval))); // Clamp between 3-8 seconds
+    const setupNarrativeTimer = async () => {
+      if (workoutPlan && currentTrackPhase && playbackState) {
+        // Intelligent timing based on track tempo and structure
+        const track = currentTrackPhase.track;
+        // Use tempo resolver for accurate BPM data
+        const tempoResult = await tempoResolver.getCurrentTrackTempo(
+          track.id,
+          track.name,
+          track.artists?.[0]?.name
+        );
+        const tempo = tempoResult?.bpm || track.audio_features?.tempo || 120;
+        const beatsPerSecond = tempo / 60;
+        
+        // Change narrative every 8-16 beats (more musical timing)
+        const narrativeBeatInterval = Math.random() > 0.5 ? 8 : 16;
+        const narrativeTimeInterval = (narrativeBeatInterval / beatsPerSecond) * 1000;
+        
+        narrativeInterval = setInterval(() => {
+          setCurrentNarrative(prev => {
+            const maxNarratives = currentTrackPhase.phase.narratives.length;
+            return (prev + 1) % maxNarratives;
+          });
+        }, Math.max(3000, Math.min(8000, narrativeTimeInterval))); // Clamp between 3-8 seconds
 
-      // Progress based on actual track progress if available
-      progressInterval = setInterval(() => {
-        if (playbackState && playbackState.progress_ms && playbackState.item) {
-          const trackProgress = playbackState.progress_ms / playbackState.item.duration_ms;
-          const phaseProgress = trackProgress * 100;
-          setPhaseProgress(phaseProgress);
-        } else {
-          setPhaseProgress(prev => Math.min(prev + 1.5, 100));
-        }
-      }, 1000);
+        // Progress based on actual track progress if available
+        progressInterval = setInterval(() => {
+          if (playbackState && playbackState.progress_ms && playbackState.item) {
+            const trackProgress = playbackState.progress_ms / playbackState.item.duration_ms;
+            const phaseProgress = trackProgress * 100;
+            setPhaseProgress(phaseProgress);
+          } else {
+            setPhaseProgress(prev => Math.min(prev + 1.5, 100));
+          }
+        }, 1000);
+      }
+    };
+
+    if (workoutPlan && currentTrackPhase && playbackState) {
+      setupNarrativeTimer();
     } else {
       // Fallback to time-based for non-Spotify
       narrativeInterval = setInterval(() => {
@@ -961,29 +1033,26 @@ const MusicSync = () => {
     if (!playbackState?.item) return null;
 
     try {
-      // Get BPM from streaming_vendor_attributes table
-      console.log(`🔍 DATABASE LOOKUP: Searching for BPM for "${playbackState.item.name}" by "${playbackState.item.artists[0]?.name}"`);
+      // 🎯 CENTRALIZED TEMPO RESOLUTION: Use new tempo resolver
+      console.log(`🔍 TEMPO RESOLVER: Getting tempo for "${playbackState.item.name}" by "${playbackState.item.artists[0]?.name}"`);
       
-      const { data: bpmData, error: bpmError } = await supabase
-        .from('streaming_vendor_attributes')
-        .select('spotify_tempo')
-        .eq('track_name', playbackState.item.name)
-        .eq('artist_name', playbackState.item.artists[0]?.name)
-        .not('spotify_tempo', 'is', null)
-        .limit(1)
-        .single();
-        
-      console.log(`📊 DATABASE BPM RESULT:`, { bpmData, bpmError });
-
-      if (bpmError || !bpmData?.spotify_tempo) {
-        console.warn('❌ No BPM found in streaming_vendor_attributes table');
-        console.warn('📊 BPM Error details:', { bpmError, bpmData });
-        console.warn('🔍 This suggests AutomaticBPMCapture failed - check why spotify_tempo is NULL');
+      const tempoResult = await tempoResolver.getCurrentTrackTempo(
+        playbackState.item.id,
+        playbackState.item.name,
+        playbackState.item.artists[0]?.name
+      );
+      
+      if (!tempoResult) {
+        console.warn('❌ Tempo resolver returned null - no tempo available');
         return null;
       }
 
-      const bpm = bpmData.spotify_tempo;
-      console.log(`🎵 Found BPM in streaming_vendor_attributes: ${bpm}`);
+      const bpm = tempoResult.bpm;
+      console.log(`🎵 Resolved tempo: ${bpm} BPM (source: ${tempoResult.source}, confidence: ${tempoResult.confidence})`);
+      
+      if (tempoResult.adjusted) {
+        console.log(`🔧 Tempo was adjusted from ${tempoResult.originalValue} to ${bpm}`);
+      }
 
       // First try to get workout track from session snapshot
       let workoutTrack = getWorkoutTrackFromSession(playbackState.item.name, playbackState.item.artists[0]?.name);

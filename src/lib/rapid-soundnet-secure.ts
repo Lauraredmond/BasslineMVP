@@ -97,6 +97,13 @@ class SecureRapidSoundnetService {
     artistName?: string, 
     allowFallback = true
   ): Promise<RapidSoundnetTrackAnalysis | null> {
+    // Feature flag: disable RapidAPI calls
+    const rapidApiEnabled = import.meta.env.VITE_FEATURE_RAPIDAPI === 'true';
+    if (!rapidApiEnabled) {
+      console.log('🚫 RapidAPI disabled via feature flag VITE_FEATURE_RAPIDAPI');
+      return allowFallback ? this.generateIntelligentFallback(trackTitle, artistName) : null;
+    }
+
     // Check cache first
     const cached = this.cache.get(trackTitle, artistName || '');
     if (cached) {

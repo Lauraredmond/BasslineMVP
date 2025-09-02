@@ -387,14 +387,41 @@ class SpotifyService {
       return [];
     }
 
+    // Cache audio features to reduce API calls
+    const cachedFeatures: SpotifyAudioFeatures[] = [];
+    const uncachedTrackIds: string[] = [];
+    
+    for (const trackId of trackIds) {
+      const cached = localStorage.getItem(`spotify_audio_${trackId}`);
+      if (cached) {
+        try {
+          const { data, timestamp } = JSON.parse(cached);
+          // Cache for 24 hours
+          if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+            cachedFeatures[trackIds.indexOf(trackId)] = data;
+            console.log(`📚 Using cached audio features for: ${trackId}`);
+            continue;
+          }
+        } catch (e) {
+          // Invalid cache entry, will refetch
+        }
+      }
+      uncachedTrackIds.push(trackId);
+    }
+
+    if (uncachedTrackIds.length === 0) {
+      console.log('✅ All audio features served from cache');
+      return cachedFeatures;
+    }
+
     try {
-      console.log('🎯 Making Audio Features API request:', {
-        url: `https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`,
-        trackIds,
-        hasToken: !!this.accessToken
+      console.log('🎯 Making Audio Features API request for uncached tracks:', {
+        url: `https://api.spotify.com/v1/audio-features?ids=${uncachedTrackIds.join(',')}`,
+        uncachedCount: uncachedTrackIds.length,
+        cachedCount: cachedFeatures.length
       });
       
-      const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${trackIds.join(',')}`, {
+      const response = await fetch(`https://api.spotify.com/v1/audio-features?ids=${uncachedTrackIds.join(',')}`, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`
         }
@@ -428,8 +455,31 @@ class SpotifyService {
           energy: f.energy
         } : null)
       });
+
+      // Cache the new features
+      features.forEach((feature, index) => {
+        if (feature && uncachedTrackIds[index]) {
+          localStorage.setItem(`spotify_audio_${uncachedTrackIds[index]}`, JSON.stringify({
+            data: feature,
+            timestamp: Date.now()
+          }));
+          console.log(`💾 Cached audio features for: ${uncachedTrackIds[index]}`);
+        }
+      });
+
+      // Merge cached and new features in original order
+      const result: SpotifyAudioFeatures[] = [];
+      let uncachedIndex = 0;
       
-      return features;
+      for (let i = 0; i < trackIds.length; i++) {
+        if (cachedFeatures[i]) {
+          result[i] = cachedFeatures[i];
+        } else {
+          result[i] = features[uncachedIndex++];
+        }
+      }
+      
+      return result;
     } catch (error) {
       console.error('💥 Audio Features API exception:', error);
       console.error('💥 Exception details:', {
