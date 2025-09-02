@@ -33,7 +33,8 @@ Reminder to LR for session prompt:Follow the Session Rules in primer.md. Task:XX
 ## Current Standard Mode (No Extended API Access)
 - **Polling interval:** 60s (configurable via VITE_SPOTIFY_POLL_INTERVAL_MS)
 - **Music-sync exception:** 8s interval (VITE_MUSIC_SYNC_POLL_INTERVAL_MS) for real-time sync requirements
-- **Visibility gating:** Only poll when tab visible, window focused, online, route active
+- **Visibility gating:** Only poll when tab visible, online, route active
+- **Focus exception:** Music-sync allows polling when window unfocused (real-time sync priority)
 - **Backoff logic:** 60s → 120s → 300s on consecutive no-change responses
 - **Pause suspension:** Stop polling if playback paused >30s
 - **Feature flags:** VITE_SPOTIFY_VISIBILITY_GATING=1, VITE_EXTENDED_SPOTIFY_API=0

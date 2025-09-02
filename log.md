@@ -219,3 +219,21 @@
 - **Tech stack:** Frontend TypeScript optimizations
 
 **Deployment:** Ready for production deployment
+
+## 2025-09-03 00:31:28 - Root Cause Found: Window Focus Gating
+
+### Issue  
+❌ **App still not responding to Spotify tracks** - console.txt shows infinite logging loop but no Spotify polling
+
+### Root Cause Analysis
+1. **Window focus gating (MusicSync.tsx:676)** - `document.hasFocus()` blocking all Spotify API calls
+2. **Infinite analysis logging** - 1000ms interval overwhelming system (fixed to 30s)
+3. **Missing polling logs** - No getCurrentPlayback() calls = confirms focus blocking
+
+### Minimal Fix
+✅ **Removed focus gating on music-sync** - Allow polling when window unfocused
+✅ **Fixed analysis logger interval** - 1000ms → 30000ms to reduce Netlify usage
+
+### Tech Details (Frontend TypeScript)  
+- `src/pages/MusicSync.tsx:676` - Removed `document.hasFocus()` check for music-sync exception
+- `src/lib/spotify-analysis-logger.ts:140` - Reduced logging from 1s to 30s intervals
