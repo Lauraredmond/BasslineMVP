@@ -1102,11 +1102,8 @@ const MusicSync = () => {
         console.log(`🔧 Tempo was adjusted from ${tempoResult.originalValue} to ${bpm}`);
       }
 
-      // First try to get workout track from session snapshot
-      let workoutTrack = getWorkoutTrackFromSession(playbackState.item.name, playbackState.item.artists[0]?.name);
-      
-      if (!workoutTrack) {
-        // Fallback to dynamic BPM-based workout track determination
+      // Use dynamic BPM-based workout track determination (prioritize over session for accuracy)
+      let workoutTrack: string;
         if (bpm >= 140 && bpm <= 200) {
           workoutTrack = 'sprint_intervals';
         } else if (bpm >= 120 && bpm <= 139) {
@@ -1124,9 +1121,9 @@ const MusicSync = () => {
           workoutTrack = 'resistance'; // Default fallback
         }
         console.log(`🎯 Dynamic BPM mapping: ${bpm} BPM → workout_track: ${workoutTrack}`);
-      } else {
-        console.log(`🎯 Session snapshot mapping: "${playbackState.item.name}" → workout_track: ${workoutTrack}`);
-      }
+      
+      // Session snapshot override temporarily disabled to ensure BPM-based accuracy
+      // TODO: Fix session snapshot data to match BPM ranges
 
       // Get current song section from streaming_vendor_attributes
       const currentTime = playbackState.progress_ms / 1000;
