@@ -640,10 +640,25 @@ const MusicSync = () => {
     }
     
     playbackMonitoringRef.current = setInterval(async () => {
-      // Skip polling if page is hidden to save bandwidth
-      if (document.hidden) {
-        console.log('⏸️ [OPTIMIZATION] Skipping Spotify poll - page hidden');
-        return;
+      // Comprehensive visibility gating
+      const visibilityGatingEnabled = import.meta.env.VITE_SPOTIFY_VISIBILITY_GATING !== '0';
+      
+      if (visibilityGatingEnabled) {
+        if (document.hidden || document.visibilityState !== 'visible') {
+          console.log('⏸️ [OPTIMIZATION] Skipping poll - page hidden');
+          return;
+        }
+        
+        if (!navigator.onLine) {
+          console.log('⏸️ [OPTIMIZATION] Skipping poll - offline');
+          return;
+        }
+        
+        // Check if window is focused (add focus tracking)
+        if (document.hasFocus && !document.hasFocus()) {
+          console.log('⏸️ [OPTIMIZATION] Skipping poll - window not focused');
+          return;
+        }
       }
 
       try {
@@ -779,7 +794,7 @@ const MusicSync = () => {
           stopPlaybackMonitoring();
         }
       }
-    }, 5000); // Check every 5 seconds (reduced from 2s for bandwidth savings)
+    }, parseInt(import.meta.env.VITE_SPOTIFY_POLL_INTERVAL_MS) || 60000); // Check every 60 seconds (configurable)
   };
   
   const stopPlaybackMonitoring = () => {

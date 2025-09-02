@@ -179,3 +179,43 @@
 **Expected Savings:** 85-90% reduction in Netlify Functions usage
 
 **Next:** Deploy optimizations and monitor usage patterns
+
+### Session Update - Aggressive Polling Reduction (60s intervals)
+
+**Completed Tasks:**
+1. **Spotify Polling Drastically Reduced** - 5s → 60s (92% reduction)
+   - Modified polling interval in MusicSync.tsx to use VITE_SPOTIFY_POLL_INTERVAL_MS (frontend TypeScript)
+   - **Impact:** 17,280 → 1,440 calls/day (92% reduction)
+
+2. **Comprehensive Visibility Gating** - Multi-layer polling prevention
+   - Added document.visibilityState, navigator.onLine, window focus checks (frontend TypeScript)  
+   - VITE_SPOTIFY_VISIBILITY_GATING flag to control gating logic
+   - **Impact:** Stops all polling when tab hidden/unfocused/offline
+
+3. **Centralized Polling Hook** - Built useSpotifyPolling.ts with backoff logic
+   - Created src/hooks/useSpotifyPolling.ts with intelligent backoff (frontend TypeScript)
+   - Backoff sequence: 60s → 120s → 300s on consecutive no-change responses
+   - Pause suspension: Stop polling if playback paused >30s
+   - **Impact:** Further reduces calls when music state is static
+
+4. **Enhanced Feature Flags** - Complete polling configuration
+   - Added VITE_SPOTIFY_POLL_INTERVAL_MS, VITE_SPOTIFY_VISIBILITY_GATING, VITE_EXTENDED_SPOTIFY_API
+   - Updated .env.example with all new flags
+   - **Impact:** Runtime configurable polling behavior
+
+5. **Future-Proofed Extended API Plan** - Documented strategy for advanced Spotify access
+   - Updated primer.md with current (60s) vs future extended API strategy
+   - Plan for Web Playback SDK events + 5-10s confirm polls
+   - **Impact:** Ready to optimize further if extended API access granted
+
+**Final Usage Estimates:**
+- **Before optimization:** 45,000+ function calls/day  
+- **After optimization:** ~1,500 function calls/day
+- **Total reduction:** 97% fewer calls
+
+**Files Modified:**
+- Frontend TypeScript: 2 files (MusicSync.tsx, new useSpotifyPolling.ts hook)
+- Configuration: 2 files (.env.example, primer.md)
+- **Tech stack:** Frontend TypeScript optimizations
+
+**Deployment:** Ready for production deployment

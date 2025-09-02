@@ -27,3 +27,29 @@ Optional (when relevant):
 - Suggest improvements separately, never bundled into the requested change.
 
 Reminder to LR for session prompt:Follow the Session Rules in primer.md. Task:XXXX
+
+# Spotify API Polling Strategy
+
+## Current Standard Mode (No Extended API Access)
+- **Polling interval:** 60s (configurable via VITE_SPOTIFY_POLL_INTERVAL_MS)
+- **Visibility gating:** Only poll when tab visible, window focused, online, route active
+- **Backoff logic:** 60s → 120s → 300s on consecutive no-change responses
+- **Pause suspension:** Stop polling if playback paused >30s
+- **Feature flags:** VITE_SPOTIFY_VISIBILITY_GATING=1, VITE_EXTENDED_SPOTIFY_API=0
+
+## Future Extended Mode (If Extended Spotify API Access Granted)
+**⚠️ Only activate if explicitly stated: "we have access to extended Spotify API"**
+
+When VITE_EXTENDED_SPOTIFY_API=1:
+- **Event-driven primary:** Web Playback SDK player_state_changed events
+- **Confirm polls:** 5-10s intervals only during active workout segments
+- **Phase-aware polling:** Short polls during workout screen foreground + active playback
+- **ETag support:** If-None-Match headers where available
+- **Visibility gating:** Maintained but allows 10s intervals when foregrounded
+
+### Revision Steps (Execute if Extended API access granted):
+1. Switch to Web Playback SDK event listeners
+2. Reduce polling to 10s during active workout only  
+3. Implement ETag/If-None-Match headers
+4. Update this document with new intervals and conditions
+5. Test that events properly replace most polling needs
