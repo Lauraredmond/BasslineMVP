@@ -68,7 +68,7 @@ class TempoResolver {
       this.cache.set(cacheKey, result);
       
       // Update database for future use
-      this.updateDatabaseTempo(trackName, artistName, result.bmp, trackId);
+      this.updateDatabaseTempo(trackName, artistName, result.bpm, trackId);
       return result;
     }
 

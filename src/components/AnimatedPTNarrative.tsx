@@ -33,6 +33,9 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
   // Animation key removed to prevent pulsing effects
   const [showNarrative, setShowNarrative] = useState<boolean>(false);
   const [detectedBPM, setDetectedBPM] = useState<number | null>(null);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const updateTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Map section_type to song_component
   const mapSectionToComponent = (sectionType: string, sectionNumber?: number): string => {
@@ -175,34 +178,86 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     }
   };
 
-  // Update narrative when section changes
+  // Update narrative when section changes (with debounce to prevent seek/skip issues)
   useEffect(() => {
     if (!currentSection?.sectionType) return;
 
-    const updateNarrative = async () => {
-      const tempo = currentTrack?.audio_features?.tempo || currentTrack?.tempo;
-      const newWorkoutTrack = await getWorkoutTrackFromTempo(tempo);
-      const songComponent = mapSectionToComponent(
-        currentSection.rawSectionType || currentSection.sectionType, 
-        currentSection.sectionNumber
-      );
+    // Clear any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
 
-      setWorkoutTrack(newWorkoutTrack);
-
-      const narrativeText = await fetchNarrative(newWorkoutTrack, songComponent);
-      setShowNarrative(false); // Start exit animation
+    // Debounce updates to prevent narrative disappearing on seeks (500ms grace period)
+    updateTimeoutRef.current = setTimeout(async () => {
+      setIsUpdating(true);
       
-      setTimeout(() => {
-        setNarrative(narrativeText);
-        // Animation key increment removed
-        setShowNarrative(true); // Start enter animation
-      }, 300);
-    };
+      const updateNarrative = async () => {
+        const tempo = currentTrack?.audio_features?.tempo || currentTrack?.tempo;
+        const newWorkoutTrack = await getWorkoutTrackFromTempo(tempo);
+        const songComponent = mapSectionToComponent(
+          currentSection.rawSectionType || currentSection.sectionType, 
+          currentSection.sectionNumber
+        );
 
-    updateNarrative();
+        setWorkoutTrack(newWorkoutTrack);
+
+        const narrativeText = await fetchNarrative(newWorkoutTrack, songComponent);
+        
+        // Instead of hiding during animation, show loading state
+        if (!showNarrative) {
+          setShowNarrative(true);
+        }
+        
+        setNarrative(narrativeText);
+        setIsUpdating(false);
+      };
+
+      await updateNarrative();
+    }, 500); // 500ms debounce to handle rapid seeks
+    
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
   }, [currentSection?.sectionType, currentSection?.sectionNumber, currentTrack?.name, currentTrack?.artists]);
 
-  if (!narrative || !currentSection) return null;
+  // Debug panel (guarded by VITE_DEBUG)
+  useEffect(() => {
+    if (import.meta.env.VITE_DEBUG === '1') {
+      setDebugInfo({
+        trackId: currentTrack?.name,
+        trackName: currentTrack?.name,
+        artistName: currentTrack?.artists?.[0]?.name,
+        detectedBPM,
+        spotifyTempo: currentTrack?.audio_features?.tempo,
+        computedWorkoutPhase: workoutTrack,
+        currentSectionType: currentSection?.sectionType,
+        narrativeVisible: showNarrative,
+        narrativeText: narrative?.substring(0, 50) + '...',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }, [currentTrack, detectedBPM, workoutTrack, currentSection, showNarrative, narrative]);
+
+  if (!narrative || !currentSection) {
+    // Show debug info even when narrative is hidden
+    if (import.meta.env.VITE_DEBUG === '1') {
+      return (
+        <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded">
+          <h4 className="font-bold text-red-800">🐛 PT Narrative Debug - HIDDEN</h4>
+          <div className="text-sm text-red-600">
+            <div>Reason: {!narrative ? 'No narrative' : 'No current section'}</div>
+            <div>Track: {currentTrack?.name || 'None'}</div>
+            <div>BPM: {detectedBPM || currentTrack?.audio_features?.tempo || 'Unknown'}</div>
+            <div>Phase: {workoutTrack || 'None'}</div>
+            <div>Section: {currentSection?.sectionType || 'None'}</div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <div className="mt-4">
@@ -260,9 +315,13 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
               )}
             </div>
             
-            {/* Animated Narrative Text */}
+            {/* Animated Narrative Text with loading state */}
             <div className="pt-narrative-text text-2xl font-bold leading-relaxed">
-              <span className="italic">"{narrative}"</span>
+              {isUpdating ? (
+                <span className="italic text-white/70">Loading...</span>
+              ) : (
+                <span className="italic">"{narrative}"</span>
+              )}
             </div>
             
             {/* Animated Bottom Bar */}
@@ -272,6 +331,26 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
           {/* Clean animations without emoticons */}
         </div>
       </div>
+      
+      {/* Debug Panel (VITE_DEBUG=1 only) */}
+      {import.meta.env.VITE_DEBUG === '1' && debugInfo && (
+        <div className="mt-4 p-4 bg-yellow-100 border border-yellow-300 rounded text-black text-xs">
+          <h4 className="font-bold text-yellow-800 mb-2">🐛 PT Narrative Debug Panel</h4>
+          <div className="grid grid-cols-2 gap-2">
+            <div><strong>Track:</strong> {debugInfo.trackName}</div>
+            <div><strong>Artist:</strong> {debugInfo.artistName}</div>
+            <div><strong>DB BPM:</strong> {debugInfo.detectedBPM || 'None'}</div>
+            <div><strong>Spotify BPM:</strong> {debugInfo.spotifyTempo || 'None'}</div>
+            <div><strong>Computed Phase:</strong> {debugInfo.computedWorkoutPhase}</div>
+            <div><strong>Section:</strong> {debugInfo.currentSectionType}</div>
+            <div><strong>Narrative Visible:</strong> {debugInfo.narrativeVisible ? 'Yes' : 'No'}</div>
+            <div><strong>Narrative:</strong> {debugInfo.narrativeText}</div>
+          </div>
+          <div className="mt-2 text-xs text-yellow-700">
+            Last updated: {debugInfo.timestamp}
+          </div>
+        </div>
+      )}
       
       {/* Section Info */}
       <div className="mt-2 text-center">
