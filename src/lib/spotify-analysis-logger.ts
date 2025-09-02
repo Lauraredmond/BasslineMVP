@@ -137,7 +137,7 @@ class SpotifyAnalysisLogger {
   private analysisData: SpotifyAnalysisData | null = null;
   private isLogging = false;
   private logInterval: number | null = null;
-  private readonly LOG_INTERVAL_MS = 1000; // Log every second
+  private readonly LOG_INTERVAL_MS = 30000; // Log every 30 seconds (reduced from 1s to save Netlify functions)
   private currentWorkoutType: string | null = null;
   private currentFitnessPhase: string | null = null;
   private autoSessionStarted = false;
