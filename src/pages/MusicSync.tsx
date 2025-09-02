@@ -728,6 +728,13 @@ const MusicSync = () => {
           console.log('🔧 [FIX] Music playing but workout state is false - correcting this!');
           setIsWorkoutActive(true);
           currentWorkoutState = true; // Use corrected state immediately
+          
+          // Force refresh narrative with corrected workout state
+          setTimeout(async () => {
+            const narrative = await getCurrentDatabaseNarrative();
+            setCurrentDatabaseNarrative(narrative);
+            console.log('🔄 [FORCED REFRESH] Updated narrative after workout state correction:', narrative);
+          }, 100);
         }
         
         // TEMPORARY DEBUG: Check conditions on every poll to see current state
