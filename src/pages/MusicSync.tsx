@@ -133,6 +133,8 @@ const MusicSync = () => {
   const [spotifyDevices, setSpotifyDevices] = useState<SpotifyDevice[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [playbackState, setPlaybackState] = useState<SpotifyPlaybackState | null>(null);
+  const [smoothProgress, setSmoothProgress] = useState<number>(0); // Running clock for smooth progress
+  const [lastSyncTime, setLastSyncTime] = useState<number>(0); // When we last synced with Spotify
   const [showDeviceSelector, setShowDeviceSelector] = useState(false);
   
   // Database-driven narratives
@@ -631,6 +633,22 @@ const MusicSync = () => {
     }
   }, [isSpotifyAuthenticated, selectedService]);
 
+  // Running clock for smooth progress between polls
+  useEffect(() => {
+    if (!playbackState?.is_playing || !lastSyncTime) return;
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - lastSyncTime;
+      const newProgress = Math.min(
+        (playbackState.progress_ms || 0) + elapsed,
+        playbackState.item?.duration_ms || 0
+      );
+      setSmoothProgress(newProgress);
+    }, 100); // Update every 100ms for smooth progress
+
+    return () => clearInterval(interval);
+  }, [playbackState?.is_playing, playbackState?.progress_ms, playbackState?.item?.duration_ms, lastSyncTime]);
+
   // Playback monitoring
   const playbackMonitoringRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -673,6 +691,24 @@ const MusicSync = () => {
         }
 
         const state = await spotifyService.getCurrentPlayback();
+        
+        // Update sync tracking and detect seeks
+        if (state?.progress_ms !== undefined) {
+          const progressDiff = Math.abs(state.progress_ms - smoothProgress);
+          
+          // Detect seek (>1500ms jump)
+          if (progressDiff > 1500 && import.meta.env.VITE_DEBUG === '1') {
+            console.log('🔄 [SEEK DETECTED] Position jump:', {
+              previous: smoothProgress,
+              new: state.progress_ms,
+              diff: progressDiff
+            });
+          }
+          
+          setSmoothProgress(state.progress_ms);
+          setLastSyncTime(Date.now());
+        }
+        
         console.log('🔍 [PLAYBACK POLL] Spotify polling result:', {
           timestamp: new Date().toISOString(),
           hasState: !!state,
@@ -794,7 +830,7 @@ const MusicSync = () => {
           stopPlaybackMonitoring();
         }
       }
-    }, parseInt(import.meta.env.VITE_SPOTIFY_POLL_INTERVAL_MS) || 60000); // Check every 60 seconds (configurable)
+    }, parseInt(import.meta.env.VITE_MUSIC_SYNC_POLL_INTERVAL_MS) || 8000); // music-sync needs faster polling for real-time sync
   };
   
   const stopPlaybackMonitoring = () => {
@@ -2106,6 +2142,32 @@ const MusicSync = () => {
                 {/* Analysis viewer removed per user request */}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Playback Sync Debug Overlay (VITE_DEBUG=1 only) */}
+      {import.meta.env.VITE_DEBUG === '1' && (
+        <div className="fixed top-4 right-4 bg-black/90 text-white p-4 rounded-lg text-xs font-mono z-50 max-w-sm">
+          <h4 className="font-bold text-green-400 mb-2">🔍 Playback Sync Debug</h4>
+          <div className="space-y-1">
+            <div><strong>Device:</strong> {selectedDevice || 'None'}</div>
+            <div><strong>Track ID:</strong> {playbackState?.item?.id || 'None'}</div>
+            <div><strong>Track:</strong> {playbackState?.item?.name || 'None'}</div>
+            <div><strong>Server Progress:</strong> {playbackState?.progress_ms || 0}ms</div>
+            <div><strong>Smooth Progress:</strong> {Math.round(smoothProgress)}ms</div>
+            <div><strong>Duration:</strong> {playbackState?.item?.duration_ms || 0}ms</div>
+            <div><strong>Playing:</strong> {playbackState?.is_playing ? 'Yes' : 'No'}</div>
+            <div><strong>Last Sync:</strong> {lastSyncTime ? new Date(lastSyncTime).toISOString().split('T')[1].split('.')[0] : 'Never'}</div>
+            <div><strong>Sync Age:</strong> {lastSyncTime ? Math.round((Date.now() - lastSyncTime) / 1000) : 0}s</div>
+            <div><strong>Poll Interval:</strong> {parseInt(import.meta.env.VITE_MUSIC_SYNC_POLL_INTERVAL_MS) || 8000}ms</div>
+            <div><strong>Source:</strong> poll:/me/player</div>
+            <div><strong>Phase:</strong> {currentDatabaseNarrative?.workoutTrack || 'None'}</div>
+            <div><strong>BPM:</strong> {currentDatabaseNarrative?.bpm || 'None'}</div>
+            <div><strong>Narrative Visible:</strong> {currentDatabaseNarrative ? 'Yes' : 'No'}</div>
+            {Math.abs((smoothProgress || 0) - (playbackState?.progress_ms || 0)) > 1500 && (
+              <div className="text-yellow-400"><strong>⚠️ SEEK DETECTED</strong></div>
+            )}
           </div>
         </div>
       )}
