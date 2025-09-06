@@ -908,7 +908,9 @@ const MusicSync = () => {
 
   // Fetch database narrative when track or position changes
   useEffect(() => {
-    if (!isWorkoutActive || !playbackState?.item) return;
+    // For playlist sessions, show narrative regardless of workout state (persists during pause)
+    // For non-playlist sessions, only show when workout is active (original behavior)
+    if (!playbackState?.item || (!playlistSessionId && !isWorkoutActive)) return;
 
     const fetchNarrative = async () => {
       console.log(`🔍 Fetching database narrative for: "${playbackState.item?.name}" by "${playbackState.item?.artists?.[0]?.name}"`);
@@ -934,7 +936,7 @@ const MusicSync = () => {
     };
 
     fetchNarrative();
-  }, [playbackState?.item?.id, playbackState?.progress_ms, isWorkoutActive, playlistSessionId]);
+  }, [playbackState?.item?.id, playlistSessionId]);
 
   // Spotify playback controls
   const handleSpotifyPlay = async () => {
@@ -1136,8 +1138,39 @@ const MusicSync = () => {
     if (!playbackState?.item) return null;
 
     try {
-      // 🎯 CENTRALIZED TEMPO RESOLUTION: Use new tempo resolver
-      console.log(`🔍 TEMPO RESOLVER: Getting tempo for "${playbackState.item.name}" by "${playbackState.item.artists[0]?.name}"`);
+      // 🔒 PRIORITY: Use locked playlist mapping when available
+      if (playlistSessionId) {
+        console.log(`🔒 [LOCKED SYSTEM] Using playlist session mapping for ${playbackState.item.name}`);
+        
+        const lockedMapping = await getLockedPhaseForTrack(playbackState.item.id, playlistSessionId);
+        
+        if (lockedMapping) {
+          console.log(`✅ [LOCKED] Found locked mapping:`, lockedMapping);
+          
+          // Get narrative text from instruction_narratives table
+          const { data: narrativeData, error: narrativeError } = await supabase
+            .from('instruction_narratives')
+            .select('narrative_text')
+            .eq('workout_track', lockedMapping.phase_code)
+            .eq('song_component', 'intro') // Default to intro section
+            .limit(1)
+            .single();
+
+          const narrativeText = narrativeData?.narrative_text || `${lockedMapping.phase_name}: ${lockedMapping.reason}`;
+          
+          return {
+            text: narrativeText,
+            workoutTrack: lockedMapping.phase_code,
+            songComponent: 'intro',
+            bpm: lockedMapping.bpm
+          };
+        } else {
+          console.warn(`⚠️ [LOCKED] No locked mapping found for ${playbackState.item.name} - session may be incomplete`);
+        }
+      }
+
+      // 🔄 FALLBACK: Use dynamic resolution only when no playlist session exists
+      console.log(`🔄 [DYNAMIC FALLBACK] No playlist session, using dynamic tempo resolution for "${playbackState.item.name}"`);
       
       const tempoResult = await tempoResolver.getCurrentTrackTempo(
         playbackState.item.id,
@@ -1151,31 +1184,27 @@ const MusicSync = () => {
       }
 
       const bpm = tempoResult.bpm;
-      console.log(`🎵 Resolved tempo: ${bpm} BPM (source: ${tempoResult.source}, confidence: ${tempoResult.confidence})`);
-      
-      if (tempoResult.adjusted) {
-        console.log(`🔧 Tempo was adjusted from ${tempoResult.originalValue} to ${bpm}`);
-      }
+      console.log(`🎵 [FALLBACK] Resolved tempo: ${bpm} BPM (source: ${tempoResult.source}, confidence: ${tempoResult.confidence})`);
 
-      // Use dynamic BPM-based workout track determination (prioritize over session for accuracy)
+      // Use dynamic BPM-based workout track determination (fallback only)
       let workoutTrack: string;
-        if (bpm >= 140 && bpm <= 200) {
-          workoutTrack = 'sprint_intervals';
-        } else if (bpm >= 120 && bpm <= 139) {
-          workoutTrack = 'jumps';
-        } else if (bpm >= 95 && bpm <= 119) {
-          workoutTrack = 'resistance';
-        } else if (bpm >= 80 && bpm <= 94) {
-          workoutTrack = 'climb';
-        } else if (bpm >= 70 && bpm <= 79) {
-          workoutTrack = 'warmup';
-        } else if (bpm >= 60 && bpm <= 69) {
-          workoutTrack = 'cooldown';
-        } else {
-          console.warn(`⚠️ BPM ${bpm} outside known ranges for track: ${playbackState.item.name}`);
-          workoutTrack = 'resistance'; // Default fallback
-        }
-        console.log(`🎯 Dynamic BPM mapping: ${bpm} BPM → workout_track: ${workoutTrack}`);
+      if (bpm >= 140 && bpm <= 200) {
+        workoutTrack = 'sprint_intervals';
+      } else if (bpm >= 120 && bpm <= 139) {
+        workoutTrack = 'jumps';
+      } else if (bpm >= 95 && bpm <= 119) {
+        workoutTrack = 'resistance';
+      } else if (bpm >= 80 && bpm <= 94) {
+        workoutTrack = 'climb';
+      } else if (bpm >= 70 && bpm <= 79) {
+        workoutTrack = 'warmup';
+      } else if (bpm >= 60 && bpm <= 69) {
+        workoutTrack = 'cooldown';
+      } else {
+        console.warn(`⚠️ BPM ${bpm} outside known ranges for track: ${playbackState.item.name}`);
+        workoutTrack = 'resistance'; // Default fallback
+      }
+      console.log(`🎯 [FALLBACK] Dynamic BPM mapping: ${bpm} BPM → workout_track: ${workoutTrack}`);
       
       // Session snapshot override temporarily disabled to ensure BPM-based accuracy
       // TODO: Fix session snapshot data to match BPM ranges
