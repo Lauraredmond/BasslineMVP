@@ -27,6 +27,7 @@ import { DebugPanel, QuickTestButton } from "@/components/TestComponents";
 import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 import { lockSessionForToday, getSessionSnapshot } from "@/lib/session-lock";
 import { tempoResolver } from "@/lib/tempo-resolver";
+import { resolvePhaseForTrack, PhaseMatch } from "@/lib/musicAnalysis/phaseResolver";
 
 const MusicSync = () => {
   
@@ -158,6 +159,9 @@ const MusicSync = () => {
   // Session locking state
   const [sessionLocked, setSessionLocked] = useState(false);
   const [sessionSnapshot, setSessionSnapshot] = useState<any>(null);
+  
+  // Phase resolution state
+  const [currentPhaseMatch, setCurrentPhaseMatch] = useState<PhaseMatch | null>(null);
   
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
@@ -879,6 +883,9 @@ const MusicSync = () => {
       console.log('📊 Database narrative result:', narrative);
       setCurrentDatabaseNarrative(narrative);
       
+      // Also resolve the current phase for display
+      await resolveCurrentPhase();
+      
       if (!narrative) {
         console.warn('❌ No database narrative found - falling back to hardcoded narratives');
         console.warn('🔍 This is why you see hardcoded text instead of database content');
@@ -1220,6 +1227,35 @@ const MusicSync = () => {
     } catch (error) {
       console.error('Error fetching database narrative:', error);
       return null;
+    }
+  };
+
+  // Resolve current track's phase using new phase resolution system
+  const resolveCurrentPhase = async () => {
+    if (!playbackState?.item) return;
+
+    try {
+      console.log(`🎯 [PHASE RESOLUTION] Resolving phase for: "${playbackState.item.name}" by "${playbackState.item.artists[0]?.name}"`);
+      
+      const phaseMatch = await resolvePhaseForTrack({
+        trackId: playbackState.item.id,
+        vendor: 'spotify',
+        positionMs: playbackState.progress_ms || 0
+      });
+      
+      setCurrentPhaseMatch(phaseMatch);
+      console.log(`✅ [PHASE RESOLUTION] Resolved:`, phaseMatch);
+      
+    } catch (error) {
+      console.error('❌ [PHASE RESOLUTION] Error resolving phase:', error);
+      setCurrentPhaseMatch({
+        bpm: null,
+        bmpConfidence: null,
+        bmpSource: 'unknown',
+        phase_code: 'recovery',
+        phase_name: 'Recovery',
+        reason: 'Error during phase resolution - defaulted to recovery'
+      });
     }
   };
 
@@ -1599,6 +1635,32 @@ const MusicSync = () => {
                                     {Math.round(currentDatabaseNarrative.bpm)} BPM
                                   </span>
                                 )}
+                              </div>
+                            )}
+                            
+                            {/* Phase Resolution Display */}
+                            {currentPhaseMatch && (
+                              <div className="mb-4 p-3 bg-white/10 rounded-lg border border-white/20">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-semibold text-white/90">
+                                    {currentPhaseMatch.phase_name || 'Unknown Phase'}
+                                  </span>
+                                  {currentPhaseMatch.bpm && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-white/80">
+                                        {Math.round(currentPhaseMatch.bpm)} BPM
+                                      </span>
+                                      {currentPhaseMatch.bpmConfidence && (
+                                        <span className="text-xs px-2 py-1 bg-white/20 rounded text-white/80">
+                                          {Math.round(currentPhaseMatch.bpmConfidence * 100)}%
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-xs text-white/70 mt-1">
+                                  {currentPhaseMatch.reason}
+                                </div>
                               </div>
                             )}
                             

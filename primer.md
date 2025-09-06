@@ -13,6 +13,7 @@ General rules (apply to every task):
 2. **Frozen code** – Treat all code not mentioned in the request as byte-for-byte frozen.
 3. **No regressions** – Do not reformat, rename, or restructure unless explicitly told.
 4. **Ask once** – If something is unclear, ask one clarifying question before assuming.
+**Ensure clean up of redundant code** – make sure code created to make something work that fails to work is fully removed so that needless serverless function calls are not made on the netlify server, thus needlessly using up bandwidth allocation for the month.
 5. **Output style** – Respond with:
    - A short plan (bullets).
    - Diffs or targeted snippets only (no full rewrites unless I ask).

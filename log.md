@@ -1,5 +1,57 @@
 # Bassline MVP Development Log
 
+## 2025-09-06 - Workout Phase Resolution System
+
+### Session Summary - Fix and Harden Workout Phase Matching
+
+**Completed Tasks:**
+1. **Database Schema Enhancement** - Added tempo quality tracking columns
+   - Added `tempo_source`, `tempo_confidence`, `tempo_last_verified_at` columns to streaming_vendor_attributes table
+   - Added `vendor`, `track_id`, `section_start_ms`, `section_end_ms` columns for complete spec compliance
+   - Created SQL migration: `database-updates/add-tempo-quality-columns.sql`
+
+2. **Phase Resolution System** - New BPM-to-phase mapping with quality validation
+   - Created `src/lib/musicAnalysis/phaseResolver.ts` (frontend TypeScript)
+   - Implemented PhaseMatch type with bpm, confidence, source, phase_code, phase_name, and reason
+   - Added tempo quality validation: detects "defaulty" values, validates plausible ranges (40-220 BPM)
+   - Implemented section-level BPM preference over track-level with position-based selection
+   - Added vendor API verification for low-confidence tempos (respects Spotify API rate limits)
+   - Implemented tie-breaking rules: narrowest range wins, then lowest order_index
+
+3. **Netlify Function Endpoint** - REST API for phase resolution
+   - Created `netlify/functions/resolve-phase.ts` (Netlify serverless function)
+   - Accepts trackId, vendor ('spotify'), and optional positionMs
+   - Returns PhaseMatch with associated instruction_narratives array
+   - Full error handling with graceful degradation to 'recovery' phase
+
+4. **UI Integration** - Phase information display in Music-sync page
+   - Updated `src/pages/MusicSync.tsx` (frontend TypeScript)
+   - Added currentPhaseMatch state and resolveCurrentPhase function
+   - Integrated phase resolution into track change detection
+   - Added phase display in PT narrative header showing phase_name, BPM, confidence %, and reason
+
+5. **Testing Framework** - Comprehensive test specifications
+   - Created `src/lib/musicAnalysis/phaseResolver.test.md` with detailed test cases
+   - Covers BPM boundary conditions, section vs track priority, quality validation, tie-breaking
+   - Includes mock data setup and performance test scenarios
+
+**Key Technical Details:**
+- Deterministic phase matching: bpm_min <= bpm < bmp_max (exclusive upper bound)
+- Quality validation detects suspicious patterns (120, 128 BPM defaults reduce confidence to 70%)
+- Section BPM at current position overrides track-level BPM when available
+- Safe fallback to 'recovery' phase prevents high-intensity defaults on invalid data
+- All tempo decision points logged for debugging (DEBUG, INFO, WARN levels)
+
+**Files Changed:**
+- Frontend TypeScript: MusicSync.tsx, phaseResolver.ts
+- Netlify Functions: resolve-phase.ts 
+- Database: add-tempo-quality-columns.sql migration
+- Documentation: phaseResolver.test.md
+
+**Deployment Status:** Ready for deployment - no regressions to existing lock-in behavior or polling cadence
+
+---
+
 ## 2025-08-31 20:48
 
 ### Session Summary - Track Narrative Matching & UI Consolidation
