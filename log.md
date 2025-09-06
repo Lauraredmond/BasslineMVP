@@ -52,6 +52,75 @@
 
 ---
 
+## 2025-09-06 - Track-Level BPM Playlist Phase Mapping & Session Locking
+
+### Session Summary - Implement Locked Playlist-to-Phase Mapping
+
+**Completed Tasks:**
+1. **Playlist Phase Mapper System** - Track-level BPM mapping with session locking
+   - Created `src/lib/playlistPhaseMapper.ts` (frontend TypeScript)
+   - Implements `mapPlaylistToPhases()` function called once at playlist selection
+   - Maps tracks using track-level BPM only (ignores section BPM entirely)
+   - Applies workout_phases ranges: bmp_min <= BPM < bmp_max (exclusive upper bound)
+   - Saves locked mappings to workout_sessions and session_phase_tracks tables
+   - Input validation: BPM <40 or >220 marked invalid with WARN logging
+
+2. **BPM Backfill System** - Spotify Web API integration for NULL tempo values
+   - Created `netlify/functions/backfill-bmp.ts` (Netlify serverless function)
+   - Fetches audio_features.tempo from Spotify Web API for NULL spotify_tempo records
+   - Batch processing with rate limiting and error handling
+   - Updates streaming_vendor_attributes with verified BPM data
+   - UPSERT mechanism prevents duplicate records
+
+3. **Session Lock Integration** - Persistent phase mappings during workout
+   - Modified `src/pages/MusicSync.tsx` (frontend TypeScript)
+   - Replaced dynamic phase resolution with locked session mappings
+   - Added `getLockedPhaseForCurrentTrack()` function
+   - Phase assignments remain constant throughout workout session
+   - Backward compatibility maintained for non-playlist workflows
+
+4. **SQL Operations Toolkit** - Database utilities for BPM management
+   - Created `database-updates/bpm-operations-sql-snippets.sql`
+   - Read operations: Get track-level BPM, find NULL values, check distribution
+   - Write operations: UPSERT BPM data, batch updates, maintenance queries
+   - Diagnostic queries: Invalid BPM detection, coverage analysis, "defaulty" value identification
+   - Performance indexes for track-level BPM matching
+
+5. **Testing Framework** - Comprehensive test specifications  
+   - Created `src/lib/playlistPhaseMapper.test.md` with detailed test cases
+   - Covers boundary conditions (140 BPM matches, 200 BPM doesn't), validation, session locking
+   - Integration tests for full playlist workflow
+   - Performance benchmarks for large playlists
+
+**Key Technical Details:**
+- **Playlist Selection Timing**: Phase mapping occurs once when playlist is confirmed, not during playback
+- **Track-Level Only**: Section BPM data completely ignored per requirements
+- **Session Persistence**: Mappings stored in workout_sessions/session_phase_tracks tables
+- **Input Validation**: BPM outside 40-220 range logged as WARN and excluded from mapping
+- **Fallback Handling**: NULL BPM tracks trigger Spotify Web API backfill when authenticated
+- **Lock-in Behavior**: Phase assignments never change during workout session
+
+**Database Schema Integration:**
+- Uses existing workout_phases table with target_tempo_min/target_tempo_max ranges
+- Leverages session_lock.ts infrastructure for workout session management
+- streaming_vendor_attributes.spotify_tempo as source of truth for BPM values
+- Deterministic mapping prevents "everything = Resistance" regression
+
+**Files Changed:**
+- Frontend TypeScript: MusicSync.tsx, playlistPhaseMapper.ts
+- Netlify Functions: backfill-bmp.ts
+- Database: bmp-operations-sql-snippets.sql
+- Documentation: playlistPhaseMapper.test.md
+
+**Acceptance Criteria Met:**
+✅ Each track assigned single phase based on track BPM at playlist selection  
+✅ Phase assignments remain fixed throughout workout session
+✅ Section BPM plays no role in phase determination
+✅ NULL spotify_tempo investigation completed with backfill solution
+✅ No regression to "everything = Resistance" behavior
+
+---
+
 ## 2025-08-31 20:48
 
 ### Session Summary - Track Narrative Matching & UI Consolidation

@@ -28,6 +28,7 @@ import heroMusicEmpowerment from "../assets/hero-music-empowerment.jpg";
 import { lockSessionForToday, getSessionSnapshot } from "@/lib/session-lock";
 import { tempoResolver } from "@/lib/tempo-resolver";
 import { resolvePhaseForTrack, PhaseMatch } from "@/lib/musicAnalysis/phaseResolver";
+import { mapPlaylistToPhases, getLockedPhaseForTrack, TrackPhaseMapping } from "@/lib/playlistPhaseMapper";
 
 const MusicSync = () => {
   
@@ -160,8 +161,12 @@ const MusicSync = () => {
   const [sessionLocked, setSessionLocked] = useState(false);
   const [sessionSnapshot, setSessionSnapshot] = useState<any>(null);
   
-  // Phase resolution state
+  // Phase resolution state (replaced by playlist phase mapping)
   const [currentPhaseMatch, setCurrentPhaseMatch] = useState<PhaseMatch | null>(null);
+  
+  // Playlist phase mapping state (locks phases at playlist selection time)
+  const [playlistPhaseMappings, setPlaylistPhaseMappings] = useState<TrackPhaseMapping[]>([]);
+  const [playlistSessionId, setPlaylistSessionId] = useState<string | null>(null);
   
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
@@ -448,11 +453,28 @@ const MusicSync = () => {
       const deviceToUse = selectedDevice ? devices.find(d => d.id === selectedDevice) || activeDevice : activeDevice;
       setSelectedDevice(deviceToUse.id);
 
-      // Get playlist tracks with audio features
+      // Get playlist tracks 
       const tracks = await spotifyService.getPlaylistTracks(selectedPlaylist);
+      const trackIds = tracks.map(track => track.id);
       
-      // Generate intelligent workout plan
-      const plan = musicAnalysisEngine.generateWorkoutPlan(tracks, selectedPlaylist);
+      console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
+      
+      // Map all tracks to phases at playlist selection time (locks mappings for session)
+      const playlistResult = await mapPlaylistToPhases({
+        trackIds,
+        userId: 'current_user', // TODO: Get actual user ID when auth is implemented
+        routineKey: 'spotify_playlist',
+        sessionDate: new Date().toISOString().split('T')[0]
+      });
+      
+      console.log(`✅ [PLAYLIST MAPPING] Mapped ${playlistResult.validTracks}/${playlistResult.totalTracks} tracks`);
+      
+      // Store playlist mappings for use during workout
+      setPlaylistPhaseMappings(playlistResult.mappings);
+      setPlaylistSessionId(playlistResult.sessionId);
+      
+      // Generate workout plan using mapped phases (for compatibility with existing UI)
+      const plan = generateWorkoutPlanFromMappings(tracks, playlistResult.mappings, selectedPlaylist);
       setWorkoutPlan(plan);
       
       if (plan.phases.length > 0) {
@@ -883,8 +905,16 @@ const MusicSync = () => {
       console.log('📊 Database narrative result:', narrative);
       setCurrentDatabaseNarrative(narrative);
       
-      // Also resolve the current phase for display
-      await resolveCurrentPhase();
+      // Use locked phase mapping instead of dynamic resolution
+      if (playlistSessionId) {
+        const lockedPhase = await getLockedPhaseForCurrentTrack();
+        if (lockedPhase) {
+          setCurrentPhaseMatch(lockedPhase);
+        }
+      } else {
+        // Fallback to dynamic resolution if no locked session (backward compatibility)
+        await resolveCurrentPhase();
+      }
       
       if (!narrative) {
         console.warn('❌ No database narrative found - falling back to hardcoded narratives');
@@ -893,7 +923,7 @@ const MusicSync = () => {
     };
 
     fetchNarrative();
-  }, [playbackState?.item?.id, playbackState?.progress_ms, isWorkoutActive]);
+  }, [playbackState?.item?.id, playbackState?.progress_ms, isWorkoutActive, playlistSessionId]);
 
   // Spotify playback controls
   const handleSpotifyPlay = async () => {
@@ -1256,6 +1286,83 @@ const MusicSync = () => {
         phase_name: 'Recovery',
         reason: 'Error during phase resolution - defaulted to recovery'
       });
+    }
+  };
+
+  // Generate workout plan from locked phase mappings (for compatibility with existing UI)
+  const generateWorkoutPlanFromMappings = (tracks: SpotifyTrack[], mappings: TrackPhaseMapping[], playlistId: string): WorkoutPlan => {
+    const phases: TrackPhaseMapping[] = [];
+    let currentTime = 0;
+    
+    // Create phase mappings for each valid track
+    mappings.forEach((mapping) => {
+      if (mapping.validBpm && mapping.phase_code) {
+        const track = tracks.find(t => t.id === mapping.trackId);
+        if (track) {
+          const duration = track.duration_ms / 1000;
+          
+          phases.push({
+            track,
+            phase: {
+              type: mapping.phase_code as any, // Map to old interface
+              name: mapping.phase_name || mapping.phase_code,
+              duration,
+              targetTempo: mapping.bpm || 120,
+              energyLevel: getEnergyLevelFromBPM(mapping.bpm || 120),
+              narratives: [`${mapping.phase_name}: ${mapping.bpm} BPM - ${mapping.reason}`],
+              beatCues: []
+            },
+            startTime: currentTime,
+            endTime: currentTime + duration,
+            confidence: 1.0 // Locked mappings have full confidence
+          });
+          
+          currentTime += duration;
+        }
+      }
+    });
+    
+    console.log(`🎯 [WORKOUT PLAN] Generated plan with ${phases.length} phases from ${mappings.length} mappings`);
+    
+    return {
+      totalDuration: currentTime,
+      phases,
+      playlistId,
+      workoutType: 'spinning'
+    };
+  };
+
+  // Helper to determine energy level from BPM
+  const getEnergyLevelFromBPM = (bmp: number): 'low' | 'medium' | 'high' => {
+    if (bmp < 80) return 'low';
+    if (bmp < 120) return 'medium';
+    return 'high';
+  };
+
+  // Get locked phase for current track (replaces dynamic resolution)
+  const getLockedPhaseForCurrentTrack = async (): Promise<PhaseMatch | null> => {
+    if (!playbackState?.item?.id || !playlistSessionId) return null;
+
+    try {
+      const lockedMapping = await getLockedPhaseForTrack(playbackState.item.id, playlistSessionId);
+      
+      if (lockedMapping) {
+        console.log(`🔒 [LOCKED PHASE] Using locked mapping for ${playbackState.item.name}: ${lockedMapping.phase_name}`);
+        
+        return {
+          bmp: lockedMapping.bmp,
+          bmpConfidence: 1.0, // Locked mappings have full confidence
+          bmpSource: 'track',
+          phase_code: lockedMapping.phase_code,
+          phase_name: lockedMapping.phase_name,
+          reason: `Locked: ${lockedMapping.reason}`
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ [LOCKED PHASE] Error getting locked phase:', error);
+      return null;
     }
   };
 
