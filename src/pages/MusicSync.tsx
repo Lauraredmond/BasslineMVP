@@ -908,12 +908,13 @@ const MusicSync = () => {
 
   // Fetch database narrative when track or position changes
   useEffect(() => {
-    // For playlist sessions, show narrative regardless of workout state (persists during pause)
+    // For playlist sessions, ALWAYS show narrative regardless of play/pause state
     // For non-playlist sessions, only show when workout is active (original behavior)
-    if (!playbackState?.item || (!playlistSessionId && !isWorkoutActive)) return;
+    if (!playbackState?.item) return;
+    if (!playlistSessionId && !isWorkoutActive) return;
 
     const fetchNarrative = async () => {
-      console.log(`🔍 Fetching database narrative for: "${playbackState.item?.name}" by "${playbackState.item?.artists?.[0]?.name}"`);
+      console.log(`🔍 [NARRATIVE] Fetching for: "${playbackState.item?.name}" - PlaylistSession: ${playlistSessionId ? 'YES' : 'NO'} - WorkoutActive: ${isWorkoutActive}`);
       const narrative = await getCurrentDatabaseNarrative();
       console.log('📊 Database narrative result:', narrative);
       setCurrentDatabaseNarrative(narrative);
