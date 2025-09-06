@@ -58,7 +58,7 @@ export async function mapPlaylistToPhases(args: {
       const mapping = await mapTrackToPhase(trackId, workoutPhases);
       mappings.push(mapping);
       
-      if (mapping.validBmp && mapping.phase_code) {
+      if (mapping.validBpm && mapping.phase_code) {
         validTracks++;
       } else {
         skippedTracks++;
@@ -76,7 +76,7 @@ export async function mapPlaylistToPhases(args: {
         phase_code: null,
         phase_name: null,
         reason: 'Error during track mapping',
-        validBmp: false
+        validBpm: false
       });
       skippedTracks++;
     }
@@ -87,7 +87,7 @@ export async function mapPlaylistToPhases(args: {
     userId,
     routineKey,
     sessionDate,
-    mappings: mappings.filter(m => m.validBmp) // Only save valid mappings
+    mappings: mappings.filter(m => m.validBpm) // Only save valid mappings
   });
 
   const result: PlaylistPhaseResult = {
@@ -107,17 +107,17 @@ export async function mapPlaylistToPhases(args: {
  */
 async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<TrackPhaseMapping> {
   // Step 1: Get track-level BPM from database
-  let bmp = await getTrackBPMFromDatabase(trackId);
+  let bpm = await getTrackBPMFromDatabase(trackId);
   let trackName = 'Unknown Track';
   let artistName = 'Unknown Artist';
   
   // Step 2: If no BPM in database, try to get track info and backfill
   if (!bpm) {
     console.log(`🔍 [PLAYLIST MAPPER] No BPM found for ${trackId}, attempting backfill`);
-    const backfillResult = await backfillTrackBMP(trackId);
+    const backfillResult = await backfillTrackBPM(trackId);
     
     if (backfillResult) {
-      bmp = backfillResult.bpm;
+      bpm = backfillResult.bpm;
       trackName = backfillResult.trackName;
       artistName = backfillResult.artistName;
     }
@@ -131,10 +131,10 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
   }
 
   // Step 3: Validate BPM
-  const isValidBmp = bpm !== null && bpm >= 40 && bpm <= 220;
+  const isValidBpm = bpm !== null && bpm >= 40 && bpm <= 220;
   
-  if (!isValidBmp) {
-    if (bmp !== null) {
+  if (!isValidBpm) {
+    if (bpm !== null) {
       console.warn(`⚠️ [PLAYLIST MAPPER] Invalid BPM ${bpm} for track ${trackId} (${trackName}) - outside range 40-220`);
     }
     
@@ -145,14 +145,14 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
       bpm,
       phase_code: null,
       phase_name: null,
-      reason: bmp === null ? 'No BPM data available' : `Invalid BPM ${bmp} (outside 40-220 range)`,
-      validBmp: false
+      reason: bpm === null ? 'No BPM data available' : `Invalid BPM ${bpm} (outside 40-220 range)`,
+      validBpm: false
     };
   }
 
   // Step 4: Match to workout phase using bmp_min <= BPM < bmp_max
   const matchingPhases = workoutPhases.filter(phase => 
-    bmp >= phase.target_tempo_min && bpm < phase.target_tempo_max
+    bpm >= phase.target_tempo_min && bpm < phase.target_tempo_max
   );
 
   if (matchingPhases.length === 0) {
@@ -165,7 +165,7 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
       phase_code: null,
       phase_name: null,
       reason: `No workout phase matches BPM ${bpm}`,
-      validBmp: true
+      validBpm: true
     };
   }
 
@@ -184,11 +184,11 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
     trackId,
     trackName,
     artistName,
-    bmp: bpm,
+    bpm: bpm,
     phase_code: bestPhase.workout_track,
     phase_name: phaseName,
     reason: `BPM ${bpm} → ${phaseName} (${bestPhase.target_tempo_min}-${bestPhase.target_tempo_max})`,
-    validBmp: true
+    validBpm: true
   };
 }
 
@@ -249,7 +249,7 @@ async function getTrackMetadata(trackId: string): Promise<{trackName: string, ar
 /**
  * Attempts to backfill BPM for a track using Spotify Web API
  */
-async function backfillTrackBMP(trackId: string): Promise<{bpm: number, trackName: string, artistName: string} | null> {
+async function backfillTrackBPM(trackId: string): Promise<{bpm: number, trackName: string, artistName: string} | null> {
   try {
     if (!spotifyService.isAuthenticated()) {
       console.warn(`⚠️ [PLAYLIST MAPPER] Spotify not authenticated, cannot backfill BPM for ${trackId}`);
@@ -268,12 +268,12 @@ async function backfillTrackBMP(trackId: string): Promise<{bpm: number, trackNam
       return null;
     }
 
-    const bmp = audioFeatures[0].tempo;
+    const bpm = audioFeatures[0].tempo;
     const trackName = track.name;
     const artistName = track.artists[0]?.name || 'Unknown Artist';
 
     // Save to database for future use
-    await upsertTrackBMP(trackId, trackName, artistName, bmp);
+    await upsertTrackBPM(trackId, trackName, artistName, bpm);
 
     console.log(`✅ [PLAYLIST MAPPER] Backfilled BPM: ${bpm} for "${trackName}" by ${artistName}`);
 
@@ -288,7 +288,7 @@ async function backfillTrackBMP(trackId: string): Promise<{bpm: number, trackNam
 /**
  * Saves or updates track BPM in streaming_vendor_attributes
  */
-async function upsertTrackBMP(trackId: string, trackName: string, artistName: string, bpm: number): Promise<void> {
+async function upsertTrackBPM(trackId: string, trackName: string, artistName: string, bpm: number): Promise<void> {
   try {
     const { error } = await supabase
       .from('streaming_vendor_attributes')
@@ -445,7 +445,7 @@ export async function getLockedPhaseForTrack(trackId: string, sessionId: string)
       phase_code: data.phase_key,
       phase_name: getPhaseDisplayName(data.phase_key),
       reason: `Locked mapping: BPM ${sectionMap.bpm} → ${getPhaseDisplayName(data.phase_key)}`,
-      validBmp: true
+      validBpm: true
     };
 
   } catch (error) {

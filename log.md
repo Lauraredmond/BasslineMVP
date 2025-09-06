@@ -119,6 +119,13 @@
 ✅ NULL spotify_tempo investigation completed with backfill solution
 ✅ No regression to "everything = Resistance" behavior
 
+**Post-deployment Fix:**
+- Fixed SQL syntax errors in `bmp-operations-sql-snippets.sql`
+- Replaced `:parameter` syntax with standard PostgreSQL `$1` parameter format
+- Corrected "bmp" typos to "bpm" throughout queries
+- Added `NULLIF()` and `COALESCE()` for proper NULL handling
+- Created `bmp-operations-sql-snippets-fixed.sql` with working queries
+
 ---
 
 ## 2025-08-31 20:48

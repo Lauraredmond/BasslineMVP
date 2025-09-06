@@ -455,26 +455,37 @@ const MusicSync = () => {
 
       // Get playlist tracks 
       const tracks = await spotifyService.getPlaylistTracks(selectedPlaylist);
-      const trackIds = tracks.map(track => track.id);
       
-      console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
+      // Try new playlist phase mapping, fall back to old system if it fails
+      let plan;
+      try {
+        const trackIds = tracks.map(track => track.id);
+        console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
+        
+        // Map all tracks to phases at playlist selection time (locks mappings for session)
+        const playlistResult = await mapPlaylistToPhases({
+          trackIds,
+          userId: 'current_user', // TODO: Get actual user ID when auth is implemented
+          routineKey: 'spotify_playlist',
+          sessionDate: new Date().toISOString().split('T')[0]
+        });
+        
+        console.log(`✅ [PLAYLIST MAPPING] Mapped ${playlistResult.validTracks}/${playlistResult.totalTracks} tracks`);
+        
+        // Store playlist mappings for use during workout
+        setPlaylistPhaseMappings(playlistResult.mappings);
+        setPlaylistSessionId(playlistResult.sessionId);
+        
+        // Generate workout plan using mapped phases (for compatibility with existing UI)
+        plan = generateWorkoutPlanFromMappings(tracks, playlistResult.mappings, selectedPlaylist);
+        
+      } catch (mappingError) {
+        console.error('❌ [PLAYLIST MAPPING] New mapping system failed, falling back to old system:', mappingError);
+        
+        // Fallback to original workout plan generation
+        plan = musicAnalysisEngine.generateWorkoutPlan(tracks, selectedPlaylist);
+      }
       
-      // Map all tracks to phases at playlist selection time (locks mappings for session)
-      const playlistResult = await mapPlaylistToPhases({
-        trackIds,
-        userId: 'current_user', // TODO: Get actual user ID when auth is implemented
-        routineKey: 'spotify_playlist',
-        sessionDate: new Date().toISOString().split('T')[0]
-      });
-      
-      console.log(`✅ [PLAYLIST MAPPING] Mapped ${playlistResult.validTracks}/${playlistResult.totalTracks} tracks`);
-      
-      // Store playlist mappings for use during workout
-      setPlaylistPhaseMappings(playlistResult.mappings);
-      setPlaylistSessionId(playlistResult.sessionId);
-      
-      // Generate workout plan using mapped phases (for compatibility with existing UI)
-      const plan = generateWorkoutPlanFromMappings(tracks, playlistResult.mappings, selectedPlaylist);
       setWorkoutPlan(plan);
       
       if (plan.phases.length > 0) {
@@ -1333,9 +1344,9 @@ const MusicSync = () => {
   };
 
   // Helper to determine energy level from BPM
-  const getEnergyLevelFromBPM = (bmp: number): 'low' | 'medium' | 'high' => {
-    if (bmp < 80) return 'low';
-    if (bmp < 120) return 'medium';
+  const getEnergyLevelFromBPM = (bpm: number): 'low' | 'medium' | 'high' => {
+    if (bpm < 80) return 'low';
+    if (bpm < 120) return 'medium';
     return 'high';
   };
 
@@ -1350,9 +1361,9 @@ const MusicSync = () => {
         console.log(`🔒 [LOCKED PHASE] Using locked mapping for ${playbackState.item.name}: ${lockedMapping.phase_name}`);
         
         return {
-          bmp: lockedMapping.bmp,
-          bmpConfidence: 1.0, // Locked mappings have full confidence
-          bmpSource: 'track',
+          bpm: lockedMapping.bpm,
+          bpmConfidence: 1.0, // Locked mappings have full confidence
+          bpmSource: 'track',
           phase_code: lockedMapping.phase_code,
           phase_name: lockedMapping.phase_name,
           reason: `Locked: ${lockedMapping.reason}`
