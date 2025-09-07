@@ -11,13 +11,21 @@ DROP TABLE IF EXISTS streaming_vendor_attributes CASCADE;
 -- Create streaming_vendor_attributes table
 CREATE TABLE streaming_vendor_attributes (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  track_id VARCHAR NOT NULL,
+  track_id VARCHAR,
   track_name VARCHAR NOT NULL,
   artist_name VARCHAR,
   spotify_tempo NUMERIC, -- BPM for full track
   section_type VARCHAR, -- intro, verse, chorus, bridge, drop, outro  
   section_number INTEGER,
   timestamp_ms BIGINT,
+  -- Additional columns used by frontend
+  event_type VARCHAR,
+  energy_level INTEGER,
+  intensity_level INTEGER,
+  data_source VARCHAR,
+  track_duration_ms BIGINT,
+  captured_by VARCHAR,
+  notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
