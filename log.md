@@ -1,5 +1,83 @@
 # Bassline MVP Development Log
 
+## 2025-09-07 - Workout Phase Engine Redevelopment
+
+### Task Completed
+Redeveloped from scratch the Workout-phase ⇄ BPM ⇄ PT-narrative mapping logic as specified in primer.md.
+
+### Changes Made
+
+#### 1. Created new narrativeLookup.ts (`src/lib/narrativeLookup.ts`)
+- **Runtime narrative lookup** using locked workout_phase + section_type
+- Implements the primer.md specification for narrative resolution
+- Includes fallback strategies for missing narratives
+- Query path: session_phase_tracks → workout_phases → instruction_narratives
+- Frontend TypeScript implementation
+
+#### 2. Updated playlistPhaseMapper.ts (`src/lib/playlistPhaseMapper.ts`)
+- **Playlist selection phase locking** per primer.md algorithm
+- Uses full-track BPM from `streaming_vendor_attributes.spotify_tempo`
+- Inclusive BPM range matching: `target_tempo_min <= BPM <= target_tempo_max`
+- Narrowest range wins tie-breaking logic
+- Updated to use `spotify_track_id` field in SVA table
+- Frontend TypeScript implementation
+
+#### 3. Created unified workoutPhaseEngine.ts (`src/lib/workoutPhaseEngine.ts`)
+- **Combined interface** for both phase mapping and narrative lookup
+- `lockPlaylistToPhases()` - maps playlist at selection time
+- `getCurrentNarrative()` - gets narrative during playback
+- `initializeWorkoutSession()` - complete workflow in one call
+- Includes validation and debugging utilities
+- Frontend TypeScript implementation
+
+#### 4. Created comprehensive test suite (`src/lib/__tests__/workoutPhaseEngine.test.ts`)
+- Tests all acceptance criteria from primer.md
+- Validates BPM → phase locking at selection time
+- Tests runtime narrative lookup with section changes
+- Confirms no re-mapping during playbook
+- Validates fallback strategies work correctly
+
+### Technical Details
+
+#### Database Schema Alignment
+- `workout_phases` table: maps `workout_track` codes to BPM ranges
+- `instruction_narratives` table: maps (`workout_track`, `song_component`) to narratives  
+- `streaming_vendor_attributes` table: stores full-track BPM in `spotify_tempo` field
+- `session_phase_tracks` table: persists locked track → phase mappings
+
+#### Algorithm Implementation
+**Selection Time (Lock Phase):**
+1. Get `spotify_tempo` from SVA table (full-track BPM)
+2. Find matching workout phases using inclusive range
+3. Apply narrowest-range tie-breaking
+4. Persist mapping in `session_phase_tracks`
+
+**Runtime (Get Narrative):**
+1. Retrieve locked `workout_track` for current track
+2. Join with `instruction_narratives` using (`workout_track`, `section_type`)
+3. Return narrative text for current song section
+
+### Acceptance Criteria Validation
+✅ **Mapping happens once at playlist selection** - Implemented in `lockPlaylistToPhases()`
+✅ **Narratives resolve to correct (workout_phase, section_type) pairing** - Implemented in `getCurrentNarrative()`  
+✅ **Design is future-proof** - Modular architecture allows adding attributes without breaking existing functionality
+✅ **No legacy behavior** - Removed per-section BPM mapping, no mid-playback re-mapping
+✅ **Clean, working code** - TypeScript compilation successful, comprehensive test coverage
+
+### Files Created/Modified
+- **NEW:** `src/lib/narrativeLookup.ts` - Runtime narrative lookup service
+- **NEW:** `src/lib/workoutPhaseEngine.ts` - Unified workout phase engine
+- **NEW:** `src/lib/__tests__/workoutPhaseEngine.test.ts` - Comprehensive test suite
+- **MODIFIED:** `src/lib/playlistPhaseMapper.ts` - Updated to align with primer.md spec
+- **UPDATED:** `log.md` - This development log entry
+
+### Next Steps
+Implementation is complete and ready for integration. The new system:
+1. Locks tracks to workout phases at playlist selection time
+2. Provides runtime narrative lookup during playback
+3. Maintains locked mappings throughout the session
+4. Supports future extensibility without breaking changes
+
 ## 2025-09-06 - Workout Phase Resolution System
 
 ### Session Summary - Fix and Harden Workout Phase Matching

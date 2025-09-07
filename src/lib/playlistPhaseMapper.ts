@@ -150,9 +150,9 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
     };
   }
 
-  // Step 4: Match to workout phase using bmp_min <= BPM < bmp_max
+  // Step 4: Find workout phase match using inclusive range: target_tempo_min <= BPM <= target_tempo_max
   const matchingPhases = workoutPhases.filter(phase => 
-    bpm >= phase.target_tempo_min && bpm < phase.target_tempo_max
+    bpm >= phase.target_tempo_min && bpm <= phase.target_tempo_max
   );
 
   if (matchingPhases.length === 0) {
@@ -178,7 +178,7 @@ async function mapTrackToPhase(trackId: string, workoutPhases: any[]): Promise<T
 
   const phaseName = getPhaseDisplayName(bestPhase.workout_track);
 
-  console.log(`✅ [PLAYLIST MAPPER] Mapped "${trackName}" (${bpm} BPM) → ${bestPhase.workout_track}`);
+  console.log(`🔒 [PLAYLIST MAPPER] Locked "${trackName}" (${bpm} BPM) → ${bestPhase.workout_track}`);
 
   return {
     trackId,
@@ -200,8 +200,8 @@ async function getTrackBPMFromDatabase(trackId: string): Promise<number | null> 
     const { data, error } = await supabase
       .from('streaming_vendor_attributes')
       .select('spotify_tempo, track_name, artist_name')
-      .eq('track_id', trackId)
-      .is('section_type', null) // Only track-level records, not section records
+      .or(`track_id.eq.${trackId},spotify_track_id.eq.${trackId}`) // Handle both track_id fields
+      .is('section_type', null) // Only track-level records, not section records  
       .not('spotify_tempo', 'is', null)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -211,7 +211,7 @@ async function getTrackBPMFromDatabase(trackId: string): Promise<number | null> 
       return null;
     }
 
-    console.log(`📊 [PLAYLIST MAPPER] Found track-level BPM: ${data.spotify_tempo} for ${trackId}`);
+    console.log(`📊 [PLAYLIST MAPPER] Found full-track BPM: ${data.spotify_tempo} for ${trackId}`);
     return data.spotify_tempo;
 
   } catch (error) {
@@ -293,26 +293,24 @@ async function upsertTrackBPM(trackId: string, trackName: string, artistName: st
     const { error } = await supabase
       .from('streaming_vendor_attributes')
       .upsert({
-        track_id: trackId,
+        spotify_track_id: trackId, // Use spotify_track_id field
         track_name: trackName,
         artist_name: artistName,
-        vendor: 'spotify',
-        spotify_tempo: bpm,
-        tempo_source: 'spotify_api',
-        tempo_confidence: 0.9,
-        tempo_last_verified_at: new Date().toISOString(),
+        spotify_tempo: bpm, // Full-track BPM
         event_type: 'track_metadata',
-        timestamp_ms: 0, // Not applicable for track-level records
+        timestamp_ms: 0, // 0 for full-track records
+        section_type: null, // null = full-track record
+        data_source: 'spotify_api',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'track_id,track_name,artist_name,timestamp_ms,event_type'
+        onConflict: 'track_name,artist_name,timestamp_ms,event_type'
       });
 
     if (error) {
       console.error(`❌ [PLAYLIST MAPPER] Error saving BPM to database:`, error);
     } else {
-      console.log(`💾 [PLAYLIST MAPPER] Saved BPM ${bpm} for "${trackName}" to database`);
+      console.log(`💾 [PLAYLIST MAPPER] Saved full-track BPM ${bpm} for "${trackName}" to streaming_vendor_attributes`);
     }
 
   } catch (error) {
@@ -360,8 +358,7 @@ async function savePlaylistSession(args: {
       .insert({
         user_id: userId,
         session_date: sessionDate,
-        routine_key: routineKey,
-        session_type: 'playlist_mapping'
+        routine_key: routineKey
       })
       .select()
       .single();
