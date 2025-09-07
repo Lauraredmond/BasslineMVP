@@ -527,6 +527,12 @@ const MusicSync = () => {
       }
     } catch (error) {
       console.error('Error starting workout:', error);
+      console.error('Full error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+        cause: error?.cause
+      });
       alert('Error starting workout. Please check your Spotify connection.');
     } finally {
       setIsAnalyzingPlaylist(false);

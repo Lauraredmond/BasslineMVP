@@ -34,10 +34,15 @@ export interface WorkoutPlan {
 
 class MusicAnalysisEngine {
   // DEPRECATED: Hardcoded tempo ranges - Use database workout_phases table instead
-  private readonly TEMPO_RANGES_DEPRECATED = {
-    // These hardcoded values should not be used in production
-    // All BPM ranges should come from Supabase workout_phases.target_tempo_min/max
-    // Kept for reference only
+  // Kept for backward compatibility with fallback workout plan generation
+  private readonly TEMPO_RANGES = {
+    warmup: { min: 60, max: 90 },
+    sprint: { min: 160, max: 180 },
+    hills: { min: 100, max: 140 },
+    resistance: { min: 55, max: 85 },
+    jumps: { min: 140, max: 170 },
+    climb: { min: 90, max: 120 },
+    cooldown: { min: 50, max: 70 }
   };
 
   private readonly ENERGY_RANGES = {
