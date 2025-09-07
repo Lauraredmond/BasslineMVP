@@ -29,6 +29,7 @@ import { lockSessionForToday, getSessionSnapshot } from "@/lib/session-lock";
 import { tempoResolver } from "@/lib/tempo-resolver";
 import { resolvePhaseForTrack, PhaseMatch } from "@/lib/musicAnalysis/phaseResolver";
 import { mapPlaylistToPhases, getLockedPhaseForTrack, TrackPhaseMapping } from "@/lib/playlistPhaseMapper";
+import { PersistentNarrativeService } from "@/lib/persistentNarrative";
 
 const MusicSync = () => {
   
@@ -142,6 +143,7 @@ const MusicSync = () => {
   // Database-driven narratives
   const [databaseNarratives, setDatabaseNarratives] = useState<any[]>([]);
   const [currentDatabaseNarrative, setCurrentDatabaseNarrative] = useState<{text: string, workoutTrack?: string, songComponent?: string, bpm?: number} | null>(null);
+  const [previousTrackId, setPreviousTrackId] = useState<string | null>(null);
   const [narrativeEngineReady, setNarrativeEngineReady] = useState(false);
   
   // Advanced music analysis cache
@@ -771,6 +773,9 @@ const MusicSync = () => {
             const narrative = await getCurrentDatabaseNarrative();
             setCurrentDatabaseNarrative(narrative);
             console.log('🔄 [FORCED REFRESH] Updated narrative after workout state correction:', narrative);
+            
+            // Clear persistent narrative cache to force refresh
+            PersistentNarrativeService.clearCache();
           }, 100);
         }
         
@@ -918,6 +923,12 @@ const MusicSync = () => {
       const narrative = await getCurrentDatabaseNarrative();
       console.log('📊 Database narrative result:', narrative);
       setCurrentDatabaseNarrative(narrative);
+      
+      // Handle track changes for persistent narrative service  
+      if (playbackState?.item?.id && playbackState.item.id !== previousTrackId) {
+        PersistentNarrativeService.onTrackChange(playbackState.item.id);
+        setPreviousTrackId(playbackState.item.id);
+      }
       
       // Use locked phase mapping instead of dynamic resolution
       if (playlistSessionId) {
@@ -1134,40 +1145,30 @@ const MusicSync = () => {
     return null;
   };
 
-  // Get current database-driven narrative based on streaming_vendor_attributes table
+  // Get current database-driven narrative with PERSISTENCE for full workout_track duration  
   const getCurrentDatabaseNarrative = async () => {
     if (!playbackState?.item) return null;
 
     try {
-      // 🔒 PRIORITY: Use locked playlist mapping when available
-      if (playlistSessionId) {
-        console.log(`🔒 [LOCKED SYSTEM] Using playlist session mapping for ${playbackState.item.name}`);
-        
-        const lockedMapping = await getLockedPhaseForTrack(playbackState.item.id, playlistSessionId);
-        
-        if (lockedMapping) {
-          console.log(`✅ [LOCKED] Found locked mapping:`, lockedMapping);
-          
-          // Get narrative text from instruction_narratives table
-          const { data: narrativeData, error: narrativeError } = await supabase
-            .from('instruction_narratives')
-            .select('narrative_text')
-            .eq('workout_track', lockedMapping.phase_code)
-            .eq('song_component', 'intro') // Default to intro section
-            .limit(1)
-            .single();
-
-          const narrativeText = narrativeData?.narrative_text || `${lockedMapping.phase_name}: ${lockedMapping.reason}`;
-          
-          return {
-            text: narrativeText,
-            workoutTrack: lockedMapping.phase_code,
-            songComponent: 'intro',
-            bpm: lockedMapping.bpm
-          };
-        } else {
-          console.warn(`⚠️ [LOCKED] No locked mapping found for ${playbackState.item.name} - session may be incomplete`);
-        }
+      // Use PersistentNarrativeService to ensure narrative persists for full track
+      const result = await PersistentNarrativeService.getNarrativeForTrack({
+        trackId: playbackState.item.id,
+        trackName: playbackState.item.name,
+        artistName: playbackState.item.artists[0]?.name || 'Unknown Artist',
+        currentSectionType: 'verse', // Default section - narrative will persist regardless
+        sessionId: playlistSessionId || undefined
+      });
+      
+      if (result) {
+        console.log(`✅ [PERSISTENT NARRATIVE] Got ${result.source} narrative that will persist for full track`);
+        return {
+          text: result.narrativeText,
+          workoutTrack: result.workoutTrack,
+          songComponent: result.sectionType,
+          bpm: null, // Not needed for display
+          persistent: result.persistent,
+          source: result.source
+        };
       }
 
       // 🔄 FALLBACK: Use dynamic resolution only when no playlist session exists

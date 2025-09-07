@@ -57,34 +57,24 @@ export class SpotifyBPMFetcher {
   }
   
   /**
-   * Get workout track based on BPM using the same logic as AnimatedPTNarrative
+   * DEPRECATED: Get workout track based on BPM - Use database workout_phases table instead
+   * This function is kept for reference but should not be used in production
+   * All BPM->workout_track mappings should come from Supabase workout_phases table
    */
-  static getWorkoutTrackFromBPM(bpm: number): string {
-    if (bpm >= 160) return 'sprint_intervals';
-    if (bpm >= 140) return 'sprint_intervals';
-    if (bpm >= 120) return 'jumps';
-    if (bpm >= 95) return 'hills';
-    if (bpm >= 85) return 'resistance';
-    if (bpm >= 80) return 'climb';
-    if (bpm >= 70) return 'warmup';
-    if (bpm >= 60) return 'cooldown';
-    return 'recovery';
+  static getWorkoutTrackFromBPM_DEPRECATED(bpm: number): string {
+    console.warn('⚠️ [DEPRECATED] Using hardcoded BPM mapping - should use database workout_phases table instead');
+    // Hardcoded values removed - use database lookup instead
+    throw new Error('This function is deprecated - use workout_phases table from database');
   }
   
   /**
-   * Get BPM ranges for a workout track
+   * DEPRECATED: Get BPM ranges for a workout track - Use database workout_phases table instead
+   * This function is kept for reference but should not be used in production
+   * All BPM ranges should come from Supabase workout_phases.target_tempo_min/max
    */
-  static getBPMRangesForWorkoutTrack(workoutTrack: string): {min: number, max: number} {
-    switch (workoutTrack) {
-      case 'sprint_intervals': return {min: 140, max: 200};
-      case 'jumps': return {min: 120, max: 139};
-      case 'hills': return {min: 95, max: 119};
-      case 'resistance': return {min: 85, max: 94};
-      case 'climb': return {min: 80, max: 84};
-      case 'warmup': return {min: 70, max: 79};
-      case 'cooldown': return {min: 60, max: 69};
-      case 'recovery': return {min: 70, max: 90};
-      default: return {min: 70, max: 90};
-    }
+  static getBPMRangesForWorkoutTrack_DEPRECATED(workoutTrack: string): {min: number, max: number} {
+    console.warn('⚠️ [DEPRECATED] Using hardcoded BPM ranges - should use database workout_phases table instead');
+    // Hardcoded values removed - use database lookup instead
+    throw new Error('This function is deprecated - use workout_phases table from database');
   }
 }
