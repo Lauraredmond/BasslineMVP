@@ -33,6 +33,7 @@ import { PersistentNarrativeService } from "@/lib/persistentNarrative";
 import { useWorkoutPhaseTracking } from "@/hooks/useWorkoutPhaseTracking";
 import { lockPlaylistPhases, mapTrackToWorkoutPhase } from "@/lib/workoutPhaseMapper";
 import { runAllTests as runWorkoutPhaseTests } from "@/lib/workoutPhaseMapperTest";
+import { testPlaylistStartWorkflow, quickSpotifyTest } from "@/lib/spotifyPlaybackTester";
 
 const MusicSync = () => {
   
@@ -90,6 +91,18 @@ const MusicSync = () => {
       console.log(`🎯 Testing single track mapping for: ${trackId}`);
       const result = await mapTrackToWorkoutPhase(trackId);
       console.log('Mapping result:', result);
+      return result;
+    };
+    
+    (window as any).testSpotifyPlayback = async (playlistId?: string) => {
+      console.log('🎵 Testing Spotify playlist playback workflow...');
+      const results = await testPlaylistStartWorkflow(playlistId);
+      return results;
+    };
+    
+    (window as any).quickSpotifyTest = async () => {
+      console.log('⚡ Running quick Spotify test...');
+      const result = await quickSpotifyTest();
       return result;
     };
     
@@ -495,17 +508,24 @@ const MusicSync = () => {
       
       // Try new playlist phase mapping, fall back to old system if it fails
       let plan;
+      let phaseMappingSucceeded = false;
+      
       try {
         const trackIds = tracks.map(track => track.id);
         console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
         
-        // NEW: Lock phases using primer.md algorithm
-        const lockingResult = await phaseTracking.lockPlaylistForSession(trackIds);
+        // NEW: Lock phases using primer.md algorithm (with timeout protection)
+        const mappingPromise = phaseTracking.lockPlaylistForSession(trackIds);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Phase mapping timeout after 10s')), 10000)
+        );
+        
+        const lockingResult = await Promise.race([mappingPromise, timeoutPromise]);
         
         console.log(`✅ [PHASE LOCKING] Locked ${lockingResult.mappings.filter(m => !m.error).length}/${trackIds.length} tracks`);
         
         if (!lockingResult.success) {
-          console.error('❌ [PHASE LOCKING] Errors:', lockingResult.errors);
+          console.warn('⚠️ [PHASE LOCKING] Some errors occurred:', lockingResult.errors);
         }
         
         // Store locked mappings for use during workout
@@ -514,19 +534,38 @@ const MusicSync = () => {
         
         // Generate workout plan using mapped phases (for compatibility with existing UI)
         plan = generateWorkoutPlanFromMappings(tracks, lockingResult.mappings, selectedPlaylist);
+        phaseMappingSucceeded = true;
         
       } catch (mappingError) {
         console.error('❌ [PLAYLIST MAPPING] New mapping system failed, falling back to old system:', mappingError);
         
-        // Fallback to original workout plan generation
+        // CRITICAL: Always fallback to ensure Spotify playback works
         plan = musicAnalysisEngine.generateWorkoutPlan(tracks, selectedPlaylist);
+        
+        // Clear any partial state from failed mapping
+        setPlaylistPhaseMappings([]);
+        setPlaylistSessionId(null);
+      }
+      
+      // Log mapping status but don't let it block playback
+      if (phaseMappingSucceeded) {
+        console.log('✅ [WORKOUT START] Using new primer.md phase mapping system');
+      } else {
+        console.log('⚠️ [WORKOUT START] Using fallback system - phase mapping failed but Spotify will still work');
       }
       
       setWorkoutPlan(plan);
       
       if (plan.phases.length > 0) {
         // Start playlist playback on Spotify
+        console.log(`🎵 [SPOTIFY START] Attempting to start playlist playback...`);
+        console.log(`📱 [SPOTIFY START] Device: ${deviceToUse.name} (${deviceToUse.id})`);
+        console.log(`🎼 [SPOTIFY START] Playlist: ${selectedPlaylist}`);
+        console.log(`📊 [SPOTIFY START] Plan has ${plan.phases.length} phases`);
+        
         const playbackStarted = await spotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
+        
+        console.log(`🎵 [SPOTIFY START] Playback started: ${playbackStarted}`);
         
         if (playbackStarted) {
           // Auto-start analysis logging session
@@ -556,18 +595,42 @@ const MusicSync = () => {
           // Start monitoring playback state
           startPlaybackMonitoring();
         } else {
-          alert('Could not start Spotify playback. Please make sure music is playing in Spotify and try again.');
+          console.error('❌ [SPOTIFY START] Spotify playback failed to start');
+          console.error('📱 [SPOTIFY START] Device info:', deviceToUse);
+          console.error('🎼 [SPOTIFY START] Playlist ID:', selectedPlaylist);
+          
+          alert(`Could not start Spotify playback on device "${deviceToUse.name}". Please make sure Spotify is open and the device is active, then try again.`);
         }
+      } else {
+        console.error('❌ [WORKOUT START] No phases in workout plan - cannot start');
+        console.error('📊 [WORKOUT START] Plan details:', plan);
+        alert('Cannot start workout - no tracks available in the workout plan.');
       }
     } catch (error) {
-      console.error('Error starting workout:', error);
-      console.error('Full error details:', {
+      console.error('💥 [WORKOUT START] Error starting workout:', error);
+      console.error('📋 [WORKOUT START] Full error details:', {
         message: error?.message,
         stack: error?.stack,
         name: error?.name,
-        cause: error?.cause
+        cause: error?.cause,
+        selectedPlaylist,
+        selectedDevice: deviceToUse?.id,
+        workoutFormat
       });
-      alert('Error starting workout. Please check your Spotify connection.');
+      
+      // More specific error message based on error type
+      let errorMessage = 'Error starting workout. ';
+      if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+        errorMessage += 'Please check your internet connection and try again.';
+      } else if (error?.message?.includes('auth') || error?.message?.includes('token')) {
+        errorMessage += 'Please reconnect to Spotify and try again.';
+      } else if (error?.message?.includes('device')) {
+        errorMessage += 'Please make sure Spotify is open on your device and try again.';
+      } else {
+        errorMessage += 'Please check your Spotify connection and try again.';
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsAnalyzingPlaylist(false);
     }
@@ -1405,6 +1468,33 @@ const MusicSync = () => {
     });
     
     console.log(`🎯 [WORKOUT PLAN] Generated plan with ${phases.length} phases from ${mappings.length} mappings`);
+    
+    // CRITICAL FIX: If no valid phases generated, fallback to basic plan to ensure Spotify works
+    if (phases.length === 0) {
+      console.warn('⚠️ [WORKOUT PLAN] No valid phases from mapping, creating fallback plan for Spotify playback');
+      
+      // Create basic phases from tracks to ensure Spotify playback works
+      currentTime = 0;
+      tracks.slice(0, 5).forEach((track, index) => { // Limit to first 5 tracks for safety
+        const duration = track.duration_ms / 1000;
+        phases.push({
+          track,
+          phase: {
+            type: 'resistance',
+            name: 'Workout',
+            duration,
+            targetTempo: 120,
+            energyLevel: 'medium',
+            narratives: ['Keep going!'],
+            beatCues: []
+          },
+          startTime: currentTime,
+          endTime: currentTime + duration,
+          confidence: 0.5 // Lower confidence for fallback
+        });
+        currentTime += duration;
+      });
+    }
     
     return {
       totalDuration: currentTime,

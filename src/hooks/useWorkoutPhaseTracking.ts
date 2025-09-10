@@ -147,16 +147,35 @@ export function useWorkoutPhaseTracking(options: UseWorkoutPhaseTrackingOptions 
         setSessionId(result.session_id);
         console.log(`✅ [PHASE TRACKING] Playlist locked successfully with session: ${result.session_id}`);
       } else {
-        console.error(`❌ [PHASE TRACKING] Playlist locking failed:`, result.errors);
-        if (onError) onError(`Failed to lock playlist: ${result.errors.join(', ')}`);
+        console.warn(`⚠️ [PHASE TRACKING] Playlist locking had issues:`, result.errors);
+        if (onError) onError(`Phase mapping had issues: ${result.errors.join(', ')}`);
       }
       
       return result;
     } catch (error) {
       const errorMsg = `Error locking playlist: ${error.message}`;
       console.error(`❌ [PHASE TRACKING] ${errorMsg}`, error);
+      
+      // Return a failed result instead of throwing - don't break Spotify playback!
+      const failedResult: PlaylistPhaseMappingResult = {
+        success: false,
+        mappings: trackIds.map(trackId => ({
+          track_id: trackId,
+          track_name: 'Unknown',
+          artist_name: 'Unknown',
+          spotify_tempo: null,
+          workout_phase_id: null,
+          workout_track: null,
+          phase_name: null,
+          bpm_range: null,
+          error: errorMsg
+        })),
+        errors: [errorMsg],
+        session_id: null
+      };
+      
       if (onError) onError(errorMsg);
-      throw error;
+      return failedResult;
     }
   }, [setSessionId, onError]);
 
