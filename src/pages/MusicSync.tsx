@@ -238,7 +238,7 @@ const MusicSync = () => {
   
   // NEW: Primer.md phase tracking system
   const phaseTracking = useWorkoutPhaseTracking({
-    enabled: isWorkoutActive && isSpotifyAuthenticated,
+    enabled: false, // TEMPORARILY DISABLED - infinite polling loop causing crash
     pollingInterval: 8000, // 8s for music-sync per primer.md
     onPhaseChange: (phase) => {
       console.log('🎯 [PHASE CHANGE]', phase);
@@ -805,6 +805,8 @@ Check the console for detailed error information.`);
           console.log('🔄 [INITIAL FETCH] Got initial playback state:', state?.item?.name);
           setPlaybackState(state);
           setIsPlaying(state.is_playing);
+        } else {
+          console.error('🚨 [INITIAL FETCH] Spotify getCurrentPlayback returned null - no music playing or API issue');
         }
       }).catch(error => {
         console.error('🚨 [INITIAL FETCH] Failed to get initial playback state:', error);
@@ -836,6 +838,8 @@ Check the console for detailed error information.`);
           if (!selectedService) {
             setSelectedService('spotify');
           }
+        } else {
+          console.error('🚨 [FALLBACK FETCH] Spotify getCurrentPlayback returned null - check if music is playing');
         }
       }).catch(error => {
         console.error('🚨 [FALLBACK FETCH] Failed:', error);
