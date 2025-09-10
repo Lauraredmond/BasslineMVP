@@ -106,6 +106,44 @@ const MusicSync = () => {
       return result;
     };
     
+    (window as any).directSpotifyPlayTest = async () => {
+      console.log('🎵 Testing direct Spotify playback...');
+      
+      try {
+        // Check auth
+        if (!spotifyService.isAuthenticated()) {
+          console.error('❌ Not authenticated');
+          return false;
+        }
+        
+        // Get devices
+        const devices = await spotifyService.getDevices();
+        console.log('📱 Devices:', devices);
+        
+        if (!devices || devices.length === 0) {
+          console.error('❌ No devices available');
+          return false;
+        }
+        
+        const device = devices[0];
+        console.log('📱 Using device:', device.name);
+        
+        // Test with current selected playlist
+        if (selectedPlaylist) {
+          console.log(`🎼 Testing with playlist: ${selectedPlaylist}`);
+          const result = await spotifyService.startPlaylistPlayback(selectedPlaylist, device.id);
+          console.log(`🎵 Direct playback result: ${result}`);
+          return result;
+        } else {
+          console.error('❌ No playlist selected');
+          return false;
+        }
+      } catch (error) {
+        console.error('❌ Direct playback test failed:', error);
+        return false;
+      }
+    };
+    
     (window as any).validateTempoCorrections = async () => {
       console.log('🔧 Testing tempo correction logic...');
       
@@ -442,6 +480,12 @@ const MusicSync = () => {
 
   const handleStartWorkout = async () => {
     console.log('🏋️ [DEBUG] handleStartWorkout called - beginning workout start process');
+    console.log('🔍 [DEBUG] Current state:', {
+      selectedService,
+      selectedPlaylist,
+      isSpotifyAuthenticated,
+      selectedDevice
+    });
     
     // Try to initialize database narratives, but don't block workout if it fails
     try {
@@ -459,40 +503,36 @@ const MusicSync = () => {
       console.warn('Database initialization failed, proceeding with fallback narratives:', error);
     }
 
+    // CRITICAL CHECK 1: Verify we have Spotify playlist selected
     if (!selectedPlaylist || selectedService !== 'spotify') {
-      // Fallback to non-Spotify workout with database narratives
-      
-      // Auto-start analysis logging session
-      await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'general');
-      setIsAnalysisLogging(true);
-      
-      // Eliminated Web Audio Analysis Logger - no getDisplayMedia calls
-      
-      console.log('🏋️ [DEBUG] Setting workout as ACTIVE (non-Spotify path)');
-      setIsWorkoutActive(true);
-      setCurrentPhase(0);
-      setCurrentNarrative(0);
-      setIsPlaying(true);
-      setPhaseProgress(0);
-      setNarrativeEngineReady(true);
-      
-      // Initialize narrative states for fallback timing
-      setWorkoutStartTime(Date.now());
-      setNarrativeStates({
-        first_shown: false,
-        second_shown: false
-      });
-      setDisplayedNarrative(null);
-      
+      const errorMsg = `❌ PLAYBACK BLOCKED: selectedPlaylist=${selectedPlaylist}, selectedService=${selectedService}`;
+      console.error(errorMsg);
+      alert(`Cannot start Spotify playback: ${!selectedPlaylist ? 'No playlist selected' : 'Service is not Spotify'}`);
       return;
     }
+    
+    // CRITICAL CHECK 2: Verify Spotify authentication
+    if (!isSpotifyAuthenticated) {
+      const errorMsg = `❌ PLAYBACK BLOCKED: Spotify not authenticated (isSpotifyAuthenticated=${isSpotifyAuthenticated})`;
+      console.error(errorMsg);
+      alert('Cannot start Spotify playback: Not authenticated with Spotify. Please log in to Spotify first.');
+      return;
+    }
+    
+    console.log('✅ [CHECK PASS] Spotify service and playlist validated');
 
     setIsAnalyzingPlaylist(true);
     try {
-      // Refresh device list first
+      // CRITICAL CHECK 3: Get and validate Spotify devices
+      console.log('🔍 [DEVICE CHECK] Refreshing Spotify devices...');
       const devices = await refreshSpotifyDevices();
+      console.log(`📱 [DEVICE CHECK] Found ${devices.length} devices:`, devices.map(d => ({ name: d.name, id: d.id, is_active: d.is_active })));
       
       if (devices.length === 0) {
+        const errorMsg = '❌ PLAYBACK BLOCKED: No Spotify devices available';
+        console.error(errorMsg);
+        console.error('💡 [DEVICE CHECK] User needs to open Spotify app on a device');
+        alert('Cannot start Spotify playback: No Spotify devices found. Please open Spotify on your phone, computer, or other device first.');
         setShowDeviceSelector(true);
         setIsAnalyzingPlaylist(false);
         return;
@@ -501,73 +541,82 @@ const MusicSync = () => {
       // Auto-select active device or first available
       const activeDevice = devices.find(d => d.is_active) || devices[0];
       const deviceToUse = selectedDevice ? devices.find(d => d.id === selectedDevice) || activeDevice : activeDevice;
+      console.log(`📱 [DEVICE CHECK] Selected device: ${deviceToUse.name} (${deviceToUse.id}) - Active: ${deviceToUse.is_active}`);
       setSelectedDevice(deviceToUse.id);
 
-      // Get playlist tracks 
+      // CRITICAL CHECK 4: Get and validate playlist tracks
+      console.log(`🎼 [TRACKS CHECK] Getting tracks for playlist: ${selectedPlaylist}`);
       const tracks = await spotifyService.getPlaylistTracks(selectedPlaylist);
+      console.log(`🎼 [TRACKS CHECK] Found ${tracks.length} tracks in playlist`);
       
-      // Try new playlist phase mapping, fall back to old system if it fails
-      let plan;
-      let phaseMappingSucceeded = false;
-      
-      try {
-        const trackIds = tracks.map(track => track.id);
-        console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
-        
-        // NEW: Lock phases using primer.md algorithm (with timeout protection)
-        const mappingPromise = phaseTracking.lockPlaylistForSession(trackIds);
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Phase mapping timeout after 10s')), 10000)
-        );
-        
-        const lockingResult = await Promise.race([mappingPromise, timeoutPromise]);
-        
-        console.log(`✅ [PHASE LOCKING] Locked ${lockingResult.mappings.filter(m => !m.error).length}/${trackIds.length} tracks`);
-        
-        if (!lockingResult.success) {
-          console.warn('⚠️ [PHASE LOCKING] Some errors occurred:', lockingResult.errors);
-        }
-        
-        // Store locked mappings for use during workout
-        setPlaylistPhaseMappings(lockingResult.mappings);
-        setPlaylistSessionId(lockingResult.session_id);
-        
-        // Generate workout plan using mapped phases (for compatibility with existing UI)
-        plan = generateWorkoutPlanFromMappings(tracks, lockingResult.mappings, selectedPlaylist);
-        phaseMappingSucceeded = true;
-        
-      } catch (mappingError) {
-        console.error('❌ [PLAYLIST MAPPING] New mapping system failed, falling back to old system:', mappingError);
-        
-        // CRITICAL: Always fallback to ensure Spotify playback works
-        plan = musicAnalysisEngine.generateWorkoutPlan(tracks, selectedPlaylist);
-        
-        // Clear any partial state from failed mapping
-        setPlaylistPhaseMappings([]);
-        setPlaylistSessionId(null);
+      if (!tracks || tracks.length === 0) {
+        const errorMsg = `❌ PLAYBACK BLOCKED: Playlist ${selectedPlaylist} has no tracks`;
+        console.error(errorMsg);
+        alert('Cannot start Spotify playback: The selected playlist is empty or cannot be accessed.');
+        setIsAnalyzingPlaylist(false);
+        return;
       }
       
-      // Log mapping status but don't let it block playback
-      if (phaseMappingSucceeded) {
-        console.log('✅ [WORKOUT START] Using new primer.md phase mapping system');
-      } else {
-        console.log('⚠️ [WORKOUT START] Using fallback system - phase mapping failed but Spotify will still work');
+      // CRITICAL CHECK 5: Generate workout plan
+      console.log(`🎯 [PLAN CHECK] Generating workout plan for ${tracks.length} tracks...`);
+      let plan;
+      
+      try {
+        // Remove the complex fallback system - just use the old system for now to isolate the issue
+        console.log('🔄 [PLAN CHECK] Using established workout plan generation (bypassing new system)');
+        plan = musicAnalysisEngine.generateWorkoutPlan(tracks, selectedPlaylist);
+        console.log(`📊 [PLAN CHECK] Generated plan with ${plan.phases.length} phases`);
+        
+        if (!plan || !plan.phases || plan.phases.length === 0) {
+          const errorMsg = `❌ PLAYBACK BLOCKED: Workout plan generation failed - no phases created`;
+          console.error(errorMsg);
+          console.error('📊 [PLAN CHECK] Plan details:', plan);
+          alert('Cannot start Spotify playback: Unable to create workout plan from playlist tracks.');
+          setIsAnalyzingPlaylist(false);
+          return;
+        }
+        
+      } catch (planError) {
+        const errorMsg = `❌ PLAYBACK BLOCKED: Workout plan generation threw error: ${planError.message}`;
+        console.error(errorMsg);
+        console.error('📊 [PLAN CHECK] Full error:', planError);
+        alert(`Cannot start Spotify playback: Error creating workout plan - ${planError.message}`);
+        setIsAnalyzingPlaylist(false);
+        return;
       }
       
       setWorkoutPlan(plan);
+      console.log('✅ [CHECK PASS] Workout plan created and set');
       
-      if (plan.phases.length > 0) {
-        // Start playlist playback on Spotify
-        console.log(`🎵 [SPOTIFY START] Attempting to start playlist playback...`);
-        console.log(`📱 [SPOTIFY START] Device: ${deviceToUse.name} (${deviceToUse.id})`);
-        console.log(`🎼 [SPOTIFY START] Playlist: ${selectedPlaylist}`);
-        console.log(`📊 [SPOTIFY START] Plan has ${plan.phases.length} phases`);
-        
-        const playbackStarted = await spotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
-        
-        console.log(`🎵 [SPOTIFY START] Playback started: ${playbackStarted}`);
-        
-        if (playbackStarted) {
+      // CRITICAL CHECK 6: Attempt Spotify playback with detailed error reporting
+      console.log(`🎵 [SPOTIFY START] === ATTEMPTING SPOTIFY PLAYBACK ===`);
+      console.log(`📱 [SPOTIFY START] Device: ${deviceToUse.name} (${deviceToUse.id}) - Active: ${deviceToUse.is_active}`);
+      console.log(`🎼 [SPOTIFY START] Playlist ID: ${selectedPlaylist}`);
+      console.log(`📊 [SPOTIFY START] Plan phases: ${plan.phases.length}`);
+      console.log(`🔐 [SPOTIFY START] Auth status: ${spotifyService.isAuthenticated()}`);
+      
+      let playbackStarted = false;
+      try {
+        playbackStarted = await spotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
+        console.log(`🎵 [SPOTIFY START] startPlaylistPlayback returned: ${playbackStarted}`);
+      } catch (spotifyError) {
+        const errorMsg = `❌ PLAYBACK BLOCKED: Spotify API call failed: ${spotifyError.message}`;
+        console.error(errorMsg);
+        console.error('🎵 [SPOTIFY START] Full Spotify error:', spotifyError);
+        console.error('🎵 [SPOTIFY START] Error details:', {
+          name: spotifyError.name,
+          message: spotifyError.message,
+          stack: spotifyError.stack,
+          status: spotifyError.status,
+          statusText: spotifyError.statusText
+        });
+        alert(`Cannot start Spotify playback: Spotify API error - ${spotifyError.message}`);
+        setIsAnalyzingPlaylist(false);
+        return;
+      }
+      
+      if (playbackStarted) {
+        console.log('✅ [SPOTIFY START] === PLAYBACK STARTED SUCCESSFULLY ===');
           // Auto-start analysis logging session
           console.log('🏋️ STARTING WORKOUT SESSION for analysis logging...');
           await spotifyAnalysisLogger.startWorkoutSession(workoutFormat || 'spotify');
@@ -595,17 +644,38 @@ const MusicSync = () => {
           // Start monitoring playback state
           startPlaybackMonitoring();
         } else {
-          console.error('❌ [SPOTIFY START] Spotify playback failed to start');
-          console.error('📱 [SPOTIFY START] Device info:', deviceToUse);
+          const errorMsg = '❌ PLAYBACK BLOCKED: Spotify startPlaylistPlayback returned false';
+          console.error(errorMsg);
+          console.error('📱 [SPOTIFY START] Device info:', {
+            name: deviceToUse.name,
+            id: deviceToUse.id,
+            is_active: deviceToUse.is_active,
+            type: deviceToUse.type,
+            volume_percent: deviceToUse.volume_percent
+          });
           console.error('🎼 [SPOTIFY START] Playlist ID:', selectedPlaylist);
+          console.error('🔐 [SPOTIFY START] Auth check:', spotifyService.isAuthenticated());
           
-          alert(`Could not start Spotify playback on device "${deviceToUse.name}". Please make sure Spotify is open and the device is active, then try again.`);
+          // Let's also check if we can get current playback state
+          try {
+            const currentState = await spotifyService.getCurrentPlayback();
+            console.error('🎵 [SPOTIFY START] Current playback state:', currentState);
+          } catch (stateError) {
+            console.error('🎵 [SPOTIFY START] Cannot get current playback state:', stateError.message);
+          }
+          
+          alert(`❌ Spotify playback failed to start on device "${deviceToUse.name}". 
+
+Possible issues:
+• Device may not be active - try playing something in Spotify first
+• Spotify app may be closed - open Spotify on your device
+• Device may be busy with other playback
+• Premium account required for remote control
+
+Check the console for detailed error information.`);
+          setIsAnalyzingPlaylist(false);
+          return;
         }
-      } else {
-        console.error('❌ [WORKOUT START] No phases in workout plan - cannot start');
-        console.error('📊 [WORKOUT START] Plan details:', plan);
-        alert('Cannot start workout - no tracks available in the workout plan.');
-      }
     } catch (error) {
       console.error('💥 [WORKOUT START] Error starting workout:', error);
       console.error('📋 [WORKOUT START] Full error details:', {
