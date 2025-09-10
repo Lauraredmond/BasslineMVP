@@ -277,12 +277,13 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
 
     } catch (error) {
       console.error('❌ Error fetching sectional data:', error);
-      setError(`Failed to fetch data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      // Fallback to algorithmic sections
-      const algorithmicSections = await createAlgorithmicSections(trackName || 'Unknown', artistName || 'Unknown');
-      setSections(algorithmicSections);
+      setError(`Sectional data fetch failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // CRITICAL: Always show error and stop loading, don't try fallback
+      console.error(`🚨 [REALTIME DISPLAY] Sectional data failed for "${trackName}" by "${artistName}": ${error instanceof Error ? error.message : error}`);
     } finally {
       setIsLoading(false);
+      console.log(`✅ [REALTIME DISPLAY] Loading complete for "${trackName}" by "${artistName}"`);
     }
   };
 
@@ -624,18 +625,31 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         const artistName = currentTrack.artists[0].name;
         
         const trackKey = `${cleanTrackName}_${artistName}`;
+        console.log(`🔍 [TRACK CHANGE] Current: "${trackKey}", Last: "${lastFetchedTrack}"`);
+        
         if (trackKey !== lastFetchedTrack) {
-          console.log('🔄 Track changed, fetching sectional data...');
-          console.log(`🎯 Original track name: "${currentTrack.name}"`);
-          console.log(`🧹 Cleaned track name: "${cleanTrackName}"`);
-          fetchSectionalData(cleanTrackName, artistName);
+          console.log('🔄 [TRACK CHANGE] Track changed, fetching sectional data...');
+          console.log(`🎯 [TRACK CHANGE] Original: "${currentTrack.name}"`);
+          console.log(`🧹 [TRACK CHANGE] Cleaned: "${cleanTrackName}"`);
+          console.log(`🎤 [TRACK CHANGE] Artist: "${artistName}"`);
+          
           setLastFetchedTrack(trackKey);
+          fetchSectionalData(cleanTrackName, artistName);
+        } else {
+          console.log('📍 [TRACK CHANGE] Same track, skipping fetch');
         }
+      } else {
+        console.log('❌ [TRACK CHANGE] Missing track data:', {
+          hasTrack: !!currentTrack,
+          hasName: !!currentTrack?.name,
+          hasArtist: !!currentTrack?.artists?.[0]?.name
+        });
       }
     } catch (error) {
-      console.error('❌ Error in track change effect:', error);
+      console.error('❌ [TRACK CHANGE] Error in effect:', error);
+      setError(`Track change error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, [currentTrack?.name, currentTrack?.artists?.[0]?.name, lastFetchedTrack]);
+  }, [currentTrack?.name, currentTrack?.artists?.[0]?.name]);
 
   // Get section styling based on type - Enhanced with more prominent flashing
   const getSectionStyling = (sectionType: string) => {
@@ -673,10 +687,16 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
       );
     }
 
-    // Show error state but don't crash
+    // Show error state with specific message
     if (error) {
-      console.warn('⚠️ RealtimeSectionDisplay error (non-blocking):', error);
-      // Don't show error to user, just continue with fallback
+      console.error('🚨 [REALTIME DISPLAY] Error state:', error);
+      return (
+        <div className={`flex items-center justify-center ${className}`}>
+          <div className="px-4 py-2 rounded-lg bg-red-500/20 border border-red-400 text-red-100">
+            <div className="text-sm">❌ {error}</div>
+          </div>
+        </div>
+      );
     }
 
     // Early returns for various states
