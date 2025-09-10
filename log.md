@@ -443,3 +443,67 @@ Implementation is complete and ready for integration. The new system:
 ### Tech Details (Frontend TypeScript)  
 - `src/pages/MusicSync.tsx:676` - Removed `document.hasFocus()` check for music-sync exception
 - `src/lib/spotify-analysis-logger.ts:140` - Reduced logging from 1s to 30s intervals
+
+## 2025-09-11 00:01:25 - Implement Spotify Track → Workout Phase Mapping (primer.md)
+
+### Task Completed
+Implemented the exact workout phase mapping model specified in primer.md for mapping Spotify tracks to workout phases using only Supabase data.
+
+### Changes Made
+
+**Core Implementation:**
+- **src/lib/workoutPhaseMapper.ts** - Implements exact primer.md algorithm
+  - `mapTrackToWorkoutPhase()` - Maps single track via BPM lookup from SVA table
+  - `lockPlaylistPhases()` - Locks all playlist tracks at selection time per primer.md
+  - `getLockedPhaseForTrack()` - Retrieves locked phase for runtime narrative selection
+
+- **src/lib/spotifyPhaseIntegration.ts** - Runtime track change management
+  - Manages current track → phase state transitions
+  - Detects track changes and maintains locked phase consistency
+  - Handles section detection for narrative selection
+
+- **src/hooks/useWorkoutPhaseTracking.ts** - React integration hook
+  - Provides phase state to UI components with comprehensive error handling
+  - Integrates with Spotify polling system per primer.md requirements
+
+**UI Updates:**
+- **src/pages/MusicSync.tsx** - Updated to use new phase tracking system
+  - Replaced old mapping system with primer.md compliant implementation
+  - Added real-time phase display with explicit error states
+  - Integrated playlist locking at selection time (not during playback)
+
+**Testing & Validation:**
+- **src/lib/workoutPhaseMapperTest.ts** - Comprehensive test suite
+- **WORKOUT_PHASE_MAPPING.md** - Implementation documentation
+- Debug console commands: `window.testWorkoutPhaseMapping()`, `window.testSingleTrackMapping(trackId)`
+
+### Key Features Implemented (per primer.md)
+
+1. **Exact BPM → Phase Mapping**: Uses only `streaming_vendor_attributes.spotify_tempo` (full-track BPM)
+2. **Lock at Selection**: Phases locked when playlist is confirmed, stable during playback
+3. **No Fallbacks**: Explicit errors when SVA data missing - no guessing or hardcoded values
+4. **Tie-breaking**: Narrowest BPM range wins when multiple phases match
+5. **Error Handling**: Clear UI errors like "Missing SVA.spotify_tempo for track_id=X; unable to map phase"
+
+### Database Schema Utilized
+- `streaming_vendor_attributes` - Track metadata including spotify_tempo (BPM)
+- `workout_phases` - Phase definitions with target_tempo_min/max ranges
+- `instruction_narratives` - PT narratives mapped by workout_track + section_type
+- `playlist_phase_map` - New table for session-locked track→phase mappings
+
+### Files Updated
+- Core mapping logic: 4 new files
+- UI integration: 1 updated file
+- Tests and documentation: 2 new files
+- Total: 7 files added/modified
+
+### Commit
+- **Commit ID**: 588959c
+- **Build Status**: ✅ Successful (warnings are pre-existing)
+- **GitHub Push**: ❌ Failed due to authentication (local commit successful)
+
+### Notes
+- Implementation follows conservative approach per primer.md: no fallbacks, explicit errors
+- All logging includes track ID, Supabase queries, chosen phase, and errors as requested
+- System now implements exact algorithm: SVA.spotify_tempo → workout_phases BPM range → locked mapping
+- Ready for testing with `window.testWorkoutPhaseMapping()` command

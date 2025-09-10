@@ -113,10 +113,37 @@ if [ -z "$GITHUB_USER" ]; then
     GITHUB_USER="Lauraredmond"
 fi
 
-# Set remote origin
-git remote remove origin 2>/dev/null || true
-git remote add origin https://github.com/$GITHUB_USER/$REPO_NAME.git
-print_status "Remote set to https://github.com/$GITHUB_USER/$REPO_NAME.git"
+# Check for GitHub token authentication
+if [ -z "$GITHUB_TOKEN" ]; then
+    print_info "GitHub token not found in environment"
+    print_info "Please authenticate with GitHub using one of these methods:"
+    echo ""
+    echo "Option 1 - Set token in environment:"
+    echo "  export GITHUB_TOKEN=your_token_here"
+    echo "  ./deploy-with-debug.sh"
+    echo ""
+    echo "Option 2 - Use git credential manager:"
+    echo "  git config --global credential.helper store"
+    echo "  (will prompt for username/token on push)"
+    echo ""
+    
+    # Configure git to use credential store for this session
+    git config credential.helper store
+    print_status "Git configured to store credentials"
+fi
+
+# Set remote origin with token if available
+if [ ! -z "$GITHUB_TOKEN" ]; then
+    # Use token in URL for authentication
+    git remote remove origin 2>/dev/null || true
+    git remote add origin https://$GITHUB_TOKEN@github.com/$GITHUB_USER/$REPO_NAME.git
+    print_status "Remote set with token authentication"
+else
+    # Use HTTPS (will prompt for credentials)
+    git remote remove origin 2>/dev/null || true
+    git remote add origin https://github.com/$GITHUB_USER/$REPO_NAME.git
+    print_status "Remote set to https://github.com/$GITHUB_USER/$REPO_NAME.git"
+fi
 
 # Push to main branch
 git branch -M main
@@ -126,6 +153,10 @@ if [ $? -eq 0 ]; then
     print_status "Code pushed to GitHub successfully"
 else
     print_error "Failed to push to GitHub"
+    print_info "If authentication failed, try:"
+    print_info "1. Generate a new Personal Access Token at: https://github.com/settings/tokens"
+    print_info "2. Set it in environment: export GITHUB_TOKEN=your_token_here"
+    print_info "3. Re-run this script"
     exit 1
 fi
 
