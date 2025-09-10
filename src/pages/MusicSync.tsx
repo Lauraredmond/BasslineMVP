@@ -30,6 +30,9 @@ import { tempoResolver } from "@/lib/tempo-resolver";
 import { resolvePhaseForTrack, PhaseMatch } from "@/lib/musicAnalysis/phaseResolver";
 import { mapPlaylistToPhases, getLockedPhaseForTrack, TrackPhaseMapping } from "@/lib/playlistPhaseMapper";
 import { PersistentNarrativeService } from "@/lib/persistentNarrative";
+import { useWorkoutPhaseTracking } from "@/hooks/useWorkoutPhaseTracking";
+import { lockPlaylistPhases, mapTrackToWorkoutPhase } from "@/lib/workoutPhaseMapper";
+import { runAllTests as runWorkoutPhaseTests } from "@/lib/workoutPhaseMapperTest";
 
 const MusicSync = () => {
   
@@ -76,6 +79,18 @@ const MusicSync = () => {
       console.log('Cache stats:', tempoResolver.getCacheStats());
       
       return { slideAwayResult, pretenderResult };
+    };
+    
+    (window as any).testWorkoutPhaseMapping = async () => {
+      console.log('🧪 Running workout phase mapping tests...');
+      await runWorkoutPhaseTests();
+    };
+    
+    (window as any).testSingleTrackMapping = async (trackId: string) => {
+      console.log(`🎯 Testing single track mapping for: ${trackId}`);
+      const result = await mapTrackToWorkoutPhase(trackId);
+      console.log('Mapping result:', result);
+      return result;
     };
     
     (window as any).validateTempoCorrections = async () => {
@@ -169,6 +184,26 @@ const MusicSync = () => {
   // Playlist phase mapping state (locks phases at playlist selection time)
   const [playlistPhaseMappings, setPlaylistPhaseMappings] = useState<TrackPhaseMapping[]>([]);
   const [playlistSessionId, setPlaylistSessionId] = useState<string | null>(null);
+  
+  // NEW: Primer.md phase tracking system
+  const phaseTracking = useWorkoutPhaseTracking({
+    enabled: isWorkoutActive && isSpotifyAuthenticated,
+    pollingInterval: 8000, // 8s for music-sync per primer.md
+    onPhaseChange: (phase) => {
+      console.log('🎯 [PHASE CHANGE]', phase);
+      // Update UI when phase changes
+      if (phase?.error) {
+        console.error('❌ [PHASE ERROR]', phase.error);
+      }
+    },
+    onTrackChange: (event) => {
+      console.log('🎵 [TRACK CHANGE]', event);
+      // Handle track change events
+    },
+    onError: (error) => {
+      console.error('❌ [PHASE TRACKING ERROR]', error);
+    }
+  });
   
   // Research lab integration
   const [showResearchLab, setShowResearchLab] = useState(false);
@@ -464,22 +499,21 @@ const MusicSync = () => {
         const trackIds = tracks.map(track => track.id);
         console.log(`🎯 [PLAYLIST MAPPING] Starting playlist phase mapping for ${trackIds.length} tracks`);
         
-        // Map all tracks to phases at playlist selection time (locks mappings for session)
-        const playlistResult = await mapPlaylistToPhases({
-          trackIds,
-          userId: 'current_user', // TODO: Get actual user ID when auth is implemented
-          routineKey: 'spotify_playlist',
-          sessionDate: new Date().toISOString().split('T')[0]
-        });
+        // NEW: Lock phases using primer.md algorithm
+        const lockingResult = await phaseTracking.lockPlaylistForSession(trackIds);
         
-        console.log(`✅ [PLAYLIST MAPPING] Mapped ${playlistResult.validTracks}/${playlistResult.totalTracks} tracks`);
+        console.log(`✅ [PHASE LOCKING] Locked ${lockingResult.mappings.filter(m => !m.error).length}/${trackIds.length} tracks`);
         
-        // Store playlist mappings for use during workout
-        setPlaylistPhaseMappings(playlistResult.mappings);
-        setPlaylistSessionId(playlistResult.sessionId);
+        if (!lockingResult.success) {
+          console.error('❌ [PHASE LOCKING] Errors:', lockingResult.errors);
+        }
+        
+        // Store locked mappings for use during workout
+        setPlaylistPhaseMappings(lockingResult.mappings);
+        setPlaylistSessionId(lockingResult.session_id);
         
         // Generate workout plan using mapped phases (for compatibility with existing UI)
-        plan = generateWorkoutPlanFromMappings(tracks, playlistResult.mappings, selectedPlaylist);
+        plan = generateWorkoutPlanFromMappings(tracks, lockingResult.mappings, selectedPlaylist);
         
       } catch (mappingError) {
         console.error('❌ [PLAYLIST MAPPING] New mapping system failed, falling back to old system:', mappingError);
@@ -1793,8 +1827,42 @@ const MusicSync = () => {
                               </div>
                             )}
                             
-                            {/* Phase Resolution Display */}
-                            {currentPhaseMatch && (
+                            {/* NEW: Phase Tracking Display */}
+                            {phaseTracking.currentPhase && (
+                              <div className="mb-4 p-3 bg-white/10 rounded-lg border border-white/20">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-semibold text-white/90">
+                                    {phaseTracking.currentPhase.error ? (
+                                      <span className="text-red-300">❌ Phase Error</span>
+                                    ) : (
+                                      phaseTracking.currentPhase.workout_track || 'No Phase'
+                                    )}
+                                  </span>
+                                  {phaseTracking.currentPhase.progress_ms && phaseTracking.currentPhase.duration_ms && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-white/80">
+                                        {Math.floor(phaseTracking.currentPhase.progress_ms / 1000)}s / {Math.floor(phaseTracking.currentPhase.duration_ms / 1000)}s
+                                      </span>
+                                      {phaseTracking.currentPhase.phase_locked && (
+                                        <span className="text-xs px-2 py-1 bg-green-500/30 rounded text-green-200">
+                                          LOCKED
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-xs text-white/70 mt-1">
+                                  {phaseTracking.currentPhase.error ? (
+                                    <span className="text-red-300">{phaseTracking.currentPhase.error}</span>
+                                  ) : (
+                                    `Track: ${phaseTracking.currentPhase.track_name} | Section: ${phaseTracking.currentPhase.section_type || 'Unknown'}`
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Legacy Phase Resolution Display (fallback) */}
+                            {!phaseTracking.currentPhase && currentPhaseMatch && (
                               <div className="mb-4 p-3 bg-white/10 rounded-lg border border-white/20">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm font-semibold text-white/90">

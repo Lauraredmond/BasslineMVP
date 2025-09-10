@@ -6,6 +6,7 @@ DROP VIEW IF EXISTS v_workout_phases CASCADE;
 DROP TABLE IF EXISTS playlist_phase_map CASCADE;
 DROP TABLE IF EXISTS instruction_narratives CASCADE; 
 DROP TABLE IF EXISTS workout_phases CASCADE;
+DROP TABLE IF EXISTS workout_types CASCADE;
 DROP TABLE IF EXISTS streaming_vendor_attributes CASCADE;
 
 -- Create streaming_vendor_attributes table
@@ -30,28 +31,47 @@ CREATE TABLE streaming_vendor_attributes (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create workout_phases table (core table for phase mapping)
+-- Create workout_types table (required for frontend joins)
+CREATE TABLE workout_types (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR NOT NULL UNIQUE, -- 'spinning', 'strength', etc.
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create workout_phases table (core table for phase mapping + frontend compatibility)
 CREATE TABLE workout_phases (
   workout_phase_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  workout_track VARCHAR NOT NULL UNIQUE, -- warmup, sprint_intervals, resistance, jumps, climb, cooldown
+  id UUID DEFAULT gen_random_uuid() UNIQUE, -- frontend expects 'id' column
+  workout_type_id UUID, -- FK to workout_types (for frontend joins)
+  phase_type VARCHAR, -- frontend expects this field
+  workout_track VARCHAR NOT NULL UNIQUE, -- primer.md compatibility
   target_tempo_min INTEGER NOT NULL,
   target_tempo_max INTEGER NOT NULL, 
   description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   CONSTRAINT valid_tempo_range CHECK (target_tempo_min <= target_tempo_max),
-  CONSTRAINT positive_tempo CHECK (target_tempo_min > 0 AND target_tempo_max > 0)
+  CONSTRAINT positive_tempo CHECK (target_tempo_min > 0 AND target_tempo_max > 0),
+  FOREIGN KEY (workout_type_id) REFERENCES workout_types(id) ON DELETE CASCADE
 );
 
--- Create instruction_narratives table
+-- Create instruction_narratives table (updated for frontend compatibility)
 CREATE TABLE instruction_narratives (
   narrative_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  workout_track VARCHAR NOT NULL, -- FK to workout_phases.workout_track
-  section_type VARCHAR NOT NULL, -- intro, verse, chorus, bridge, drop, outro
+  id UUID DEFAULT gen_random_uuid() UNIQUE, -- frontend expects 'id' column
+  workout_phase_id UUID, -- FK to workout_phases.id (for frontend joins)  
+  workout_track VARCHAR NOT NULL, -- references workout_phases.workout_track (primer.md compatibility)
+  section_type VARCHAR NOT NULL, -- intro, verse, chorus, bridge, drop, outro (matches SVA vocabulary)
   narrative_text TEXT NOT NULL,
+  narrative_type VARCHAR DEFAULT 'instruction', -- frontend expects this field
+  sort_order INTEGER DEFAULT 0, -- frontend expects this field
+  interval_beats INTEGER, -- frontend expects this field
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  FOREIGN KEY (workout_track) REFERENCES workout_phases(workout_track) ON DELETE CASCADE
+  FOREIGN KEY (workout_track) REFERENCES workout_phases(workout_track) ON DELETE CASCADE,
+  FOREIGN KEY (workout_phase_id) REFERENCES workout_phases(id) ON DELETE CASCADE
 );
 
 -- Create playlist_phase_map table (for locked mappings)
