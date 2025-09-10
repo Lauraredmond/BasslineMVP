@@ -1912,7 +1912,7 @@ Check the console for detailed error information.`);
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   
-                  {/* Real-time Section Display - WITHOUT redundant PT narratives */}
+                  {/* Real-time Section Display - WITH PT narratives enabled */}
                   <div className="mb-6">
                     <RealtimeSectionDisplay
                       currentTrack={playbackState?.item}
@@ -1927,7 +1927,7 @@ Check the console for detailed error information.`);
                         mode: playbackState?.item?.mode
                       }}
                       rapidApiData={undefined}
-                      hidePTNarrative={true}
+                      hidePTNarrative={false}
                     />
                     
                   </div>
