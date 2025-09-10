@@ -135,11 +135,10 @@ export async function mapTrackToWorkoutPhase(trackId: string): Promise<WorkoutPh
 async function findBestFitPhase(bpm: number) {
   console.log(`🔍 [PHASE MAPPER] Finding phase for BPM: ${bpm}`);
 
+  // Get all phases and filter in JavaScript to avoid 406 Range errors
   const { data: phases, error } = await supabase
     .from('workout_phases')
-    .select('workout_phase_id, workout_track, target_tempo_min, target_tempo_max')
-    .lte('target_tempo_min', bpm)
-    .gte('target_tempo_max', bpm);
+    .select('workout_phase_id, workout_track, target_tempo_min, target_tempo_max');
 
   console.log(`📊 [PHASE MAPPER] Phase query result:`, { data: phases, error });
 
@@ -148,6 +147,24 @@ async function findBestFitPhase(bpm: number) {
   }
 
   if (!phases || phases.length === 0) {
+    console.log(`❌ [PHASE MAPPER] No workout phases found in database`);
+    return {
+      workout_phase_id: null,
+      workout_track: null,
+      phase_name: null,
+      target_tempo_min: null,
+      target_tempo_max: null
+    };
+  }
+
+  // Filter phases in JavaScript (avoiding Supabase Range issues)
+  const matchingPhases = phases.filter(phase => 
+    phase.target_tempo_min <= bpm && bpm <= phase.target_tempo_max
+  );
+
+  console.log(`🎯 [PHASE MAPPER] Found ${matchingPhases.length} matching phases for BPM ${bpm}`);
+
+  if (matchingPhases.length === 0) {
     return {
       workout_phase_id: null,
       workout_track: null,
@@ -158,7 +175,7 @@ async function findBestFitPhase(bpm: number) {
   }
 
   // Find the phase with the narrowest range (primer.md tie-breaking rule)
-  const bestPhase = phases.reduce((best, current) => {
+  const bestPhase = matchingPhases.reduce((best, current) => {
     const bestRange = best.target_tempo_max - best.target_tempo_min;
     const currentRange = current.target_tempo_max - current.target_tempo_min;
     return currentRange < bestRange ? current : best;
