@@ -1348,42 +1348,26 @@ Check the console for detailed error information.`);
         };
       }
 
-      // 🔄 FALLBACK: Use dynamic resolution only when no playlist session exists
-      console.log(`🔄 [DYNAMIC FALLBACK] No playlist session, using dynamic tempo resolution for "${playbackState.item.name}"`);
+      // 🔄 FALLBACK: Use direct SVA table lookup (no cached data)
+      console.log(`🔄 [DYNAMIC FALLBACK] No playlist session, using direct SVA table lookup for "${playbackState.item.name}"`);
       
-      const tempoResult = await tempoResolver.getCurrentTrackTempo(
-        playbackState.item.id,
-        playbackState.item.name,
-        playbackState.item.artists[0]?.name
-      );
+      const directMapping = await mapTrackToWorkoutPhase(playbackState.item.id);
       
-      if (!tempoResult) {
-        console.warn('❌ Tempo resolver returned null - no tempo available');
+      if (!directMapping || directMapping.error) {
+        console.warn('❌ Direct SVA mapping failed:', directMapping?.error || 'No mapping result');
         return null;
       }
 
-      const bpm = tempoResult.bpm;
-      console.log(`🎵 [FALLBACK] Resolved tempo: ${bpm} BPM (source: ${tempoResult.source}, confidence: ${tempoResult.confidence})`);
+      const bpm = directMapping.spotify_tempo;
+      console.log(`🎵 [FALLBACK] SVA table tempo: ${bpm} BPM from track "${directMapping.track_name}"`);
 
-      // Use dynamic BPM-based workout track determination (fallback only)
-      let workoutTrack: string;
-      if (bpm >= 140 && bpm <= 200) {
-        workoutTrack = 'sprint_intervals';
-      } else if (bpm >= 120 && bpm <= 139) {
-        workoutTrack = 'jumps';
-      } else if (bpm >= 95 && bpm <= 119) {
-        workoutTrack = 'resistance';
-      } else if (bpm >= 80 && bpm <= 94) {
-        workoutTrack = 'climb';
-      } else if (bpm >= 70 && bpm <= 79) {
-        workoutTrack = 'warmup';
-      } else if (bpm >= 60 && bpm <= 69) {
-        workoutTrack = 'cooldown';
-      } else {
-        console.warn(`⚠️ BPM ${bpm} outside known ranges for track: ${playbackState.item.name}`);
-        workoutTrack = 'resistance'; // Default fallback
+      // Use database-driven workout_track (no hardcoded fallback)
+      const workoutTrack = directMapping.workout_track;
+      if (!workoutTrack) {
+        console.warn(`⚠️ No workout_track found for BPM ${bpm} in database for track: ${playbackState.item.name}`);
+        return null;
       }
-      console.log(`🎯 [FALLBACK] Dynamic BPM mapping: ${bpm} BPM → workout_track: ${workoutTrack}`);
+      console.log(`🎯 [FALLBACK] Database workout_track: ${workoutTrack} for ${bpm} BPM`);
       
       // Session snapshot override temporarily disabled to ensure BPM-based accuracy
       // TODO: Fix session snapshot data to match BPM ranges
