@@ -43,7 +43,13 @@ export async function mapTrackToWorkoutPhase(trackId: string): Promise<WorkoutPh
       .limit(1)
       .single();
 
-    console.log(`📊 [PHASE MAPPER] SVA query result:`, { data: svaData, error: svaError });
+    console.log(`📊 [PHASE MAPPER] SVA query result for "${trackId}":`, { 
+      data: svaData, 
+      error: svaError,
+      trackName: svaData?.track_name,
+      artistName: svaData?.artist_name,
+      spotifyTempo: svaData?.spotify_tempo
+    });
 
     if (svaError || !svaData) {
       const error = `Missing SVA data for track_id=${trackId}; unable to map phase`;
@@ -157,12 +163,19 @@ async function findBestFitPhase(bpm: number) {
     };
   }
 
+  // Log all available phases for debugging
+  console.log(`📊 [PHASE MAPPER] All available phases:`, phases.map(p => 
+    `${p.workout_track} (${p.target_tempo_min}-${p.target_tempo_max} BPM)`
+  ));
+  
   // Filter phases in JavaScript (avoiding Supabase Range issues)
   const matchingPhases = phases.filter(phase => 
     phase.target_tempo_min <= bpm && bpm <= phase.target_tempo_max
   );
 
-  console.log(`🎯 [PHASE MAPPER] Found ${matchingPhases.length} matching phases for BPM ${bpm}`);
+  console.log(`🎯 [PHASE MAPPER] BPM ${bpm} matches:`, matchingPhases.map(p => 
+    `${p.workout_track} (${p.target_tempo_min}-${p.target_tempo_max}, range: ${p.target_tempo_max - p.target_tempo_min})`
+  ));
 
   if (matchingPhases.length === 0) {
     return {
