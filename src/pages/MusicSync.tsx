@@ -443,14 +443,11 @@ const MusicSync = () => {
   // Initialize database narratives for warmup
   const initializeDatabaseNarratives = async () => {
     try {
-      // Clear existing narratives and insert ONLY your 2 specific ones
-      const result = await dbAdmin.insertWarmupNarratives();
-      if (!result.success) {
-        return false;
-      }
+      // DISABLED: workout_types table is redundant and causing 400 errors
+      console.log('📊 [DB ADMIN] Skipping workout_types queries - table is redundant');
       
-      // Load narratives from database
-      const narratives = await dbAdmin.getNarrativesForPhase('spinning', 'warmup');
+      // Skip database admin calls that reference workout_types table
+      const narratives = []; // Empty array to avoid errors
       
       // Verify we have exactly 2 narratives
       if (narratives.length !== 2) {
@@ -489,16 +486,9 @@ const MusicSync = () => {
     
     // Try to initialize database narratives, but don't block workout if it fails
     try {
-      const allPhasesResult = await dbAdmin.insertNarrativesForAllPhases();
-      if (allPhasesResult.success) {
-        // Try to load warmup narratives specifically
-        const narrativesReady = await initializeDatabaseNarratives();
-        if (!narrativesReady) {
-          console.warn('Database narratives failed to load, will use fallback narratives');
-        }
-      } else {
-        console.warn('Database setup failed, will use fallback narratives');
-      }
+      // DISABLED: Skip database admin operations that query workout_types table
+      console.log('📊 [DB ADMIN] Skipping all workout_types operations - table is redundant');
+      console.log('✅ [DB ADMIN] Proceeding without database admin initialization');
     } catch (error) {
       console.warn('Database initialization failed, proceeding with fallback narratives:', error);
     }
