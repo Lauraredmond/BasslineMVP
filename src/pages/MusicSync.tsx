@@ -1393,16 +1393,19 @@ Check the console for detailed error information.`);
         console.log(`✅ Found ${trackExists.length} entries for "${trackName}" by "${artistName}":`, trackExists);
         
         // Try to get current section from streaming_vendor_attributes
-        const { data: sectionData, error: sectionError } = await supabase
+        // Get all sections and filter in JavaScript to avoid 406 Range error
+        const { data: allSections, error: sectionError } = await supabase
           .from('streaming_vendor_attributes')
-          .select('section_type, section_number')
+          .select('section_type, section_number, timestamp_ms')
           .eq('track_name', trackName)
           .eq('artist_name', artistName)
           .eq('event_type', 'section_change')
-          .lte('timestamp_ms', playbackState.progress_ms)
-          .order('timestamp_ms', { ascending: false })
-          .limit(1)
-          .single();
+          .order('timestamp_ms', { ascending: false });
+          
+        // Filter in JavaScript to find current section
+        const sectionData = allSections?.find(section => 
+          section.timestamp_ms <= playbackState.progress_ms
+        );
 
         if (sectionData?.section_type) {
           const rawSongComponent = sectionData.section_type;
