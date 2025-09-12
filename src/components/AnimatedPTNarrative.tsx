@@ -42,9 +42,11 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     const section = sectionType.toLowerCase();
     
     if (section.includes('verse')) {
-      if (sectionNumber === 2 || section.includes('2')) return 'verse_2';
-      if (sectionNumber === 3 || section.includes('3')) return 'verse_3';
-      return 'verse';
+      if (sectionNumber === 2 || section.includes('2')) return 'verse 2';
+      if (sectionNumber === 3 || section.includes('3')) return 'verse 3';
+      if (sectionNumber === 4 || section.includes('4')) return 'verse 4';
+      if (sectionNumber === 1 || section.includes('1')) return 'verse 1';
+      return 'verse 1'; // Default first verse to 'verse 1' to match database
     }
     
     if (section.includes('chorus')) {
@@ -63,10 +65,10 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     return section;
   };
 
-  // Get BPM from streaming_vendor_attributes table for the current track
+  // Get BPM from streaming_vendor_attributes table spotify_tempo field ONLY
   const fetchTrackBPM = async (trackName: string, artistName: string): Promise<number | null> => {
     try {
-      console.log(`🎵 Fetching BPM for: "${trackName}" by "${artistName}"`);
+      console.log(`🎵 Fetching BPM from SVA.spotify_tempo for: "${trackName}" by "${artistName}"`);
       
       const { data, error } = await supabase
         .from('streaming_vendor_attributes')
@@ -78,59 +80,62 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
         .single();
 
       if (error || !data?.spotify_tempo) {
-        console.log('⚠️ No BPM found in streaming_vendor_attributes, using fallback');
+        console.log('⚠️ No spotify_tempo found in streaming_vendor_attributes table');
         return null;
       }
 
-      console.log(`✅ Found BPM in database: ${data.spotify_tempo}`);
+      console.log(`✅ Found spotify_tempo in SVA table: ${data.spotify_tempo}`);
       return data.spotify_tempo;
     } catch (err) {
-      console.error('❌ Error fetching BPM:', err);
+      console.error('❌ Error fetching spotify_tempo from SVA table:', err);
       return null;
     }
   };
 
   // DATABASE-DRIVEN workout track mapping - reads ranges from workout_phases table
   const getWorkoutTrackFromTempo = async (tempo?: number): Promise<string> => {
-    // If no tempo, try to get it from database first
-    if (!tempo && currentTrack) {
-      const dbBPM = await fetchTrackBPM(
+    let finalBPM: number | null = null;
+    
+    // ONLY SOURCE: SVA table spotify_tempo field
+    if (currentTrack) {
+      const svaBPM = await fetchTrackBPM(
         currentTrack.name,
         currentTrack.artists?.[0]?.name || ''
       );
-      setDetectedBPM(dbBPM);
-      tempo = dbBPM || undefined;
+      if (svaBPM) {
+        finalBPM = svaBPM;
+        setDetectedBPM(svaBPM);
+        console.log(`✅ Using SVA.spotify_tempo: ${svaBPM} for "${currentTrack.name}"`);
+      }
     }
     
-    if (!tempo) {
-      console.log('❌ CRITICAL: No BPM available for workout mapping!');
+    if (!finalBPM) {
+      console.log('❌ CRITICAL: No BPM available from SVA.spotify_tempo!');
       console.log('🔍 Available data:', { 
-        trackName: currentTrack?.name, 
-        dbBPM, 
-        spotifyBPM: currentTrack?.audio_features?.tempo,
-        fallbackBPM: currentTrack?.tempo 
+        trackName: currentTrack?.name,
+        artistName: currentTrack?.artists?.[0]?.name
       });
-      console.log('⚠️ Defaulting to recovery - this is the bug!');
+      console.log('⚠️ Defaulting to recovery - track not in SVA table or missing spotify_tempo');
       return 'recovery';
     }
     
-    console.log(`🎯 [DATABASE-DRIVEN] Mapping BPM ${tempo} to workout track using workout_phases table`);
+    console.log(`🎯 [DATABASE-DRIVEN] Mapping BPM ${finalBPM} to workout track using workout_phases table`);
     
     try {
       // REPLACED hardcoded ranges with database lookup
       const { getWorkoutTrackForBPM } = await import('../lib/database-driven-phase-mapping');
       
-      const workoutTrack = await getWorkoutTrackForBPM(tempo);
+      const workoutTrack = await getWorkoutTrackForBPM(finalBPM);
       
       if (workoutTrack) {
-        console.log(`✅ [DATABASE-DRIVEN] BPM ${tempo} → ${workoutTrack} (from workout_phases table)`);
+        console.log(`✅ [DATABASE-DRIVEN] BPM ${finalBPM} → ${workoutTrack} (from workout_phases table)`);
         return workoutTrack;
       } else {
-        console.warn(`⚠️ [DATABASE-DRIVEN] No workout phase found for BPM ${tempo} in database, using recovery fallback`);
+        console.warn(`⚠️ [DATABASE-DRIVEN] No workout phase found for BPM ${finalBPM} in database, using recovery fallback`);
         return 'recovery';
       }
     } catch (error) {
-      console.error(`❌ [DATABASE-DRIVEN] Error mapping BPM ${tempo}:`, error);
+      console.error(`❌ [DATABASE-DRIVEN] Error mapping BPM ${finalBPM}:`, error);
       return 'recovery'; // Emergency fallback
     }
   };
@@ -173,8 +178,8 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       setIsUpdating(true);
       
       const updateNarrative = async () => {
-        const tempo = currentTrack?.audio_features?.tempo || currentTrack?.tempo;
-        const newWorkoutTrack = await getWorkoutTrackFromTempo(tempo);
+        // Always try database BPM lookup first, then fall back to Spotify BPM
+        const newWorkoutTrack = await getWorkoutTrackFromTempo();
         const songComponent = mapSectionToComponent(
           currentSection.rawSectionType || currentSection.sectionType, 
           currentSection.sectionNumber
@@ -211,7 +216,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
         trackName: currentTrack?.name,
         artistName: currentTrack?.artists?.[0]?.name,
         detectedBPM,
-        spotifyTempo: currentTrack?.audio_features?.tempo,
+        svaBPMSource: 'SVA.spotify_tempo only',
         computedWorkoutPhase: workoutTrack,
         currentSectionType: currentSection?.sectionType,
         narrativeVisible: showNarrative,
@@ -230,7 +235,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
           <div className="text-sm text-red-600">
             <div>Reason: {!narrative ? 'No narrative' : 'No current section'}</div>
             <div>Track: {currentTrack?.name || 'None'}</div>
-            <div>BPM: {detectedBPM || currentTrack?.audio_features?.tempo || 'Unknown'}</div>
+            <div>SVA BPM: {detectedBPM || 'Unknown'}</div>
             <div>Phase: {workoutTrack || 'None'}</div>
             <div>Section: {currentSection?.sectionType || 'None'}</div>
           </div>
@@ -289,9 +294,9 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
                   {workoutTrack.replace('_', ' ')}
                 </span>
               </div>
-              {(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo) && (
+              {detectedBPM && (
                 <span className="text-lg bg-white/20 px-4 py-2 rounded-lg font-semibold">
-                  {Math.round(detectedBPM || currentTrack?.audio_features?.tempo || currentTrack?.tempo || 0)} BPM
+                  {Math.round(detectedBPM)} BPM
                 </span>
               )}
             </div>
@@ -320,8 +325,8 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div><strong>Track:</strong> {debugInfo.trackName}</div>
             <div><strong>Artist:</strong> {debugInfo.artistName}</div>
-            <div><strong>DB BPM:</strong> {debugInfo.detectedBPM || 'None'}</div>
-            <div><strong>Spotify BPM:</strong> {debugInfo.spotifyTempo || 'None'}</div>
+            <div><strong>SVA BPM:</strong> {debugInfo.detectedBPM || 'None'}</div>
+            <div><strong>BPM Source:</strong> {debugInfo.svaBPMSource}</div>
             <div><strong>Computed Phase:</strong> {debugInfo.computedWorkoutPhase}</div>
             <div><strong>Section:</strong> {debugInfo.currentSectionType}</div>
             <div><strong>Narrative Visible:</strong> {debugInfo.narrativeVisible ? 'Yes' : 'No'}</div>

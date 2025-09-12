@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 /**
- * Automatically captures and stores BPM from RapidAPI SoundNet when tracks play
+ * Automatically captures and stores BPM in streaming_vendor_attributes table
  * ONLY updates spotify_tempo field - preserves all existing section data
  * Does NOT overwrite any existing timing, sections, or energy levels
  */

@@ -268,14 +268,39 @@ export class NarrativeEngine {
 
       if (!currentSection) return null;
 
-      // Step 3: Determine workout_track (hardcoded for The Pretender and Slide Away)
+      // Step 3: Determine workout_track using database-driven BPM mapping
       let workoutTrack: string;
-      if (trackMetadata.name.toLowerCase().includes('pretender')) {
-        workoutTrack = 'sprint_intervals';
-      } else if (trackMetadata.name.toLowerCase().includes('slide away')) {
-        workoutTrack = 'climb';
-      } else {
-        return null; // Only configured tracks emit narratives
+      try {
+        // Get BPM from SVA table
+        const { data: bpmData, error } = await supabase
+          .from('streaming_vendor_attributes')
+          .select('spotify_tempo')
+          .eq('track_name', trackMetadata.name)
+          .eq('artist_name', trackMetadata.artist)
+          .not('spotify_tempo', 'is', null)
+          .limit(1)
+          .single();
+
+        if (error || !bpmData?.spotify_tempo) {
+          console.warn(`⚠️ No BPM found in SVA table for "${trackMetadata.name}" by "${trackMetadata.artist}"`);
+          return null;
+        }
+
+        // Map BPM to workout_track using database-driven service
+        const { getWorkoutTrackForBPM } = await import('./database-driven-phase-mapping');
+        const mappedTrack = await getWorkoutTrackForBPM(bpmData.spotify_tempo);
+        
+        if (!mappedTrack) {
+          console.warn(`⚠️ No workout phase found for BPM ${bpmData.spotify_tempo} for "${trackMetadata.name}"`);
+          return null;
+        }
+        
+        workoutTrack = mappedTrack;
+        console.log(`✅ Database-driven mapping: "${trackMetadata.name}" (${bpmData.spotify_tempo} BPM) → ${workoutTrack}`);
+        
+      } catch (err) {
+        console.error(`❌ Database lookup failed for "${trackMetadata.name}":`, err);
+        return null;
       }
 
       const workoutPhase = { workout_track: workoutTrack };

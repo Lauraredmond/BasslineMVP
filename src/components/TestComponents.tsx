@@ -3,6 +3,7 @@ import { testSuite, errorHandler } from '@/lib/integration-test-suite';
 import type { TestSuite, TestResult } from '@/lib/integration-test-suite';
 import { spotifyService } from '@/lib/spotify';
 import { DatabaseSchemaInspector } from './DatabaseSchemaInspector';
+import { DebugRLSIssue } from './DebugRLSIssue';
 
 export const DebugPanel: React.FC = () => {
   const [testResults, setTestResults] = React.useState<TestSuite | null>(null);
@@ -804,6 +805,11 @@ export const QuickTestButton: React.FC = () => {
       >
         🧪 Quick Test
       </button>
+      
+      {/* RLS Debug Component for Death in Vegas issue */}
+      <div style={{ marginTop: '10px' }}>
+        <DebugRLSIssue />
+      </div>
     </div>
   );
 };
