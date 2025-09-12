@@ -129,17 +129,21 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       console.log('✅ Mapped to jumps (120-139 BPM)');
       return 'jumps';
     }
-    if (tempo >= 95 && tempo < 120) {
-      console.log('✅ Mapped to hills (95-119 BPM)');
+    if (tempo >= 101 && tempo < 116) {
+      console.log('✅ Mapped to hills (101-115 BPM) - FIXED');
       return 'hills';
     }
-    if (tempo >= 85 && tempo < 95) {
-      console.log('✅ Mapped to resistance (85-94 BPM)');
-      return 'resistance';
-    }
-    if (tempo >= 80 && tempo < 85) {
-      console.log('✅ Mapped to climb (80-84 BPM)');
+    if (tempo >= 90 && tempo <= 100) {
+      console.log('✅ Mapped to climb (90-100 BPM) - FIXED! Oasis 100 goes here');
       return 'climb';
+    }
+    if (tempo >= 80 && tempo < 90) {
+      console.log('✅ Mapped to warmup (80-89 BPM) - FIXED');
+      return 'warmup';
+    }
+    if (tempo >= 55 && tempo < 60) {
+      console.log('✅ Mapped to resistance (55-60 BPM) - FIXED! Dirge 58 goes here');
+      return 'resistance';
     }
     if (tempo >= 70 && tempo < 80) {
       console.log('✅ Mapped to warmup (70-79 BPM)');
