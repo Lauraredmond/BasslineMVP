@@ -113,6 +113,12 @@ if [ -z "$GITHUB_USER" ]; then
     GITHUB_USER="Lauraredmond"
 fi
 
+# Load environment variables from .env.local if it exists
+if [ -f ".env.local" ]; then
+    source .env.local
+    print_info "Loaded environment variables from .env.local"
+fi
+
 # Check for GitHub token authentication
 if [ -z "$GITHUB_TOKEN" ]; then
     print_info "GitHub token not found in environment"
