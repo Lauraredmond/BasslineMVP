@@ -198,8 +198,8 @@ export class PersistentNarrativeService {
       const { data: phaseData, error: phaseError } = await supabase
         .from('workout_phases')
         .select('workout_track, target_tempo_min, target_tempo_max')
-        .lte('target_tempo_min', bpm)
-        .gte('target_tempo_max', bpm)
+        .lte('target_tempo_min', bpm)  // target_tempo_min <= BPM (correct)
+        .gte('target_tempo_max', bpm)  // target_tempo_max >= BPM (correct)
         .order('target_tempo_min');
       
       if (phaseError || !phaseData || phaseData.length === 0) {
