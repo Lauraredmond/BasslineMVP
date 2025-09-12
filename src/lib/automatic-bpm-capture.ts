@@ -105,17 +105,24 @@ export class AutomaticBPMCapture {
    * Get workout track for BPM - FIXED to match actual database ranges
    * WARNING: Use database lookup instead when possible!
    */
-  static getWorkoutTrackFromBPM(bpm: number): string {
-    // FIXED ranges to match Supabase workout_phases table
-    if (bpm >= 160) return 'sprint_intervals'; // 160-180 BPM
-    if (bpm >= 116) return 'jumps';            // 116-159 BPM  
-    if (bpm >= 101) return 'hills';            // 101-115 BPM
-    if (bpm >= 90) return 'climb';             // 90-100 BPM ← FIXED! Oasis 100 goes here
-    if (bpm >= 80) return 'warmup';            // 80-89 BPM
-    if (bpm >= 70) return 'recovery';          // 70-79 BPM
-    if (bpm >= 60) return 'cooldown';          // 60-69 BPM
-    if (bpm >= 55) return 'resistance';        // 55-60 BPM ← Dirge 58 goes here
-    return 'resistance'; // Default fallback
+  static async getWorkoutTrackFromBPM(bpm: number): Promise<string> {
+    try {
+      // REPLACED hardcoded ranges with database lookup
+      const { getWorkoutTrackForBPM } = await import('./database-driven-phase-mapping');
+      
+      const workoutTrack = await getWorkoutTrackForBPM(bpm);
+      
+      if (workoutTrack) {
+        console.log(`✅ [DB BPM MAPPING] BPM ${bpm} → ${workoutTrack} (from workout_phases table)`);
+        return workoutTrack;
+      } else {
+        console.warn(`⚠️ [DB BPM MAPPING] No match for BPM ${bpm}, using fallback`);
+        return 'resistance'; // Fallback only if database fails
+      }
+    } catch (error) {
+      console.error(`❌ [DB BPM MAPPING] Database query failed for BPM ${bpm}:`, error);
+      return 'resistance'; // Emergency fallback
+    }
   }
   
   /**

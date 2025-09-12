@@ -90,7 +90,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
     }
   };
 
-  // Intelligent workout track mapping based on BPM ranges from workout_phases table
+  // DATABASE-DRIVEN workout track mapping - reads ranges from workout_phases table
   const getWorkoutTrackFromTempo = async (tempo?: number): Promise<string> => {
     // If no tempo, try to get it from database first
     if (!tempo && currentTrack) {
@@ -114,48 +114,25 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       return 'recovery';
     }
     
-    console.log(`🎯 Mapping BPM ${tempo} to workout track`);
+    console.log(`🎯 [DATABASE-DRIVEN] Mapping BPM ${tempo} to workout track using workout_phases table`);
     
-    // Updated BPM ranges to handle high-energy rock songs like The Pretender (172 BPM)
-    if (tempo >= 160) {
-      console.log(`✅ Mapped to sprint_intervals (160+ BPM) - High energy like The Pretender ${tempo}`);
-      return 'sprint_intervals';
+    try {
+      // REPLACED hardcoded ranges with database lookup
+      const { getWorkoutTrackForBPM } = await import('../lib/database-driven-phase-mapping');
+      
+      const workoutTrack = await getWorkoutTrackForBPM(tempo);
+      
+      if (workoutTrack) {
+        console.log(`✅ [DATABASE-DRIVEN] BPM ${tempo} → ${workoutTrack} (from workout_phases table)`);
+        return workoutTrack;
+      } else {
+        console.warn(`⚠️ [DATABASE-DRIVEN] No workout phase found for BPM ${tempo} in database, using recovery fallback`);
+        return 'recovery';
+      }
+    } catch (error) {
+      console.error(`❌ [DATABASE-DRIVEN] Error mapping BPM ${tempo}:`, error);
+      return 'recovery'; // Emergency fallback
     }
-    if (tempo >= 140 && tempo < 160) {
-      console.log('✅ Mapped to sprint_intervals (140-159 BPM)');
-      return 'sprint_intervals';  
-    }
-    if (tempo >= 120 && tempo < 140) {
-      console.log('✅ Mapped to jumps (120-139 BPM)');
-      return 'jumps';
-    }
-    if (tempo >= 101 && tempo < 116) {
-      console.log('✅ Mapped to hills (101-115 BPM) - FIXED');
-      return 'hills';
-    }
-    if (tempo >= 90 && tempo <= 100) {
-      console.log('✅ Mapped to climb (90-100 BPM) - FIXED! Oasis 100 goes here');
-      return 'climb';
-    }
-    if (tempo >= 80 && tempo < 90) {
-      console.log('✅ Mapped to warmup (80-89 BPM) - FIXED');
-      return 'warmup';
-    }
-    if (tempo >= 55 && tempo < 60) {
-      console.log('✅ Mapped to resistance (55-60 BPM) - FIXED! Dirge 58 goes here');
-      return 'resistance';
-    }
-    if (tempo >= 70 && tempo < 80) {
-      console.log('✅ Mapped to warmup (70-79 BPM)');
-      return 'warmup';
-    }
-    if (tempo >= 60 && tempo < 70) {
-      console.log('✅ Mapped to cooldown (60-69 BPM)');
-      return 'cooldown';
-    }
-    
-    console.log(`⚠️ BPM ${tempo} doesn't fit standard ranges, using recovery`);
-    return 'recovery';
   };
 
   // Fetch narrative from database
