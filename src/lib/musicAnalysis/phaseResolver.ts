@@ -304,8 +304,8 @@ async function findMatchingPhase(bpm: number) {
     const { data: phases, error } = await supabase
       .from('workout_phases')
       .select('*')
-      .lte('target_tempo_min', bpm)
-      .gt('target_tempo_max', bpm) // BPM < max (exclusive upper bound)
+      .lte('target_tempo_min', bpm)     // target_tempo_min <= BPM  
+      .gte('target_tempo_max', bpm)     // target_tempo_max >= BPM
       .order('target_tempo_max', { ascending: true }); // Order by range size (implicit)
 
     if (error) {
