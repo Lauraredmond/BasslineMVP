@@ -1637,7 +1637,7 @@ Check the console for detailed error information.`);
             Sync to Your Playlist
           </h1>
           <p className="text-lg text-cream/80">
-            Let's match your music to your workout rhythm
+            Let's match your music to your workout
           </p>
         </div>
 
