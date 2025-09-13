@@ -247,11 +247,6 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
 
   return (
     <div className="mt-4">
-      {/* TESTING: This should be visible */}
-      <div className="bg-red-500 text-white p-4 mb-2 text-center font-bold">
-        🚨 ANIMATEDPTNARRATIVE COMPONENT IS RENDERING 🚨
-      </div>
-      
       {/* PT Narrative Display with Animations */}
       <div className="w-full">
         <div className="relative w-full">
