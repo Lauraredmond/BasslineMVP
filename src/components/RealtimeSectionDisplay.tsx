@@ -770,17 +770,19 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
         
         {/* ANIMATED PT NARRATIVES - Shows instructor guidance based on current section */}
         {!hidePTNarrative && (
-          <AnimatedPTNarrative 
-            currentSection={currentSection}
-            currentTrack={currentTrack ? {
-              ...currentTrack,
-              tempo: spotifyMetadata?.tempo,
-              audio_features: {
-                ...currentTrack.audio_features,
-                tempo: currentTrack.audio_features?.tempo || spotifyMetadata?.tempo
-              }
-            } : undefined}
-          />
+          <div className="w-full self-stretch">
+            <AnimatedPTNarrative 
+              currentSection={currentSection}
+              currentTrack={currentTrack ? {
+                ...currentTrack,
+                tempo: spotifyMetadata?.tempo,
+                audio_features: {
+                  ...currentTrack.audio_features,
+                  tempo: currentTrack.audio_features?.tempo || spotifyMetadata?.tempo
+                }
+              } : undefined}
+            />
+          </div>
         )}
         
       </div>
