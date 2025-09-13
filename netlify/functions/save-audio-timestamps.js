@@ -1,9 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Initialize Supabase client
+// Initialize Supabase client with service role for server-side operations
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 exports.handler = async (event, context) => {
@@ -29,6 +29,19 @@ exports.handler = async (event, context) => {
       statusCode: 405,
       headers,
       body: JSON.stringify({ error: 'Method not allowed' })
+    };
+  }
+
+  // Check for required environment variables
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ 
+        error: 'Server configuration error - missing service key',
+        details: 'SUPABASE_SERVICE_ROLE_KEY not configured'
+      })
     };
   }
 

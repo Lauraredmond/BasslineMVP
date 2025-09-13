@@ -1,18 +1,25 @@
-[Log] 🎵 [REGISTER] Starting register new song process... (index-uSH_fsjw.js, line 755)
-[Log] 🎵 [REGISTER] Fetching current playback state (same as music-sync)... (index-uSH_fsjw.js, line 755)
+[Log] 📚 Loaded 77 cached entries from storage (index-D6yIkmKJ.js, line 275)
+[Log] 🎵 [REGISTER] Starting register new song process... (index-D6yIkmKJ.js, line 755)
+[Log] 🎵 [REGISTER] Fetching current playback state (same as music-sync)... (index-D6yIkmKJ.js, line 755)
 [Error] Failed to load resource: the server responded with a status of 401 () (player, line 0)
-[Log] 🎵 [REGISTER] Playback state: (index-uSH_fsjw.js, line 755)
+[Log] 🎵 [REGISTER] Playback state: – Object (index-D6yIkmKJ.js, line 755)
 Object
-
-artist: undefined
-
-hasItem: false
-
-hasState: true
-
-isPlaying: undefined
-
-trackName: undefined
-
-Object Prototype
-[Log] 🎵 [REGISTER] No current track found (index-uSH_fsjw.js, line 755)
+[Log] 🎵 [REGISTER] Found track: – "Fire" – "by" – "Kasabian" (index-D6yIkmKJ.js, line 755)
+[Log] 🎵 Registered new song from Spotify: – "Fire" – "by" – "Kasabian" (index-D6yIkmKJ.js, line 755)
+[Log] 🎵 [REGISTER] Fetching BPM... (index-D6yIkmKJ.js, line 755)
+[Log] 🎵 Fetching BPM for: "Fire" by "Kasabian" (index-D6yIkmKJ.js, line 755)
+[Error] ❌ Error fetching BPM from Spotify: – TypeError: Oe.search is not a function. (In 'Oe.search(n,"track",1)', 'Oe.search' is undefined)
+TypeError: Oe.search is not a function. (In 'Oe.search(n,"track",1)', 'Oe.search' is undefined)
+	(anonymous function) (index-D6yIkmKJ.js:755:1091)
+	fetchBPMForTrack (index-D6yIkmKJ.js:755:1187)
+	(anonymous function) (index-D6yIkmKJ.js:755:3317)
+[Log] 🎤 Recording started for: – "Fire" – "by" – "Kasabian" (index-D6yIkmKJ.js, line 755)
+[Log] ⏰ Timestamp captured: – Object (index-D6yIkmKJ.js, line 755)
+Object
+[Log] 💾 Attempting to save session... (index-D6yIkmKJ.js, line 755)
+[Log] ✅ Session saved locally: – "d3d3508d-1a7b-4d73-89c3-592afac86afa" (index-D6yIkmKJ.js, line 754)
+[Log] ✅ Session saved locally as backup (index-D6yIkmKJ.js, line 755)
+[Log] 📡 Attempting database save to: – "/.netlify/functions/save-audio-timestamps" (index-D6yIkmKJ.js, line 755)
+[Error] Failed to load resource: the server responded with a status of 500 () (save-audio-timestamps, line 0)
+[Warning] ⚠️ Database save failed, but data is saved locally: – Error: HTTP 500: {"error":"Database error","details":"new row violates row-level security policy for table \"streaming_vendor_attributes\""} (index-D6yIkmKJ.js, line 755)
+Error: HTTP 500: {"error":"Database error","details":"new row violates row-level security policy for table \"streaming_vendor_attributes\""}
