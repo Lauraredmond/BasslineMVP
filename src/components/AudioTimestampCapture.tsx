@@ -37,6 +37,11 @@ interface AudioTimestampCaptureProps {
     name: string;
     artist: string;
   };
+  currentPhase?: {
+    track_name: string;
+    artist_name: string;
+    track_id?: string;
+  } | null;
 }
 
 export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ spotifyTempo, trackInfo }) => {
@@ -86,7 +91,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     }
   }, [trackInfo]);
 
-  // Register new song from current Spotify playback
+  // Register new song from current Spotify playback - using the same method as music-sync polling
   const registerNewSong = async () => {
     console.log('🎵 [REGISTER] Starting register new song process...');
     
@@ -100,29 +105,41 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     setError(null);
 
     try {
-      console.log('🎵 [REGISTER] Fetching current track metadata...');
-      const currentTrack = await spotifyService.getCurrentTrackMetadata();
+      // Use the exact same method as music-sync polling: getCurrentPlayback()
+      console.log('🎵 [REGISTER] Fetching current playback state (same as music-sync)...');
+      const playbackState = await spotifyService.getCurrentPlayback();
       
-      if (!currentTrack) {
+      console.log('🎵 [REGISTER] Playback state:', {
+        hasState: !!playbackState,
+        hasItem: !!playbackState?.item,
+        isPlaying: playbackState?.is_playing,
+        trackName: playbackState?.item?.name,
+        artist: playbackState?.item?.artists?.[0]?.name
+      });
+      
+      if (!playbackState?.item) {
         const errorMsg = 'No song found in Spotify. Please make sure Spotify is open and has a song selected (playing or paused).';
         setError(errorMsg);
         console.log('🎵 [REGISTER] No current track found');
         return;
       }
 
-      console.log('🎵 [REGISTER] Found track:', currentTrack);
+      const trackName = playbackState.item.name;
+      const artistName = playbackState.item.artists?.[0]?.name || '';
+
+      console.log('🎵 [REGISTER] Found track:', trackName, 'by', artistName);
 
       // Update track info
-      setTrackName(currentTrack.name);
-      setArtistName(currentTrack.artist);
+      setTrackName(trackName);
+      setArtistName(artistName);
 
-      console.log('🎵 Registered new song from Spotify:', currentTrack.name, 'by', currentTrack.artist);
+      console.log('🎵 Registered new song from Spotify:', trackName, 'by', artistName);
       
       // Try to fetch BPM automatically
-      if (currentTrack.name && currentTrack.artist) {
+      if (trackName && artistName) {
         try {
           console.log('🎵 [REGISTER] Fetching BPM...');
-          const bpmData = await SpotifyBPMFetcher.fetchBPMForTrack(currentTrack.name, currentTrack.artist);
+          const bpmData = await SpotifyBPMFetcher.fetchBPMForTrack(trackName, artistName);
           if (bpmData.found) {
             setFetchedBPM(bpmData.spotify_tempo);
             console.log('✅ Also fetched BPM:', bpmData.spotify_tempo);
