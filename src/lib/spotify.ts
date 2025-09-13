@@ -906,6 +906,12 @@ class SpotifyService {
         }
       });
 
+      if (response.status === 401) {
+        // Token expired, try to refresh
+        await this.refreshAccessToken();
+        return this.getCurrentPlayback(); // Retry
+      }
+
       if (response.status === 204) {
         return null; // No active device
       }
