@@ -1136,13 +1136,24 @@ class SpotifyService {
     duration_ms: number;
   } | null> {
     try {
+      console.log('🔍 [SPOTIFY DEBUG] Getting current track metadata...');
       const playbackState = await this.getCurrentPlayback();
       
-      if (!playbackState?.item || !playbackState.is_playing) {
+      console.log('🔍 [SPOTIFY DEBUG] Playback state:', {
+        hasState: !!playbackState,
+        hasItem: !!playbackState?.item,
+        isPlaying: playbackState?.is_playing,
+        trackName: playbackState?.item?.name,
+        artist: playbackState?.item?.artists?.[0]?.name
+      });
+      
+      if (!playbackState?.item) {
+        console.log('🔍 [SPOTIFY DEBUG] No item in playback state');
         return null;
       }
 
-      return {
+      // Return metadata even if not currently playing (user might have paused)
+      const metadata = {
         track_id: playbackState.item.id,
         track_uri: `spotify:track:${playbackState.item.id}`,
         name: playbackState.item.name,
@@ -1150,8 +1161,11 @@ class SpotifyService {
         progress_ms: playbackState.progress_ms || 0,
         duration_ms: playbackState.item.duration_ms
       };
+      
+      console.log('🔍 [SPOTIFY DEBUG] Returning metadata:', metadata);
+      return metadata;
     } catch (error) {
-      console.error('Error getting current track metadata:', error);
+      console.error('🔍 [SPOTIFY DEBUG] Error getting current track metadata:', error);
       return null;
     }
   }

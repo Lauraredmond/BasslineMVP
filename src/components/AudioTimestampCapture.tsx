@@ -88,8 +88,11 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
 
   // Register new song from current Spotify playback
   const registerNewSong = async () => {
+    console.log('🎵 [REGISTER] Starting register new song process...');
+    
     if (!spotifyService.isAuthenticated()) {
       setError('Please connect to Spotify first from the Music Sync page');
+      console.log('🎵 [REGISTER] Not authenticated');
       return;
     }
 
@@ -97,12 +100,17 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     setError(null);
 
     try {
+      console.log('🎵 [REGISTER] Fetching current track metadata...');
       const currentTrack = await spotifyService.getCurrentTrackMetadata();
       
       if (!currentTrack) {
-        setError('No song is currently playing on Spotify. Please start playing a song and try again.');
+        const errorMsg = 'No song found in Spotify. Please make sure Spotify is open and has a song selected (playing or paused).';
+        setError(errorMsg);
+        console.log('🎵 [REGISTER] No current track found');
         return;
       }
+
+      console.log('🎵 [REGISTER] Found track:', currentTrack);
 
       // Update track info
       setTrackName(currentTrack.name);
@@ -113,6 +121,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
       // Try to fetch BPM automatically
       if (currentTrack.name && currentTrack.artist) {
         try {
+          console.log('🎵 [REGISTER] Fetching BPM...');
           const bpmData = await SpotifyBPMFetcher.fetchBPMForTrack(currentTrack.name, currentTrack.artist);
           if (bpmData.found) {
             setFetchedBPM(bpmData.spotify_tempo);
@@ -124,8 +133,8 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
       }
 
     } catch (error) {
-      console.error('Failed to register new song:', error);
-      setError(`Failed to get current song: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('🎵 [REGISTER] Failed to register new song:', error);
+      setError(`Failed to get current song: ${error instanceof Error ? error.message : 'Unknown error'}. Make sure Spotify is connected and open.`);
     } finally {
       setIsRegisteringSpotify(false);
     }
@@ -428,8 +437,8 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
                 <Button
                   onClick={registerNewSong}
                   disabled={isRegisteringSpotify || isRecording}
-                  variant="outline"
                   size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
                 >
                   {isRegisteringSpotify ? '🔄 Getting Song...' : '🎵 Register New Song'}
                 </Button>
