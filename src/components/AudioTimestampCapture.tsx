@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LocalTimestampStorage } from '@/lib/local-timestamp-storage';
 import { SpotifyBPMFetcher } from '@/lib/spotify-bpm-fetcher';
+import { spotifyService } from '@/lib/spotify';
 
 interface TimestampEvent {
   id: string;
@@ -52,6 +53,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   const [artistName, setArtistName] = useState('');
   const [fetchedBPM, setFetchedBPM] = useState<number | null>(null);
   const [isLoadingBPM, setIsLoadingBPM] = useState(false);
+  const [isRegisteringSpotify, setIsRegisteringSpotify] = useState(false);
   
   // Event capture state - Focus only on section changes (bar changes are too granular for manual capture)
   const [eventType, setEventType] = useState<'section_change' | 'custom'>('section_change');
@@ -83,6 +85,51 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
       setArtistName(trackInfo.artist);
     }
   }, [trackInfo]);
+
+  // Register new song from current Spotify playback
+  const registerNewSong = async () => {
+    if (!spotifyService.isAuthenticated()) {
+      setError('Please connect to Spotify first from the Music Sync page');
+      return;
+    }
+
+    setIsRegisteringSpotify(true);
+    setError(null);
+
+    try {
+      const currentTrack = await spotifyService.getCurrentTrackMetadata();
+      
+      if (!currentTrack) {
+        setError('No song is currently playing on Spotify. Please start playing a song and try again.');
+        return;
+      }
+
+      // Update track info
+      setTrackName(currentTrack.name);
+      setArtistName(currentTrack.artist);
+
+      console.log('🎵 Registered new song from Spotify:', currentTrack.name, 'by', currentTrack.artist);
+      
+      // Try to fetch BPM automatically
+      if (currentTrack.name && currentTrack.artist) {
+        try {
+          const bpmData = await SpotifyBPMFetcher.fetchBPMForTrack(currentTrack.name, currentTrack.artist);
+          if (bpmData.found) {
+            setFetchedBPM(bpmData.spotify_tempo);
+            console.log('✅ Also fetched BPM:', bpmData.spotify_tempo);
+          }
+        } catch (bmpError) {
+          console.warn('Failed to fetch BPM:', bmpError);
+        }
+      }
+
+    } catch (error) {
+      console.error('Failed to register new song:', error);
+      setError(`Failed to get current song: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsRegisteringSpotify(false);
+    }
+  };
 
   // Export functions
   const exportAsJSON = () => {
@@ -375,39 +422,55 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
         <CardContent>
           <div className="space-y-4">
             {/* Track Information - Auto-populated from Spotify */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="trackName">Track Name</Label>
-                <div className="relative">
-                  <Input
-                    id="trackName"
-                    value={trackName}
-                    onChange={(e) => setTrackName(e.target.value)}
-                    disabled={isRecording}
-                    className={trackInfo?.name ? "bg-green-50 border-green-200" : ""}
-                  />
-                  {trackInfo?.name && (
-                    <div className="absolute right-2 top-2 text-xs text-green-600">
-                      🎵 From Spotify
-                    </div>
-                  )}
-                </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Track Information</h3>
+                <Button
+                  onClick={registerNewSong}
+                  disabled={isRegisteringSpotify || isRecording}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isRegisteringSpotify ? '🔄 Getting Song...' : '🎵 Register New Song'}
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="artistName">Artist Name</Label>
-                <div className="relative">
-                  <Input
-                    id="artistName"
-                    value={artistName}
-                    onChange={(e) => setArtistName(e.target.value)}
-                    disabled={isRecording}
-                    className={trackInfo?.artist ? "bg-green-50 border-green-200" : ""}
-                  />
-                  {trackInfo?.artist && (
-                    <div className="absolute right-2 top-2 text-xs text-green-600">
-                      🎵 From Spotify
-                    </div>
-                  )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="trackName">Track Name</Label>
+                  <div className="relative">
+                    <Input
+                      id="trackName"
+                      value={trackName}
+                      onChange={(e) => setTrackName(e.target.value)}
+                      disabled={isRecording}
+                      placeholder="Enter track name or use 'Register New Song'"
+                      className={trackInfo?.name ? "bg-green-50 border-green-200" : ""}
+                    />
+                    {trackInfo?.name && (
+                      <div className="absolute right-2 top-2 text-xs text-green-600">
+                        🎵 From Spotify
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="artistName">Artist Name</Label>
+                  <div className="relative">
+                    <Input
+                      id="artistName"
+                      value={artistName}
+                      onChange={(e) => setArtistName(e.target.value)}
+                      disabled={isRecording}
+                      placeholder="Enter artist name or use 'Register New Song'"
+                      className={trackInfo?.artist ? "bg-green-50 border-green-200" : ""}
+                    />
+                    {trackInfo?.artist && (
+                      <div className="absolute right-2 top-2 text-xs text-green-600">
+                        🎵 From Spotify
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
