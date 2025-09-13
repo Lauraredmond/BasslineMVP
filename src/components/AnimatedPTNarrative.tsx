@@ -272,19 +272,16 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
             {/* Header with Workout Track */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <div className="bg-yellow-400 p-2 rounded-lg">
-                  <div className="text-black font-bold text-xs">LOGO HERE:</div>
-                  <img 
-                    src={basslineLogoYellow} 
-                    alt="Bassline Logo" 
-                    className="h-16 w-16"
-                    onError={(e) => {
-                      console.error('❌ HEADER LOGO FAILED TO LOAD:', basslineLogoYellow);
-                      e.currentTarget.outerHTML = '<div class="h-16 w-16 bg-red-500 flex items-center justify-center text-white font-bold">FAIL</div>';
-                    }}
-                    onLoad={() => console.log('✅ HEADER LOGO LOADED:', basslineLogoYellow)}
-                  />
-                </div>
+                <img 
+                  src={basslineLogoYellow} 
+                  alt="Bassline Logo" 
+                  className="h-16 w-16"
+                  onError={(e) => {
+                    console.error('❌ HEADER LOGO FAILED TO LOAD:', basslineLogoYellow);
+                    e.currentTarget.outerHTML = '<div class="h-16 w-16 bg-red-500 flex items-center justify-center text-white font-bold">FAIL</div>';
+                  }}
+                  onLoad={() => console.log('✅ HEADER LOGO LOADED:', basslineLogoYellow)}
+                />
                 <span className="text-lg uppercase tracking-wide font-bold opacity-90">
                   {workoutTrack.replace('_', ' ')}
                 </span>
