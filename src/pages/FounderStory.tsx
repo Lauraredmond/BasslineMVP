@@ -23,7 +23,7 @@ const FounderStory = () => {
         </Button>
         {/* Header */}
         <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold bg-energy-gradient bg-clip-text text-transparent [text-shadow:_0_1px_2px_rgba(0,0,0,0.5)]">
+            <h1 className="text-3xl font-bold text-cream mb-2">
             Founder Story
             </h1>
 
