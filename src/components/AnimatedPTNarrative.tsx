@@ -253,8 +253,8 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
       </div>
       
       {/* PT Narrative Display with Animations */}
-      <div className="">
-        <div className="relative">
+      <div className="w-full">
+        <div className="relative w-full">
           {/* Artistic Background with Yellow Logo */}
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl" />
           <div className="absolute top-6 right-6 opacity-50">
@@ -273,7 +273,7 @@ export const AnimatedPTNarrative: React.FC<PTNarrativeProps> = ({
           </div>
           
           {/* Main Content */}
-          <div className="relative bg-gradient-to-r from-primary/95 to-primary/80 text-white p-12 rounded-2xl border-4 border-primary/60 shadow-2xl overflow-hidden">
+          <div className="relative w-full bg-gradient-to-r from-primary/95 to-primary/80 text-white p-12 rounded-2xl border-4 border-primary/60 shadow-2xl overflow-hidden">
             {/* Header with Workout Track */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">

@@ -1,6 +1,9 @@
   - Goal of code in this folder is to build a web app that syncs music played separatey in my Spotify app to appropriate PT (Personal Trainer) fitness class narrative.
   - Current application constraints are described in the SECTIONAL_ANALYSIS_CONSTRAINTS.md file
   - Tech stack & key modules:TypeScript React frontend with Netlify serverless functions (Node.js runtime) and Supabase for database, authentication, and storage.
+  
+## Technical Constraints & API Limitations
+  - **Spotify Audio Features API**: The audio features endpoint that provided BPM/tempo data is deprecated and no longer available. Use alternative BPM sources (RapidAPI, manual entry, etc.) for tempo data collection.
   - There is a model comprising 3 tables in Supabase which maps song components (like intro,verse,chorus etc) to PT narratives that is core to how the application implements cueing of PT narratives for songs played in Spotify. This model relies on mapping tables called "streaming_vendor_attributes","workout_phases" and "instruction_narratives". It is the mapping across the joining of these tables that achieves the song component to PT narrative mapping. As the MVP develops, more attributes will need to feed into this model as it adapts to handle greater variety of data input structures. The mapping of workout_phases to songs should be established in the music-sync page of the application, when the user selects the playlist. BPM of an individual song, as indicated by the spotify_tempo field in the streaming_vendor_attributes table will determine the workout_phase mapped to a song when it matches the range indicated by the target_tempo_min and target_tempo_max fields in the workout_phases table. This, then, ultimately drives the PT narratives that will get mapped to the currently playing song when the song_component and workout_track fields can be matched on the SVA.section_type and workout_phases.workout_track fields of the joined SVA and WP tables.
   Developer spec of above model description: 
   Workout-phase ⇄ BPM ⇄ PT-narrative mapping (Bassline backend)
@@ -27,7 +30,8 @@ track_id -> workout_phase_id (via BPM range match)
 This mapping does not change during playback.
 BPM→phase: Use SVA.spotify_tempo (full-track BPM). Find the single WP row where:
 WP.target_tempo_min <= SVA.spotify_tempo <= WP.target_tempo_max
-If multiple match, choose the one with the narrowest range; if none match, fall back per “edge cases” below.
+If multiple match, choose the one with the narrowest range; if none match, fall back per "edge cases" below.
+**Note: Spotify's audio features endpoint is deprecated and no longer provides BPM data. Use alternative BPM sources (RapidAPI, etc.) for spotify_tempo field population.**
 Narrative selection at runtime: While the track plays, when you know the current section (e.g., chorus) choose the narrative by joining on (section_type, workout_track):
 (current_track’s locked workout_phase).workout_track
 + current_section_type
