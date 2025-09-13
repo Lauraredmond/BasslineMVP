@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import basslineLogoYellow from '../assets/bassline-logo-yellow.png';
+import basslineLogoYellow from '../../Logos/Bassline_Logo_2_Yellow_TRANSPARENT.png';
 
 interface PTNarrativeProps {
   currentSection?: {
