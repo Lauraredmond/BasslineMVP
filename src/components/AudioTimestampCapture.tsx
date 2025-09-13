@@ -48,8 +48,8 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   
   // Session state
   const [currentSession, setCurrentSession] = useState<CaptureSession | null>(null);
-  const [trackName, setTrackName] = useState(trackInfo?.name || 'The Pretender');
-  const [artistName, setArtistName] = useState(trackInfo?.artist || 'Foo Fighters');
+  const [trackName, setTrackName] = useState('');
+  const [artistName, setArtistName] = useState('');
   const [fetchedBPM, setFetchedBPM] = useState<number | null>(null);
   const [isLoadingBPM, setIsLoadingBPM] = useState(false);
   
@@ -73,6 +73,16 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   useEffect(() => {
     setLocalSessions(LocalTimestampStorage.getAllSessions());
   }, []);
+
+  // Update track and artist names when Spotify data is available
+  useEffect(() => {
+    if (trackInfo?.name) {
+      setTrackName(trackInfo.name);
+    }
+    if (trackInfo?.artist) {
+      setArtistName(trackInfo.artist);
+    }
+  }, [trackInfo]);
 
   // Export functions
   const exportAsJSON = () => {
@@ -364,25 +374,41 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Track Information */}
+            {/* Track Information - Auto-populated from Spotify */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="trackName">Track Name</Label>
-                <Input
-                  id="trackName"
-                  value={trackName}
-                  onChange={(e) => setTrackName(e.target.value)}
-                  disabled={isRecording}
-                />
+                <div className="relative">
+                  <Input
+                    id="trackName"
+                    value={trackName}
+                    onChange={(e) => setTrackName(e.target.value)}
+                    disabled={isRecording}
+                    className={trackInfo?.name ? "bg-green-50 border-green-200" : ""}
+                  />
+                  {trackInfo?.name && (
+                    <div className="absolute right-2 top-2 text-xs text-green-600">
+                      🎵 From Spotify
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <Label htmlFor="artistName">Artist Name</Label>
-                <Input
-                  id="artistName"
-                  value={artistName}
-                  onChange={(e) => setArtistName(e.target.value)}
-                  disabled={isRecording}
-                />
+                <div className="relative">
+                  <Input
+                    id="artistName"
+                    value={artistName}
+                    onChange={(e) => setArtistName(e.target.value)}
+                    disabled={isRecording}
+                    className={trackInfo?.artist ? "bg-green-50 border-green-200" : ""}
+                  />
+                  {trackInfo?.artist && (
+                    <div className="absolute right-2 top-2 text-xs text-green-600">
+                      🎵 From Spotify
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
