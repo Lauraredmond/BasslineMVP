@@ -129,7 +129,11 @@ Optional (when relevant):
 - Highlight risks if my request could impact other modules.
 - Suggest improvements separately, never bundled into the requested change.
 
-Reminder to LR for session prompt:Follow the Session Rules in primer.md. Task:XXXX
+Reminder to **LR for session prompt:Follow the Session Rules in primer.md. Please read the primer.md file as a guide to how to operate and help me    │
+│   with coding tasks. Please do only as I instruct and ask questions when     │
+│   unsure. Don't implement any spoofed or hard-coded behaviour which may      │
+│   make it appear as though the application is working as requested when it   │
+│   is not. 
 
 # Spotify API Polling Strategy
 

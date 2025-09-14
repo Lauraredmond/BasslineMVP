@@ -257,9 +257,7 @@ const MusicSync = () => {
   });
   
   // Research lab integration
-  const [showResearchLab, setShowResearchLab] = useState(false);
   const [isAnalysisLogging, setIsAnalysisLogging] = useState(false);
-  const [enhancedAnalysisEnabled, setEnhancedAnalysisEnabled] = useState(true);
   
   // Removed Web Audio Analysis Logger - eliminated Web Audio capture
 
@@ -1596,33 +1594,6 @@ Check the console for detailed error information.`);
       
       <div className="flex-1 px-4">
 
-        {/* Enhanced Analysis Notification */}
-        {enhancedAnalysisEnabled && (
-          <div className="mx-auto max-w-4xl mb-6">
-            <Card className="border-orange-200 bg-orange-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    <div>
-                      <p className="text-orange-800 font-medium text-sm">
-                        ⚠️ Enhanced Analysis Temporarily Disabled
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => setEnhancedAnalysisEnabled(false)}
-                    variant="ghost"
-                    size="sm"
-                    className="text-orange-600 hover:text-orange-800"
-                  >
-                    ×
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         <div className="relative text-center mb-8">
           <div className="relative w-full h-48 rounded-xl overflow-hidden mb-6 shadow-glow">
@@ -2424,45 +2395,6 @@ Check the console for detailed error information.`);
       
       {/* Eliminated Web Audio Intelligence Status */}
       
-      {/* Research Lab Toggle */}
-      {isAnalysisLogging && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <Button
-            onClick={() => setShowResearchLab(!showResearchLab)}
-            className={showResearchLab 
-              ? "bg-red-600 hover:bg-red-700 text-white shadow-lg" 
-              : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
-            }
-            size="sm"
-          >
-            {showResearchLab ? '🔬 Hide Lab' : '🔬 Research Lab'}
-          </Button>
-        </div>
-      )}
-      
-      {/* Research Lab Overlay */}
-      {showResearchLab && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40" onClick={() => setShowResearchLab(false)}>
-          <div className="fixed inset-4 bg-premium-texture rounded-lg shadow-2xl z-50 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-between p-4 border-b border-cream/20">
-                <h2 className="text-xl font-bold text-cream">Live Research Lab</h2>
-                <Button
-                  onClick={() => setShowResearchLab(false)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-cream hover:bg-cream/20"
-                >
-                  ✕
-                </Button>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                {/* Analysis viewer removed per user request */}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Playback Sync Debug Overlay (VITE_DEBUG=1 only) */}
       {import.meta.env.VITE_DEBUG === '1' && (
