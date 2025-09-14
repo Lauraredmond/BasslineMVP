@@ -746,8 +746,8 @@ export const RealtimeSectionDisplay: React.FC<RealtimeSectionDisplayProps> = ({
           {currentSection.dataSource === 'streaming_vendor_attributes' ? 
             '📊 Manual Section Data' : 
             currentSection.confidence ? 
-            `🧠 AI Prediction (${Math.round((currentSection.confidence || 0.8) * 100)}%)` : 
-            '📈 Analysis Data'
+            `🧠 AI Prediction (${Math.round((currentSection.confidence || 0.8) * 100)}%)` : null
+           /* '📈 Analysis Data'*/
           }
         </div>
         
