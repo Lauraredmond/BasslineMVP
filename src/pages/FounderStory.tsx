@@ -70,7 +70,7 @@ const FounderStory = () => {
 
           <div className="bg-card-texture rounded-xl p-6 shadow-glow animate-fade-in hover-scale">
             <h3 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-energy-gradient" />
+              
               A quick timeline of how fitness became fun — and accessible
             </h3>
             <div className="space-y-3">
