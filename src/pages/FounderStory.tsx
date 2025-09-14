@@ -58,7 +58,7 @@ const FounderStory = () => {
               <span className="relative inline-block mx-1">
                 <span className="bg-energy-gradient bg-clip-text text-transparent font-semibold">I signed up for the college gym and tried a cardio class.</span>
                 <div className="absolute -top-1 -right-1">
-                  <Zap className="w-3 h-3 text-energy-gradient " />
+                  /*<Zap className="w-3 h-3 text-energy-gradient " />*/
                 </div>
               </span>
             </p>
