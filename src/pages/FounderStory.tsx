@@ -57,9 +57,7 @@ const FounderStory = () => {
               Cut to age 19, when I had a rude awakening — I realised my fitness was starting to dwindle. I decided to do the unthinkable and join an institution I felt I had no business being in: 
               <span className="relative inline-block mx-1">
                 <span className="bg-energy-gradient bg-clip-text text-transparent font-semibold">I signed up for the college gym and tried a cardio class.</span>
-                <div className="absolute -top-1 -right-1">
-                  /*<Zap className="w-3 h-3 text-energy-gradient " />*/
-                </div>
+           
               </span>
             </p>
             <p className="text-foreground/80 leading-relaxed mb-4">
