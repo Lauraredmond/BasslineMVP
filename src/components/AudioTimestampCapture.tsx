@@ -406,7 +406,10 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
 
   // Finish rhythm capture and create event
   const finishRhythmCapture = (taps: number[]) => {
-    if (!currentSession) return;
+    if (!currentSession) {
+      console.error('❌ Cannot finish rhythm capture: No current session');
+      return;
+    }
     
     const eventId = crypto.randomUUID();
     const avgTimestamp = taps.reduce((sum, tap) => sum + tap, 0) / taps.length;
@@ -419,12 +422,28 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
       notes: notes || undefined
     };
     
+    console.log('🥁 [RHYTHM DEBUG] Creating rhythm event:', {
+      eventId,
+      avgTimestamp,
+      tapCount: taps.length,
+      taps,
+      eventType: newEvent.eventType,
+      rhythmTaps: newEvent.rhythmTaps
+    });
+    
     // Update session
     const updatedSession = {
       ...currentSession,
       events: [...currentSession.events, newEvent]
     };
     setCurrentSession(updatedSession);
+    
+    console.log('🥁 [RHYTHM DEBUG] Session updated with rhythm event:', {
+      sessionId: currentSession.id,
+      trackName: currentSession.trackName,
+      totalEvents: updatedSession.events.length,
+      latestEvent: newEvent
+    });
     
     // Clear taps and notes
     setRhythmTaps([]);
@@ -506,6 +525,20 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
           capture_session_id: currentSession.id
         }))
       };
+      
+      console.log('💾 [SAVE DEBUG] Prepared session data for save:', {
+        trackName: sessionData.trackName,
+        artistName: sessionData.artistName,
+        sessionId: sessionData.sessionId,
+        eventCount: sessionData.events.length,
+        events: sessionData.events.map(e => ({
+          type: e.event_type,
+          timestamp: e.timestamp_ms,
+          rhythm_taps: e.rhythm_taps,
+          bar_start: e.bar_start_timestamp,
+          loudness: e.loudness_timestamp
+        }))
+      });
       
       // Try to save to database with multiple endpoint attempts
       const urls = [
