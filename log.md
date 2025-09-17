@@ -578,3 +578,71 @@ Updated Audio Timestamp Capture Tool page to replace dropdown menu with buttons 
 ✅ **Build successful** - No compilation errors  
 ✅ **Backend compatibility confirmed** - save-audio-timestamps.js processes button data identically to dropdown data
 ✅ **Deployed to GitHub** - commit c50f141 pushed successfully
+
+## 2025-09-17 22:58:09 - Enhanced Audio Timestamp Capture: Bar Start, Rhythm Taps & Loudness
+
+### Task Completed
+Added new capture buttons for bar start, rhythm taps (up to 8 timestamps), and loudness detection to Audio Timestamp Capture Tool, with complete backend and database schema support.
+
+### Changes Made
+
+#### Frontend TypeScript Enhancements:
+- **src/components/AudioTimestampCapture.tsx** - Added comprehensive new capture functionality
+  - Extended TimestampEvent interface with barStartTimestamp, rhythmTaps[], loudnessTimestamp fields
+  - Added 3 new event types: 'bar_start', 'rhythm_taps', 'loudness' to existing 'section_change', 'custom'
+  - Updated tab navigation from 2 to 5 tabs: Section, Bar Start, Rhythm, Loudness, Custom
+  - Implemented captureBarStart() function with orange-styled button
+  - Built rhythm tap system with 8-tap limit, clear functionality, and auto-completion
+  - Added captureLoudness() function with red-styled button for volume change detection
+  - Enhanced UI with tap counting (X/8), rhythm sequence display, and finish option for partial captures
+
+#### Backend Integration:
+- **netlify/functions/save-audio-timestamps.js** - Updated to handle new data types
+  - Added bar_start_timestamp, rhythm_taps, loudness_timestamp field mapping
+  - Maintains existing Supabase write functionality with new column support
+  - Arrays stored as FLOAT[] in PostgreSQL for rhythm tap sequences
+
+#### Database Schema:
+- **database-updates/add-audio-timestamp-columns.sql** - Complete SQL migration script
+  - bar_start_timestamp FLOAT NULL - Single timestamp for bar/measure start detection
+  - rhythm_taps FLOAT[] NULL - Array of up to 8 rhythm tap timestamps  
+  - loudness_timestamp FLOAT NULL - Single timestamp for volume/loudness changes
+  - Added conditional column creation with existence checks (idempotent)
+  - Performance index for new event types: idx_sva_audio_timestamp_events
+  - Complete documentation and sample queries included
+
+### Technical Implementation Details
+
+#### User Interface Flow:
+1. **Bar Start**: Single orange button to capture measure/bar beginning timestamps
+2. **Rhythm Taps**: Purple button with 8-tap limit, counter display, auto-finish, and manual finish option
+3. **Loudness**: Red button for capturing significant volume changes
+4. **Data Flow**: All new capture types → same session → same backend save function → enhanced SVA table
+
+#### Data Structure:
+- **Frontend**: TypeScript interfaces extended for new event types
+- **Backend**: Netlify function maps new fields to database columns
+- **Database**: PostgreSQL FLOAT and FLOAT[] types for timestamp storage
+
+### User Experience Features
+- **Visual Feedback**: Color-coded buttons (orange, purple, red) for different capture types
+- **Real-time Display**: Tap counter (X/8), timestamp formatting, captured sequence preview
+- **Flexible Completion**: Auto-finish at 8 taps or manual finish with fewer taps
+- **Clear Controls**: Reset/clear functionality for rhythm captures
+- **Consistent UX**: Same recording session workflow, notes support, save-to-database integration
+
+### Files Modified/Created
+- **Frontend TypeScript**: 1 file updated (AudioTimestampCapture.tsx)  
+- **Backend Functions**: 1 file updated (save-audio-timestamps.js)
+- **Database Schema**: 1 new migration SQL file created
+- **Total**: 3 files modified/created
+
+### Verification
+✅ **Build successful** - No TypeScript compilation errors
+✅ **Enhanced data capture** - 3 new timestamp capture methods operational  
+✅ **Backend compatibility** - All new data types flow to Supabase correctly
+✅ **Database ready** - Migration SQL provided for FLOAT and FLOAT[] columns
+✅ **Deployed to GitHub** - commit df4d5c6 pushed successfully
+
+### Next Steps
+Run the database migration SQL to add the new columns to the streaming_vendor_attributes table in production Supabase instance.

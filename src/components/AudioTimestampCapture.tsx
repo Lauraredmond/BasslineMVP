@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LocalTimestampStorage } from '@/lib/local-timestamp-storage';
 import { SpotifyBPMFetcher } from '@/lib/spotify-bpm-fetcher';
 import { spotifyService } from '@/lib/spotify';
@@ -63,7 +62,6 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   const [isRegisteringSpotify, setIsRegisteringSpotify] = useState(false);
   
   // Event capture state
-  const [eventType, setEventType] = useState<'section_change' | 'bar_start' | 'rhythm_taps' | 'loudness' | 'custom'>('section_change');
   const [sectionType, setSectionType] = useState('');
   const [sectionNumber, setSectionNumber] = useState(1);
   const [energyLevel, setEnergyLevel] = useState(50);
@@ -303,7 +301,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     }
   };
 
-  // Capture timestamp event
+  // Capture timestamp event for sections
   const captureTimestamp = () => {
     if (!isRecording || !recordingStartTime || !currentSession) {
       setError('Recording must be active to capture timestamps');
@@ -316,17 +314,13 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     const newEvent: TimestampEvent = {
       id: eventId,
       timestamp,
-      eventType,
+      eventType: 'section_change',
+      sectionType: sectionType,
+      sectionNumber: sectionNumber,
+      energyLevel: energyLevel,
+      intensityLevel: intensityLevel,
       notes: notes || undefined
     };
-    
-    // Add type-specific data
-    if (eventType === 'section_change') {
-      newEvent.sectionType = sectionType;
-      newEvent.sectionNumber = sectionNumber;
-      newEvent.energyLevel = energyLevel;
-      newEvent.intensityLevel = intensityLevel;
-    }
     
     // Update session
     const updatedSession = {
@@ -335,18 +329,15 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     };
     setCurrentSession(updatedSession);
     
-    // Auto-increment counters
-    if (eventType === 'section_change' && sectionType) {
-      // Keep same section type, increment number
-      setSectionNumber(prev => prev + 1);
-    }
+    // Auto-increment section number
+    setSectionNumber(prev => prev + 1);
     
     // Clear notes
     setNotes('');
     
-    console.log('⏰ Timestamp captured:', {
+    console.log('⏰ Section timestamp captured:', {
       time: formatTime(timestamp),
-      type: eventType,
+      section: sectionType,
       data: newEvent
     });
   };
@@ -710,155 +701,137 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
 
             {/* Timestamp Capture */}
             {isRecording && (
-              <Tabs value={eventType} onValueChange={(value) => setEventType(value as any)}>
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="section_change">Section</TabsTrigger>
-                  <TabsTrigger value="bar_start">Bar Start</TabsTrigger>
-                  <TabsTrigger value="rhythm_taps">Rhythm</TabsTrigger>
-                  <TabsTrigger value="loudness">Loudness</TabsTrigger>
-                  <TabsTrigger value="custom">Custom</TabsTrigger>
-                </TabsList>
+              <div className="space-y-6">
+                <div className="space-y-4">
+                  {/* Section Type Selection */}
+                  <div>
+                    <Label className="text-base font-semibold">Section Types</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {['intro', 'verse', 'pre-chorus', 'chorus', 'bridge', 'breakdown', 'outro'].map((section) => (
+                        <Button
+                          key={section}
+                          type="button"
+                          variant={sectionType === section ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSectionType(section)}
+                          className={`text-sm ${sectionType === section ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-50'}`}
+                        >
+                          {section === 'pre-chorus' ? 'Pre-Chorus' : section.charAt(0).toUpperCase() + section.slice(1)}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-                <TabsContent value="section_change" className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <Label>Section Type</Label>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        {['intro', 'verse', 'pre-chorus', 'chorus', 'bridge', 'breakdown', 'outro'].map((section) => (
-                          <Button
-                            key={section}
-                            type="button"
-                            variant={sectionType === section ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSectionType(section)}
-                            className={`text-sm ${sectionType === section ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-50'}`}
-                          >
-                            {section === 'pre-chorus' ? 'Pre-Chorus' : section.charAt(0).toUpperCase() + section.slice(1)}
-                          </Button>
-                        ))}
+                  {/* Section Details for Selected Section */}
+                  {sectionType && (
+                    <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50 rounded-lg">
+                      <div>
+                        <Label>Section Number</Label>
+                        <Input
+                          type="number"
+                          value={sectionNumber}
+                          onChange={(e) => setSectionNumber(Number(e.target.value))}
+                          min="1"
+                          size={3}
+                        />
+                      </div>
+                      <div>
+                        <Label>Energy Level (0-100)</Label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={energyLevel}
+                          onChange={(e) => setEnergyLevel(Number(e.target.value))}
+                          className="slider"
+                        />
+                        <span className="text-sm text-gray-600">{energyLevel}</span>
                       </div>
                     </div>
-                    <div>
-                      <Label>Section Number</Label>
-                      <Input
-                        type="number"
-                        value={sectionNumber}
-                        onChange={(e) => setSectionNumber(Number(e.target.value))}
-                        min="1"
-                      />
-                    </div>
-                    <div>
-                      <Label>Energy Level (0-100)</Label>
-                      <Input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={energyLevel}
-                        onChange={(e) => setEnergyLevel(Number(e.target.value))}
-                        className="slider"
-                      />
-                      <span className="text-sm text-gray-600">{energyLevel}</span>
-                    </div>
-                  </div>
-                </TabsContent>
+                  )}
 
-                <TabsContent value="bar_start" className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Click the button below when you hear the start of a new bar/measure
-                    </p>
-                    <Button 
-                      onClick={() => captureBarStart()}
-                      className="bg-orange-500 hover:bg-orange-600 text-white"
-                      size="lg"
-                    >
-                      🎵 Capture Bar Start ({formatTime(currentTime)})
-                    </Button>
-                  </div>
-                </TabsContent>
+                  {/* All Capture Buttons */}
+                  <div>
+                    <Label className="text-base font-semibold">Capture Timestamps</Label>
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      {/* Section Capture - only show if section selected */}
+                      {sectionType && (
+                        <Button 
+                          onClick={() => captureTimestamp()}
+                          className="bg-blue-500 hover:bg-blue-600 text-white"
+                          size="lg"
+                        >
+                          🎵 Capture {sectionType.charAt(0).toUpperCase() + sectionType.slice(1)}
+                        </Button>
+                      )}
 
-                <TabsContent value="rhythm_taps" className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Tap the rhythm of the current song (max 8 taps)
-                      </p>
-                      <p className="text-xs text-gray-500 mb-4">
-                        Current taps: {rhythmTaps.length}/8
-                      </p>
-                    </div>
-                    
-                    <div className="flex gap-2 justify-center flex-wrap">
+                      {/* Bar Start */}
+                      <Button 
+                        onClick={() => captureBarStart()}
+                        className="bg-orange-500 hover:bg-orange-600 text-white"
+                        size="lg"
+                      >
+                        🎵 Bar Start
+                      </Button>
+
+                      {/* Rhythm Tap */}
                       <Button 
                         onClick={() => captureRhythmTap()}
                         disabled={rhythmTaps.length >= 8}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
                         size="lg"
                       >
-                        🥁 Tap Rhythm ({formatTime(currentTime)})
+                        🥁 Rhythm Tap ({rhythmTaps.length}/8)
                       </Button>
-                      
-                      {rhythmTaps.length > 0 && rhythmTaps.length < 8 && (
-                        <Button 
-                          onClick={() => finishRhythmCapture(rhythmTaps)}
-                          className="bg-green-500 hover:bg-green-600 text-white"
-                          size="lg"
-                        >
-                          ✅ Finish Rhythm ({rhythmTaps.length} taps)
-                        </Button>
-                      )}
-                      
+
+                      {/* Loudness */}
                       <Button 
-                        onClick={() => setRhythmTaps([])}
-                        variant="outline"
+                        onClick={() => captureLoudness()}
+                        className="bg-red-500 hover:bg-red-600 text-white"
                         size="lg"
                       >
-                        🔄 Clear Taps
+                        🔊 Loudness
                       </Button>
                     </div>
-                    
-                    {rhythmTaps.length > 0 && (
-                      <div className="bg-gray-50 p-3 rounded">
-                        <p className="text-sm font-medium mb-2">Captured rhythm taps:</p>
+                  </div>
+
+                  {/* Rhythm Tap Controls */}
+                  {rhythmTaps.length > 0 && (
+                    <div className="p-3 bg-purple-50 rounded-lg space-y-3">
+                      <div className="flex gap-2 justify-center">
+                        {rhythmTaps.length > 0 && rhythmTaps.length < 8 && (
+                          <Button 
+                            onClick={() => finishRhythmCapture(rhythmTaps)}
+                            className="bg-green-500 hover:bg-green-600 text-white"
+                            size="sm"
+                          >
+                            ✅ Finish Rhythm ({rhythmTaps.length} taps)
+                          </Button>
+                        )}
+                        
+                        <Button 
+                          onClick={() => setRhythmTaps([])}
+                          variant="outline"
+                          size="sm"
+                        >
+                          🔄 Clear Taps
+                        </Button>
+                      </div>
+                      
+                      <div className="bg-white p-2 rounded">
+                        <p className="text-sm font-medium mb-1">Captured rhythm taps:</p>
                         <div className="text-xs text-gray-600 space-y-1">
                           {rhythmTaps.map((tap, index) => (
-                            <div key={index}>
-                              Tap {index + 1}: {formatTime(tap)}
-                            </div>
+                            <span key={index} className="inline-block mr-3">
+                              {index + 1}: {formatTime(tap)}
+                            </span>
                           ))}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </TabsContent>
+                    </div>
+                  )}
 
-                <TabsContent value="loudness" className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Click when you notice a significant change in loudness/volume
-                    </p>
-                    <Button 
-                      onClick={() => captureLoudness()}
-                      className="bg-red-500 hover:bg-red-600 text-white"
-                      size="lg"
-                    >
-                      🔊 Capture Loudness ({formatTime(currentTime)})
-                    </Button>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="custom" className="space-y-4">
-                  <div>
-                    <Label>Custom Event Notes</Label>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Describe this timestamp event..."
-                    />
-                  </div>
-                </TabsContent>
-
-                <div className="space-y-4">
+                  {/* Notes */}
                   <div>
                     <Label>Notes (Optional)</Label>
                     <Input
@@ -867,16 +840,8 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
                       placeholder="Add notes about this timestamp..."
                     />
                   </div>
-                  
-                  <Button 
-                    onClick={captureTimestamp}
-                    className="w-full bg-blue-500 hover:bg-blue-600"
-                    size="lg"
-                  >
-                    ⏰ Capture Timestamp ({formatTime(currentTime)})
-                  </Button>
                 </div>
-              </Tabs>
+              </div>
             )}
 
             {/* Session Summary */}
