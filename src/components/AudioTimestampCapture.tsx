@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -582,20 +581,20 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <Label>Section Type</Label>
-                      <Select value={sectionType} onValueChange={setSectionType}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select section" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="intro">Intro</SelectItem>
-                          <SelectItem value="verse">Verse</SelectItem>
-                          <SelectItem value="pre-chorus">Pre-Chorus</SelectItem>
-                          <SelectItem value="chorus">Chorus</SelectItem>
-                          <SelectItem value="bridge">Bridge</SelectItem>
-                          <SelectItem value="breakdown">Breakdown</SelectItem>
-                          <SelectItem value="outro">Outro</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {['intro', 'verse', 'pre-chorus', 'chorus', 'bridge', 'breakdown', 'outro'].map((section) => (
+                          <Button
+                            key={section}
+                            type="button"
+                            variant={sectionType === section ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSectionType(section)}
+                            className={`text-sm ${sectionType === section ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                          >
+                            {section === 'pre-chorus' ? 'Pre-Chorus' : section.charAt(0).toUpperCase() + section.slice(1)}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <Label>Section Number</Label>
@@ -705,40 +704,6 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
               </Card>
             )}
 
-            {/* Local Storage Management */}
-            {localSessions.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Saved Sessions ({localSessions.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="text-sm text-gray-600">
-                      You have {LocalTimestampStorage.getStorageInfo().totalEvents} timestamps saved locally.
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button onClick={exportAsJSON} variant="outline">
-                        📥 Export JSON
-                      </Button>
-                      <Button onClick={exportAsCSV} variant="outline">
-                        📊 Export CSV
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {localSessions.slice(-3).map((session) => (
-                        <div key={session.id} className="p-2 bg-gray-50 rounded text-sm">
-                          <strong>{session.trackName}</strong> by {session.artistName}
-                          <br />
-                          {session.events.length} timestamps • {new Date(session.createdAt).toLocaleString()}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Error Display */}
             {error && (

@@ -1616,7 +1616,7 @@ Check the console for detailed error information.`);
         <div className="mb-8">
           <div className="bg-card-texture rounded-xl p-6 shadow-card border border-cream/20">
             <h3 className="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
-              🎯 Your Selected Workout
+              Your Selected Workout
             </h3>
             
             <div className="space-y-2">

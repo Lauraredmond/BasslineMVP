@@ -108,7 +108,7 @@ const FounderStory = () => {
             <div className="absolute inset-0 bg-energy-gradient/5 opacity-50"></div>
             <div className="relative z-10">
               <p className="text-foreground/80 leading-relaxed">
-                Bassline isn't just powered by playlists — it's powered by people who understand the psychology of fitness. Our network of personal trainers isn't just skilled in movement — they're trained to support motivation, build confidence, and help people overcome the emotional blocks that traditional fitness often ignores.
+                Bassline isn't just powered by playlists. It's powered by people who understand the psychology of fitness. Our network of personal trainers isn't just skilled in movement - they're trained to support motivation, build confidence, and help people overcome the emotional blocks that traditional fitness often ignores.
               </p>
             </div>
           </div>
