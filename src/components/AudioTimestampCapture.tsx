@@ -13,12 +13,15 @@ import { spotifyService } from '@/lib/spotify';
 interface TimestampEvent {
   id: string;
   timestamp: number;
-  eventType: 'section_change' | 'custom';
+  eventType: 'section_change' | 'bar_start' | 'rhythm_taps' | 'loudness' | 'custom';
   sectionType?: string;
   sectionNumber?: number;
   energyLevel?: number;
   intensityLevel?: number;
   notes?: string;
+  barStartTimestamp?: number;
+  rhythmTaps?: number[];
+  loudnessTimestamp?: number;
 }
 
 interface CaptureSession {
@@ -59,13 +62,17 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   const [isLoadingBPM, setIsLoadingBPM] = useState(false);
   const [isRegisteringSpotify, setIsRegisteringSpotify] = useState(false);
   
-  // Event capture state - Focus only on section changes (bar changes are too granular for manual capture)
-  const [eventType, setEventType] = useState<'section_change' | 'custom'>('section_change');
+  // Event capture state
+  const [eventType, setEventType] = useState<'section_change' | 'bar_start' | 'rhythm_taps' | 'loudness' | 'custom'>('section_change');
   const [sectionType, setSectionType] = useState('');
   const [sectionNumber, setSectionNumber] = useState(1);
   const [energyLevel, setEnergyLevel] = useState(50);
   const [intensityLevel, setIntensityLevel] = useState(50);
   const [notes, setNotes] = useState('');
+  
+  // New event capture state
+  const [rhythmTaps, setRhythmTaps] = useState<number[]>([]);
+  const [isCapturingRhythm, setIsCapturingRhythm] = useState(false);
   
   // UI state
   const [error, setError] = useState<string | null>(null);
@@ -344,6 +351,135 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     });
   };
 
+  // Capture bar start
+  const captureBarStart = () => {
+    if (!isRecording || !recordingStartTime || !currentSession) {
+      setError('Recording must be active to capture timestamps');
+      return;
+    }
+    
+    const timestamp = Date.now() - recordingStartTime;
+    const eventId = crypto.randomUUID();
+    
+    const newEvent: TimestampEvent = {
+      id: eventId,
+      timestamp,
+      eventType: 'bar_start',
+      barStartTimestamp: timestamp,
+      notes: notes || undefined
+    };
+    
+    // Update session
+    const updatedSession = {
+      ...currentSession,
+      events: [...currentSession.events, newEvent]
+    };
+    setCurrentSession(updatedSession);
+    
+    // Clear notes
+    setNotes('');
+    
+    console.log('🎵 Bar start captured:', {
+      time: formatTime(timestamp),
+      data: newEvent
+    });
+  };
+
+  // Capture rhythm tap
+  const captureRhythmTap = () => {
+    if (!isRecording || !recordingStartTime) {
+      setError('Recording must be active to capture rhythm taps');
+      return;
+    }
+    
+    if (rhythmTaps.length >= 8) {
+      setError('Maximum 8 rhythm taps allowed');
+      return;
+    }
+    
+    const timestamp = Date.now() - recordingStartTime;
+    const newTaps = [...rhythmTaps, timestamp];
+    setRhythmTaps(newTaps);
+    
+    console.log('🥁 Rhythm tap captured:', {
+      tapNumber: newTaps.length,
+      time: formatTime(timestamp),
+      allTaps: newTaps.map(t => formatTime(t))
+    });
+    
+    // If we have 8 taps, automatically create the event
+    if (newTaps.length === 8) {
+      finishRhythmCapture(newTaps);
+    }
+  };
+
+  // Finish rhythm capture and create event
+  const finishRhythmCapture = (taps: number[]) => {
+    if (!currentSession) return;
+    
+    const eventId = crypto.randomUUID();
+    const avgTimestamp = taps.reduce((sum, tap) => sum + tap, 0) / taps.length;
+    
+    const newEvent: TimestampEvent = {
+      id: eventId,
+      timestamp: avgTimestamp,
+      eventType: 'rhythm_taps',
+      rhythmTaps: taps,
+      notes: notes || undefined
+    };
+    
+    // Update session
+    const updatedSession = {
+      ...currentSession,
+      events: [...currentSession.events, newEvent]
+    };
+    setCurrentSession(updatedSession);
+    
+    // Clear taps and notes
+    setRhythmTaps([]);
+    setNotes('');
+    
+    console.log('🎵 Rhythm sequence completed:', {
+      taps: taps.length,
+      sequence: taps.map(t => formatTime(t)),
+      data: newEvent
+    });
+  };
+
+  // Capture loudness change
+  const captureLoudness = () => {
+    if (!isRecording || !recordingStartTime || !currentSession) {
+      setError('Recording must be active to capture timestamps');
+      return;
+    }
+    
+    const timestamp = Date.now() - recordingStartTime;
+    const eventId = crypto.randomUUID();
+    
+    const newEvent: TimestampEvent = {
+      id: eventId,
+      timestamp,
+      eventType: 'loudness',
+      loudnessTimestamp: timestamp,
+      notes: notes || undefined
+    };
+    
+    // Update session
+    const updatedSession = {
+      ...currentSession,
+      events: [...currentSession.events, newEvent]
+    };
+    setCurrentSession(updatedSession);
+    
+    // Clear notes
+    setNotes('');
+    
+    console.log('🔊 Loudness change captured:', {
+      time: formatTime(timestamp),
+      data: newEvent
+    });
+  };
+
   // Save session (with fallback to local storage)
   const saveSession = async () => {
     if (!currentSession) {
@@ -372,6 +508,9 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
           energy_level: event.energyLevel,
           intensity_level: event.intensityLevel,
           notes: event.notes,
+          bar_start_timestamp: event.barStartTimestamp,
+          rhythm_taps: event.rhythmTaps,
+          loudness_timestamp: event.loudnessTimestamp,
           captured_by: 'manual_audio_capture',
           capture_session_id: currentSession.id
         }))
@@ -572,9 +711,12 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
             {/* Timestamp Capture */}
             {isRecording && (
               <Tabs value={eventType} onValueChange={(value) => setEventType(value as any)}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="section_change">Section Change</TabsTrigger>
-                  <TabsTrigger value="custom">Custom Event</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="section_change">Section</TabsTrigger>
+                  <TabsTrigger value="bar_start">Bar Start</TabsTrigger>
+                  <TabsTrigger value="rhythm_taps">Rhythm</TabsTrigger>
+                  <TabsTrigger value="loudness">Loudness</TabsTrigger>
+                  <TabsTrigger value="custom">Custom</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="section_change" className="space-y-4">
@@ -617,6 +759,91 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
                       />
                       <span className="text-sm text-gray-600">{energyLevel}</span>
                     </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="bar_start" className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Click the button below when you hear the start of a new bar/measure
+                    </p>
+                    <Button 
+                      onClick={() => captureBarStart()}
+                      className="bg-orange-500 hover:bg-orange-600 text-white"
+                      size="lg"
+                    >
+                      🎵 Capture Bar Start ({formatTime(currentTime)})
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="rhythm_taps" className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-600 mb-2">
+                        Tap the rhythm of the current song (max 8 taps)
+                      </p>
+                      <p className="text-xs text-gray-500 mb-4">
+                        Current taps: {rhythmTaps.length}/8
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      <Button 
+                        onClick={() => captureRhythmTap()}
+                        disabled={rhythmTaps.length >= 8}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                        size="lg"
+                      >
+                        🥁 Tap Rhythm ({formatTime(currentTime)})
+                      </Button>
+                      
+                      {rhythmTaps.length > 0 && rhythmTaps.length < 8 && (
+                        <Button 
+                          onClick={() => finishRhythmCapture(rhythmTaps)}
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                          size="lg"
+                        >
+                          ✅ Finish Rhythm ({rhythmTaps.length} taps)
+                        </Button>
+                      )}
+                      
+                      <Button 
+                        onClick={() => setRhythmTaps([])}
+                        variant="outline"
+                        size="lg"
+                      >
+                        🔄 Clear Taps
+                      </Button>
+                    </div>
+                    
+                    {rhythmTaps.length > 0 && (
+                      <div className="bg-gray-50 p-3 rounded">
+                        <p className="text-sm font-medium mb-2">Captured rhythm taps:</p>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          {rhythmTaps.map((tap, index) => (
+                            <div key={index}>
+                              Tap {index + 1}: {formatTime(tap)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="loudness" className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Click when you notice a significant change in loudness/volume
+                    </p>
+                    <Button 
+                      onClick={() => captureLoudness()}
+                      className="bg-red-500 hover:bg-red-600 text-white"
+                      size="lg"
+                    >
+                      🔊 Capture Loudness ({formatTime(currentTime)})
+                    </Button>
                   </div>
                 </TabsContent>
 
