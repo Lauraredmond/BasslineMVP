@@ -540,3 +540,41 @@ Implemented the exact workout phase mapping model specified in primer.md for map
 
 ### Priority
 🚨 **CRITICAL** - Apply immediately to production database to prevent data exposure
+
+## 2025-09-17 22:42:47 - Audio Timestamp Capture UI Enhancement
+
+### Task Completed
+Updated Audio Timestamp Capture Tool page to replace dropdown menu with buttons for section type selection and removed unnecessary "Saved Sessions" box.
+
+### Changes Made
+
+#### UI Component Updates:
+- **src/components/AudioTimestampCapture.tsx** - Updated section type selection interface
+  - Replaced dropdown Select component with button grid for section types
+  - Added 7 section type buttons: intro, verse, pre-chorus, chorus, bridge, breakdown, outro
+  - Implemented active state styling with blue background for selected button
+  - Removed unused Select component import
+  - Removed entire "Saved Sessions" card section (lines 708-741)
+  - Maintained exact same data flow to backend - no changes to Supabase write functionality
+
+### Technical Details (Frontend TypeScript)
+- **Button Implementation**: Used existing Button component with variant="default" for active state
+- **State Management**: Unchanged - sectionType state variable works identically with button clicks
+- **Backend Integration**: ✅ Verified netlify/functions/save-audio-timestamps.js handles section_type field identically
+- **Data Flow**: User clicks button → setSectionType() → captureTimestamp() → same backend write to streaming_vendor_attributes table
+
+### User Experience Improvements
+- **Faster Selection**: Direct button clicks vs dropdown navigation
+- **Visual Clarity**: Clear active state shows currently selected section type  
+- **Reduced Clutter**: Removed unnecessary saved sessions display as requested
+- **Consistent Behavior**: Capture timestamp and save to database functions unchanged
+
+### Files Modified
+- **Frontend TypeScript**: 1 file (AudioTimestampCapture.tsx)
+- **Backend**: No changes required - existing Supabase integration preserved
+- **Database**: No schema changes - same section_type field usage
+
+### Verification
+✅ **Build successful** - No compilation errors  
+✅ **Backend compatibility confirmed** - save-audio-timestamps.js processes button data identically to dropdown data
+✅ **Deployed to GitHub** - commit c50f141 pushed successfully

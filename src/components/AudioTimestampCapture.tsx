@@ -589,7 +589,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
                             variant={sectionType === section ? "default" : "outline"}
                             size="sm"
                             onClick={() => setSectionType(section)}
-                            className={`text-sm ${sectionType === section ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+                            className={`text-sm ${sectionType === section ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-50'}`}
                           >
                             {section === 'pre-chorus' ? 'Pre-Chorus' : section.charAt(0).toUpperCase() + section.slice(1)}
                           </Button>
