@@ -77,7 +77,7 @@ exports.handler = async (event, context) => {
       intensity_level: event.intensity_level || null,
       notes: event.notes || null,
       bar_start_timestamp: event.bar_start_timestamp || null,
-      rhythm_taps: event.rhythm_taps || null,
+      rhythm_taps: event.rhythm_taps && Array.isArray(event.rhythm_taps) ? event.rhythm_taps : null,
       loudness_timestamp: event.loudness_timestamp || null,
       data_source: event.data_source || 'manual_capture',
       capture_session_id: event.capture_session_id || sessionId,
@@ -89,6 +89,20 @@ exports.handler = async (event, context) => {
 
     console.log(`💾 Inserting ${records.length} records into streaming_vendor_attributes table`);
     console.log('📊 Sample record:', JSON.stringify(records[0], null, 2));
+    
+    // Debug rhythm_taps specifically
+    const rhythmEvents = records.filter(r => r.rhythm_taps !== null);
+    if (rhythmEvents.length > 0) {
+      console.log('🥁 [BACKEND DEBUG] Rhythm taps records found:', rhythmEvents.length);
+      rhythmEvents.forEach((event, index) => {
+        console.log(`🥁 [BACKEND DEBUG] Rhythm event ${index + 1}:`, {
+          event_type: event.event_type,
+          rhythm_taps: event.rhythm_taps,
+          rhythm_taps_type: typeof event.rhythm_taps,
+          rhythm_taps_length: Array.isArray(event.rhythm_taps) ? event.rhythm_taps.length : 'not array'
+        });
+      });
+    }
 
     // Insert records into database
     const { data, error } = await supabase
