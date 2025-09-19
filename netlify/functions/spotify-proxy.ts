@@ -89,7 +89,13 @@ const makeSpotifyApiCall = async (endpoint: string, accessToken: string, method 
     throw new Error(`Spotify API call failed: ${response.status} ${response.statusText}`);
   }
 
-  return await response.json();
+  // Some Spotify endpoints return empty responses (like playback control)
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return {};
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : {};
 };
 
 export const handler: Handler = async (event, context) => {
@@ -185,12 +191,25 @@ export const handler: Handler = async (event, context) => {
         };
 
       case 'apiCall':
-        const { endpoint, accessToken, method = 'GET', body } = params;
-        if (!endpoint || !accessToken) {
+        const { endpoint, method = 'GET', body } = params;
+        if (!endpoint) {
           return {
             statusCode: 400,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ error: 'Missing endpoint or access token' })
+            body: JSON.stringify({ error: 'Missing endpoint' })
+          };
+        }
+
+        // Get access token from HTTP-only cookies
+        const cookies = event.headers.cookie || '';
+        const accessTokenMatch = cookies.match(/spotify_access_token=([^;]+)/);
+        const accessToken = accessTokenMatch ? accessTokenMatch[1] : null;
+
+        if (!accessToken) {
+          return {
+            statusCode: 401,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ error: 'No access token found in session' })
           };
         }
         

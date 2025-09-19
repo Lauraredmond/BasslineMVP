@@ -277,6 +277,213 @@ class SecureSpotifyService {
     }
   }
 
+  // Get available devices through secure proxy
+  async getDevices(): Promise<any[]> {
+    try {
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          action: 'apiCall',
+          endpoint: '/me/player/devices'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get devices');
+      }
+
+      const data = await response.json();
+      return data.devices || [];
+    } catch (error) {
+      console.error('Error getting devices:', error);
+      return [];
+    }
+  }
+
+  // Alias for getDevices
+  getAvailableDevices = () => this.getDevices();
+
+  // Start playlist playback through secure proxy
+  async startPlaylistPlayback(playlistId: string, deviceId?: string): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/play',
+        method: 'PUT',
+        body: {
+          context_uri: `spotify:playlist:${playlistId}`
+        }
+      };
+
+      if (deviceId) {
+        body.body.device_id = deviceId;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error starting playlist playback:', error);
+      return false;
+    }
+  }
+
+  // Get current playback state (alias for getCurrentlyPlaying)
+  async getCurrentPlayback(): Promise<any> {
+    return this.getCurrentlyPlaying();
+  }
+
+  // Get user playlists (alias for getPlaylists)
+  async getUserPlaylists(): Promise<SpotifyPlaylist[]> {
+    return this.getPlaylists();
+  }
+
+  // Playback control methods
+  async startPlayback(options: { device_id?: string } = {}): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/play',
+        method: 'PUT',
+        body: {}
+      };
+
+      if (options.device_id) {
+        body.body.device_id = options.device_id;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error starting playback:', error);
+      return false;
+    }
+  }
+
+  async pausePlayback(deviceId?: string): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/pause',
+        method: 'PUT',
+        body: {}
+      };
+
+      if (deviceId) {
+        body.body.device_id = deviceId;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error pausing playback:', error);
+      return false;
+    }
+  }
+
+  async skipToNext(deviceId?: string): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/next',
+        method: 'POST',
+        body: {}
+      };
+
+      if (deviceId) {
+        body.body.device_id = deviceId;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error skipping to next:', error);
+      return false;
+    }
+  }
+
+  async skipToPrevious(deviceId?: string): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/previous', 
+        method: 'POST',
+        body: {}
+      };
+
+      if (deviceId) {
+        body.body.device_id = deviceId;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error skipping to previous:', error);
+      return false;
+    }
+  }
+
+  async playTrackFromPlaylist(playlistId: string, trackOffset: number, deviceId?: string): Promise<boolean> {
+    try {
+      const body: any = {
+        action: 'apiCall',
+        endpoint: '/me/player/play',
+        method: 'PUT',
+        body: {
+          context_uri: `spotify:playlist:${playlistId}`,
+          offset: { position: trackOffset }
+        }
+      };
+
+      if (deviceId) {
+        body.body.device_id = deviceId;
+      }
+
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body)
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error playing track from playlist:', error);
+      return false;
+    }
+  }
+
   // Legacy compatibility methods - delegate to secure implementations
   validateToken = () => this.isAuthenticated();
   refreshAccessToken = async () => true; // Handled server-side now
