@@ -16,6 +16,9 @@ import {
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 
+console.log('🔍 [SPOTIFY CONFIG] Client ID configured:', !!CLIENT_ID);
+console.log('🔍 [SPOTIFY CONFIG] Environment:', import.meta.env.MODE);
+
 // Automatically detect environment and use appropriate redirect URI
 const getRedirectUri = (): string => {
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -171,6 +174,7 @@ class SecureSpotifyService {
       console.log('🔍 [AUTH CHECK] Starting authentication check...');
       const user = await this.getCurrentUser();
       console.log('✅ [AUTH CHECK] Authentication successful:', user?.display_name || 'Unknown user');
+      console.log('🎯 [AUTH CHECK] User details:', user);
       return true;
     } catch (error) {
       console.log('❌ [AUTH CHECK] Authentication failed:', error);
