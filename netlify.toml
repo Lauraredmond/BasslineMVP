@@ -17,6 +17,22 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# Cache control headers to prevent aggressive caching of JS/CSS files
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # SPA routing - redirect everything except function calls and assets to index.html
 [[redirects]]
   from = "/*"

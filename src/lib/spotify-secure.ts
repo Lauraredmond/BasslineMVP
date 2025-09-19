@@ -154,6 +154,7 @@ class SecureSpotifyService {
       await this.getCurrentUser();
       return true;
     } catch (error) {
+      console.log('🔍 [AUTH CHECK] Authentication failed:', error);
       return false;
     }
   }
@@ -481,6 +482,59 @@ class SecureSpotifyService {
     } catch (error) {
       console.error('Error playing track from playlist:', error);
       return false;
+    }
+  }
+
+  // Get audio features for tracks through secure proxy
+  async getAudioFeatures(trackIds: string[]): Promise<SpotifyAudioFeatures[]> {
+    try {
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          action: 'apiCall',
+          endpoint: `/audio-features?ids=${trackIds.join(',')}`
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          console.log('ℹ️ [AUDIO FEATURES] API access restricted by Spotify - using fallback');
+          return [];
+        }
+        throw new Error('Failed to get audio features');
+      }
+
+      const data = await response.json();
+      return data.audio_features || [];
+    } catch (error) {
+      console.error('Error getting audio features:', error);
+      return [];
+    }
+  }
+
+  // Get audio analysis for a track through secure proxy
+  async getAudioAnalysis(trackId: string): Promise<AudioAnalysis | null> {
+    try {
+      const response = await fetch('/.netlify/functions/spotify-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          action: 'apiCall',
+          endpoint: `/audio-analysis/${trackId}`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get audio analysis');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting audio analysis:', error);
+      return null;
     }
   }
 
