@@ -1,7 +1,7 @@
 import React from 'react';
 import { testSuite, errorHandler } from '@/lib/integration-test-suite';
 import type { TestSuite, TestResult } from '@/lib/integration-test-suite';
-import { spotifyService } from '@/lib/spotify';
+import { secureSpotifyService } from '@/lib/spotify-secure';
 import { DatabaseSchemaInspector } from './DatabaseSchemaInspector';
 import { DebugRLSIssue } from './DebugRLSIssue';
 

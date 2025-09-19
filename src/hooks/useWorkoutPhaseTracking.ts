@@ -4,7 +4,8 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { spotifyService, SpotifyPlaybackState } from '@/lib/spotify';
+import { secureSpotifyService } from '@/lib/spotify-secure';
+import { SpotifyPlaybackState } from '@/lib/spotify-types';
 import { spotifyPhaseManager, CurrentTrackPhase, TrackChangeEvent } from '@/lib/spotifyPhaseIntegration';
 import { lockPlaylistPhases, PlaylistPhaseMappingResult } from '@/lib/workoutPhaseMapper';
 
@@ -58,13 +59,13 @@ export function useWorkoutPhaseTracking(options: UseWorkoutPhaseTrackingOptions 
 
     const poll = async () => {
       try {
-        if (!spotifyService.isAuthenticated()) {
+        if (!(await secureSpotifyService.isAuthenticated())) {
           setState(prev => ({ ...prev, error: 'Spotify not authenticated', isPolling: false }));
           return;
         }
 
         // Get current playback state
-        const playbackState = await spotifyService.getCurrentPlayback();
+        const playbackState = await secureSpotifyService.getCurrentlyPlaying();
         
         // Process through phase manager
         const trackChangeEvent = await spotifyPhaseManager.processPlaybackState(

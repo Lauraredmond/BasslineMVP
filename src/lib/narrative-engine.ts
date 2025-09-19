@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { advancedMusicAnalysis, MusicalStructure } from './advanced-music-analysis'
-import { spotifyService } from './spotify'
+import { secureSpotifyService } from './spotify-secure'
 
 export interface NarrativeCue {
   id: string

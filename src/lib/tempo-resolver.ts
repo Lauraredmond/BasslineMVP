@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { spotifyService } from './spotify';
+import { secureSpotifyService } from './spotify-secure';
 import { secureRapidSoundnetService } from './rapid-soundnet-secure';
 
 export interface TempoResult {

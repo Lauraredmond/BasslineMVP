@@ -11,8 +11,8 @@ import {
   SpotifyTatum,
   SpotifyBar,
   SpotifyBeat,
-  AudioAnalysis
-} from './spotify';
+  SpotifyAudioAnalysis as AudioAnalysis
+} from './spotify-types';
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 

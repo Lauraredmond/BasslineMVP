@@ -1,4 +1,4 @@
-import { spotifyService } from './spotify';
+import { secureSpotifyService } from './spotify-secure';
 
 export interface TrackBPMData {
   track_name: string;

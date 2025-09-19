@@ -4,7 +4,7 @@
  */
 
 import { supabase } from '../supabase';
-import { spotifyService } from '../spotify';
+import { secureSpotifyService } from '../spotify-secure';
 
 export type PhaseMatch = {
   bpm: number | null;

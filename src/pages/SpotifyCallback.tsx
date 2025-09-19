@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { spotifyService } from '@/lib/spotify';
+import { secureSpotifyService } from '@/lib/spotify-secure';
 
 const SpotifyCallback = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const SpotifyCallback = () => {
 
       if (code) {
         try {
-          const success = await spotifyService.exchangeCodeForToken(code);
+          const success = await secureSpotifyService.exchangeCodeForToken(code);
           if (success) {
             // Redirect back to music sync page
             navigate('/music-sync?spotify_connected=true');

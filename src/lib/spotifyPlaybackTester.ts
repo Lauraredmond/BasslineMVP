@@ -3,7 +3,7 @@
  * Tests the complete playlist start workflow to ensure no regressions
  */
 
-import { spotifyService } from './spotify';
+import { secureSpotifyService } from './spotify-secure';
 
 export interface PlaybackTestResult {
   step: string;

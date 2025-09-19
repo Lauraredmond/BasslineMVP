@@ -10,7 +10,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '../lib/supabase';
 import { SpotifyAnalysisLoggerDemo } from './SpotifyAnalysisLoggerDemo';
 import { AlertCircle, Download, Filter, RefreshCw, Activity, Clock, Database, TrendingUp } from 'lucide-react';
-import { spotifyService } from '../lib/spotify';
+import { secureSpotifyService } from '../lib/spotify-secure';
 
 interface AnalysisLog {
   id: string;

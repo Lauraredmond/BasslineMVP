@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LocalTimestampStorage } from '@/lib/local-timestamp-storage';
 import { SpotifyBPMFetcher } from '@/lib/spotify-bpm-fetcher';
-import { spotifyService } from '@/lib/spotify';
+import { secureSpotifyService } from '@/lib/spotify-secure';
 
 interface TimestampEvent {
   id: string;

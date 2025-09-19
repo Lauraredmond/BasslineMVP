@@ -1,5 +1,5 @@
 // Music Analysis and Narrative Mapping for Spinning Workouts
-import { SpotifyTrack, SpotifyAudioFeatures } from './spotify';
+import { SpotifyTrack, SpotifyAudioFeatures } from './spotify-types';
 
 export interface WorkoutPhase {
   type: 'warmup' | 'sprint' | 'hills' | 'resistance' | 'jumps' | 'climb' | 'cooldown';

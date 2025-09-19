@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { spotifyService, SpotifyPlaybackState } from '@/lib/spotify';
+import { secureSpotifyService } from '@/lib/spotify-secure';
+import { SpotifyPlaybackState } from '@/lib/spotify-types';
 
 interface UseSpotifyPollingOptions {
   enabled?: boolean;
@@ -96,7 +97,7 @@ export const useSpotifyPolling = (options: UseSpotifyPollingOptions = {}) => {
         });
       }
       
-      const newState = await spotifyService.getCurrentPlayback();
+      const newState = await secureSpotifyService.getCurrentlyPlaying();
       const newStateHash = createStateHash(newState);
       
       // Check for pause suspension (>30s paused)

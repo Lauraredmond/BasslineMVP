@@ -1,4 +1,5 @@
-import { SpotifyAudioAnalysis, SpotifySection, SpotifyBar, spotifyService } from './spotify'
+import { SpotifyAudioAnalysis, SpotifySection, SpotifyBar } from './spotify-types';
+import { secureSpotifyService } from './spotify-secure';
 
 export interface MusicalStructure {
   trackId: string

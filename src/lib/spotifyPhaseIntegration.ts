@@ -4,7 +4,8 @@
  * Implements the runtime behavior from primer.md
  */
 
-import { spotifyService, SpotifyPlaybackState } from './spotify';
+import { secureSpotifyService } from './spotify-secure';
+import { SpotifyPlaybackState } from './spotify-types';
 import { getLockedPhaseForTrack } from './workoutPhaseMapper';
 import { supabase } from './supabase';
 

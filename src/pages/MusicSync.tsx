@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { Header } from "@/components/Header";
-import { spotifyService, SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPlaybackState, formatTrackUri } from "@/lib/spotify";
+import { secureSpotifyService } from "@/lib/spotify-secure";
+import { SpotifyPlaylist, SpotifyTrack, SpotifyDevice, SpotifyPlaybackState, formatTrackUri } from "@/lib/spotify-types";
 import { musicAnalysisEngine, WorkoutPlan, TrackPhaseMapping } from "@/lib/musicAnalysis";
 import { narrativeEngine } from "@/lib/narrative-engine";
 import basslineLogoYellowTransparent from '../assets/bassline-logo-yellow-transparent.png';
@@ -111,13 +112,13 @@ const MusicSync = () => {
       
       try {
         // Check auth
-        if (!spotifyService.isAuthenticated()) {
+        if (!(await secureSpotifyService.isAuthenticated())) {
           console.error('❌ Not authenticated');
           return false;
         }
         
         // Get devices
-        const devices = await spotifyService.getDevices();
+        const devices = await secureSpotifyService.getDevices();
         console.log('📱 Devices:', devices);
         
         if (!devices || devices.length === 0) {
@@ -131,7 +132,7 @@ const MusicSync = () => {
         // Test with current selected playlist
         if (selectedPlaylist) {
           console.log(`🎼 Testing with playlist: ${selectedPlaylist}`);
-          const result = await spotifyService.startPlaylistPlayback(selectedPlaylist, device.id);
+          const result = await secureSpotifyService.startPlaylistPlayback(selectedPlaylist, device.id);
           console.log(`🎵 Direct playback result: ${result}`);
           return result;
         } else {
@@ -413,7 +414,7 @@ const MusicSync = () => {
     
     try {
       console.log('🔍 [DEVICE DEBUG] Fetching available devices...');
-      const devices = await spotifyService.getAvailableDevices();
+      const devices = await secureSpotifyService.getAvailableDevices();
       console.log('🔍 [DEVICE DEBUG] Devices fetched:', {
         totalDevices: devices.length,
         deviceNames: devices.map(d => d.name),
@@ -534,7 +535,7 @@ const MusicSync = () => {
 
       // CRITICAL CHECK 4: Get and validate playlist tracks
       console.log(`🎼 [TRACKS CHECK] Getting tracks for playlist: ${selectedPlaylist}`);
-      const tracks = await spotifyService.getPlaylistTracks(selectedPlaylist);
+      const tracks = await secureSpotifyService.getPlaylistTracks(selectedPlaylist);
       console.log(`🎼 [TRACKS CHECK] Found ${tracks.length} tracks in playlist`);
       
       if (!tracks || tracks.length === 0) {
@@ -581,11 +582,11 @@ const MusicSync = () => {
       console.log(`📱 [SPOTIFY START] Device: ${deviceToUse.name} (${deviceToUse.id}) - Active: ${deviceToUse.is_active}`);
       console.log(`🎼 [SPOTIFY START] Playlist ID: ${selectedPlaylist}`);
       console.log(`📊 [SPOTIFY START] Plan phases: ${plan.phases.length}`);
-      console.log(`🔐 [SPOTIFY START] Auth status: ${spotifyService.isAuthenticated()}`);
+      console.log(`🔐 [SPOTIFY START] Auth status: ${await secureSpotifyService.isAuthenticated()}`);
       
       let playbackStarted = false;
       try {
-        playbackStarted = await spotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
+        playbackStarted = await secureSpotifyService.startPlaylistPlayback(selectedPlaylist, deviceToUse.id);
         console.log(`🎵 [SPOTIFY START] startPlaylistPlayback returned: ${playbackStarted}`);
       } catch (spotifyError) {
         const errorMsg = `❌ PLAYBACK BLOCKED: Spotify API call failed: ${spotifyError.message}`;
@@ -642,11 +643,11 @@ const MusicSync = () => {
             volume_percent: deviceToUse.volume_percent
           });
           console.error('🎼 [SPOTIFY START] Playlist ID:', selectedPlaylist);
-          console.error('🔐 [SPOTIFY START] Auth check:', spotifyService.isAuthenticated());
+          console.error('🔐 [SPOTIFY START] Auth check:', await secureSpotifyService.isAuthenticated());
           
           // Let's also check if we can get current playback state
           try {
-            const currentState = await spotifyService.getCurrentPlayback();
+            const currentState = await secureSpotifyService.getCurrentPlayback();
             console.error('🎵 [SPOTIFY START] Current playback state:', currentState);
           } catch (stateError) {
             console.error('🎵 [SPOTIFY START] Cannot get current playback state:', stateError.message);
@@ -695,16 +696,16 @@ Check the console for detailed error information.`);
   };
 
   const handleSpotifyLogin = async () => {
-    const authUrl = await spotifyService.getAuthUrl();
+    const authUrl = await secureSpotifyService.getAuthUrl();
     window.location.href = authUrl;
   };
 
   const loadSpotifyPlaylists = async () => {
-    if (!spotifyService.isAuthenticated()) return;
+    if (!(await secureSpotifyService.isAuthenticated())) return;
     
     setIsLoadingPlaylists(true);
     try {
-      const playlists = await spotifyService.getUserPlaylists();
+      const playlists = await secureSpotifyService.getUserPlaylists();
       setSpotifyPlaylists(playlists);
     } catch (error) {
       console.error('Failed to load playlists:', error);
@@ -761,7 +762,7 @@ Check the console for detailed error information.`);
         // Could show an error message to user here
       }
       
-      if (spotifyConnected === 'true' || spotifyService.isAuthenticated()) {
+      if (spotifyConnected === 'true' || (await secureSpotifyService.isAuthenticated())) {
         setIsSpotifyAuthenticated(true);
         await loadSpotifyPlaylists();
         
@@ -788,7 +789,7 @@ Check the console for detailed error information.`);
       console.log('🔄 [AUTO START] Starting playback monitoring due to authentication');
       
       // Get initial playback state immediately
-      spotifyService.getCurrentPlayback().then(state => {
+      secureSpotifyService.getCurrentPlayback().then(state => {
         if (state) {
           console.log('🔄 [INITIAL FETCH] Got initial playback state:', state?.item?.name);
           setPlaybackState(state);
@@ -816,7 +817,7 @@ Check the console for detailed error information.`);
       console.log('🔄 [FALLBACK START] Auto-starting playback monitoring for authenticated Spotify');
       
       // Get initial state
-      spotifyService.getCurrentPlayback().then(state => {
+      secureSpotifyService.getCurrentPlayback().then(state => {
         if (state) {
           console.log('🔄 [FALLBACK FETCH] Got playback state:', state?.item?.name);
           setPlaybackState(state);
@@ -891,7 +892,7 @@ Check the console for detailed error information.`);
           });
         }
 
-        const state = await spotifyService.getCurrentPlayback();
+        const state = await secureSpotifyService.getCurrentPlayback();
         
         // Update sync tracking and detect seeks
         if (state?.progress_ms !== undefined) {
@@ -946,7 +947,7 @@ Check the console for detailed error information.`);
         
         // TEMPORARY DEBUG: Check conditions on every poll to see current state
         if (state?.item) {
-          const isSpotifyAuthenticated = spotifyService.isAuthenticated();
+          const isSpotifyAuthenticated = await secureSpotifyService.isAuthenticated();
           console.log('🔍 [DEBUG] CURRENT CONDITIONS:', {
             isWorkoutActive: currentWorkoutState,
             isSpotifyAuthenticated,
@@ -1057,7 +1058,7 @@ Check the console for detailed error information.`);
       if (!document.hidden && isSpotifyAuthenticated && selectedDevice) {
         console.log('🔄 [VISIBILITY] Page focused, forcing playback refresh');
         // Force immediate refresh when page becomes visible
-        spotifyService.getCurrentPlayback().then(state => {
+        secureSpotifyService.getCurrentPlayback().then(state => {
           if (state) {
             console.log('🔄 [FOCUS REFRESH] Updated playback state:', state?.item?.name);
             setPlaybackState(state);
@@ -1118,25 +1119,25 @@ Check the console for detailed error information.`);
   // Spotify playback controls
   const handleSpotifyPlay = async () => {
     if (selectedDevice) {
-      await spotifyService.startPlayback({ device_id: selectedDevice });
+      await secureSpotifyService.startPlayback({ device_id: selectedDevice });
     }
   };
   
   const handleSpotifyPause = async () => {
     if (selectedDevice) {
-      await spotifyService.pausePlayback(selectedDevice);
+      await secureSpotifyService.pausePlayback(selectedDevice);
     }
   };
   
   const handleSpotifyNext = async () => {
     if (selectedDevice) {
-      await spotifyService.skipToNext(selectedDevice);
+      await secureSpotifyService.skipToNext(selectedDevice);
     }
   };
   
   const handleSpotifyPrevious = async () => {
     if (selectedDevice) {
-      await spotifyService.skipToPrevious(selectedDevice);
+      await secureSpotifyService.skipToPrevious(selectedDevice);
     }
   };
 
@@ -1228,7 +1229,7 @@ Check the console for detailed error information.`);
   const handleEndWorkout = async () => {
     // Pause Spotify playback
     if (selectedService === 'spotify' && selectedDevice) {
-      await spotifyService.pausePlayback(selectedDevice);
+      await secureSpotifyService.pausePlayback(selectedDevice);
     }
     stopPlaybackMonitoring();
     setShowWorkoutCompleteModal(true);
@@ -2020,13 +2021,13 @@ Check the console for detailed error information.`);
                           if (previousPhaseTrack) {
                             try {
                               // Navigate to the specific track for this phase
-                              await spotifyService.playTrackFromPlaylist(
+                              await secureSpotifyService.playTrackFromPlaylist(
                                 selectedPlaylist, 
                                 `spotify:track:${previousPhaseTrack.track.id}`,
                                 selectedDevice
                               );
                             } catch (error) {
-                              await spotifyService.skipToPrevious(selectedDevice);
+                              await secureSpotifyService.skipToPrevious(selectedDevice);
                             }
                           }
                         }
@@ -2051,17 +2052,17 @@ Check the console for detailed error information.`);
                           if (nextPhaseTrack) {
                             try {
                               // Navigate to the specific track for this phase
-                              await spotifyService.playTrackFromPlaylist(
+                              await secureSpotifyService.playTrackFromPlaylist(
                                 selectedPlaylist, 
                                 `spotify:track:${nextPhaseTrack.track.id}`,
                                 selectedDevice
                               );
                             } catch (error) {
-                              await spotifyService.skipToNext(selectedDevice);
+                              await secureSpotifyService.skipToNext(selectedDevice);
                             }
                           } else {
                             // Fallback to regular next track
-                            await spotifyService.skipToNext(selectedDevice);
+                            await secureSpotifyService.skipToNext(selectedDevice);
                           }
                         }
                       }}
