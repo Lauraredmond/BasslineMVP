@@ -50,6 +50,8 @@ const generateCodeChallenge = async (codeVerifier: string): Promise<string> => {
 
 // Call server-side Spotify proxy
 const callSpotifyProxy = async (action: string, params: any = {}) => {
+  console.log(`📡 [PROXY CALL] Calling spotify-proxy with action: ${action}`);
+  
   const response = await fetch('/.netlify/functions/spotify-proxy', {
     method: 'POST',
     headers: {
@@ -59,11 +61,17 @@ const callSpotifyProxy = async (action: string, params: any = {}) => {
     body: JSON.stringify({ action, ...params })
   });
 
+  console.log(`📡 [PROXY CALL] Response status: ${response.status} ${response.statusText}`);
+
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`❌ [PROXY CALL] Spotify proxy error: ${response.status} - ${errorText}`);
     throw new Error(`Spotify proxy error: ${response.status}`);
   }
 
-  return await response.json();
+  const result = await response.json();
+  console.log(`📡 [PROXY CALL] Response data:`, result);
+  return result;
 };
 
 class SecureSpotifyService {
@@ -122,11 +130,16 @@ class SecureSpotifyService {
   // Exchange authorization code for access token using server-side proxy
   async exchangeCodeForToken(code: string): Promise<boolean> {
     try {
+      console.log('🔄 [TOKEN EXCHANGE] Starting token exchange with code:', code.substring(0, 10) + '...');
+      
       const codeVerifier = localStorage.getItem('spotify_code_verifier');
       if (!codeVerifier) {
+        console.error('❌ [TOKEN EXCHANGE] No code verifier found in localStorage');
         throw new Error('No code verifier found');
       }
 
+      console.log('🔑 [TOKEN EXCHANGE] Found code verifier, calling server proxy...');
+      
       // Use server-side proxy for secure token exchange
       const result = await callSpotifyProxy('exchangeCode', {
         code,
@@ -134,16 +147,20 @@ class SecureSpotifyService {
         redirectUri: REDIRECT_URI
       });
 
+      console.log('📡 [TOKEN EXCHANGE] Server response:', result);
+
       if (result.success) {
         // Clean up code verifier
         localStorage.removeItem('spotify_code_verifier');
         this.isInitialized = true;
+        console.log('✅ [TOKEN EXCHANGE] Token exchange successful!');
         return true;
       }
       
+      console.error('❌ [TOKEN EXCHANGE] Server returned success=false');
       return false;
     } catch (error) {
-      console.error('Error exchanging code for token:', error);
+      console.error('❌ [TOKEN EXCHANGE] Error exchanging code for token:', error);
       return false;
     }
   }
@@ -151,10 +168,12 @@ class SecureSpotifyService {
   // Check if user is authenticated by testing API call
   async isAuthenticated(): Promise<boolean> {
     try {
-      await this.getCurrentUser();
+      console.log('🔍 [AUTH CHECK] Starting authentication check...');
+      const user = await this.getCurrentUser();
+      console.log('✅ [AUTH CHECK] Authentication successful:', user?.display_name || 'Unknown user');
       return true;
     } catch (error) {
-      console.log('🔍 [AUTH CHECK] Authentication failed:', error);
+      console.log('❌ [AUTH CHECK] Authentication failed:', error);
       return false;
     }
   }
