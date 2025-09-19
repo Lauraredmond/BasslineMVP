@@ -3,7 +3,7 @@
 
 import { Handler } from '@netlify/functions';
 
-const CLIENT_ID = process.env.VITE_SPOTIFY_CLIENT_ID;
+const CLIENT_ID = process.env.VITE_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
 const CORS_HEADERS = {
@@ -109,13 +109,27 @@ export const handler: Handler = async (event, context) => {
   }
 
   try {
+    // Debug environment variables
+    console.log('[SPOTIFY PROXY] Environment check:', {
+      hasViteClientId: !!process.env.VITE_SPOTIFY_CLIENT_ID,
+      hasClientId: !!process.env.SPOTIFY_CLIENT_ID,
+      hasClientSecret: !!process.env.SPOTIFY_CLIENT_SECRET,
+      clientIdValue: CLIENT_ID ? CLIENT_ID.substring(0, 8) + '...' : 'undefined',
+      availableEnvVars: Object.keys(process.env).filter(key => key.includes('SPOTIFY')).join(', ')
+    });
+
     if (!CLIENT_ID || !CLIENT_SECRET) {
       return {
         statusCode: 500,
         headers: CORS_HEADERS,
         body: JSON.stringify({ 
           error: 'Server configuration error',
-          message: 'Missing Spotify credentials'
+          message: 'Missing Spotify credentials',
+          debug: {
+            hasClientId: !!CLIENT_ID,
+            hasClientSecret: !!CLIENT_SECRET,
+            spotifyEnvVars: Object.keys(process.env).filter(key => key.includes('SPOTIFY'))
+          }
         })
       };
     }
