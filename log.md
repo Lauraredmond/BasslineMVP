@@ -646,3 +646,32 @@ Added new capture buttons for bar start, rhythm taps (up to 8 timestamps), and l
 
 ### Next Steps
 Run the database migration SQL to add the new columns to the streaming_vendor_attributes table in production Supabase instance.
+
+## 2025-09-20 10:12:08 - Spotify Login 502 Error Fix
+
+### Previous Task Failed
+❌ **Spotify authentication failing with 502 error** - Set-Cookie header formatting issue in netlify serverless function
+
+### Root Cause Analysis
+Console.txt showed: "error decoding lambda response: invalid type "[]interface {}" for "headers" key "Set-Cookie""
+Issue was inconsistent Set-Cookie header format in spotify-proxy.ts:
+- Line 173: Set as string value
+- Lines 242-244: Set as array value
+Netlify functions require consistent header format across all responses.
+
+### Fix Applied
+✅ **Fixed Set-Cookie header formatting** - Made all Set-Cookie headers use array format
+- Updated spotify-proxy.ts line 173 to use array format: `['spotify_access_token=${tokens.access_token}; ${cookieOptions}']`
+- Maintains consistency with logout function that already used array format
+- Preserves all cookie security options (HttpOnly, Secure, SameSite=Strict)
+
+### Technical Details (Netlify Serverless Function)
+- **File**: netlify/functions/spotify-proxy.ts
+- **Change**: Wrapped single Set-Cookie string in array brackets for Netlify compatibility
+- **Impact**: Resolves 502 error during OAuth token exchange process
+- **Security**: No changes to cookie security attributes - HttpOnly, Secure, SameSite maintained
+
+### Verification
+✅ **Build successful** - No compilation errors
+✅ **Deployed to GitHub** - commit 434976a pushed successfully  
+✅ **Ready for testing** - Spotify login flow should now complete without 502 errors

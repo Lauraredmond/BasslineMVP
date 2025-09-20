@@ -170,7 +170,7 @@ export const handler: Handler = async (event, context) => {
           statusCode: 200,
           headers: {
             ...CORS_HEADERS,
-            'Set-Cookie': [`spotify_access_token=${tokens.access_token}; ${cookieOptions}`]
+            'Set-Cookie': `spotify_access_token=${tokens.access_token}; ${cookieOptions}`
           },
           body: JSON.stringify({ 
             success: true,
@@ -237,7 +237,9 @@ export const handler: Handler = async (event, context) => {
         return {
           statusCode: 200,
           headers: {
-            ...CORS_HEADERS,
+            ...CORS_HEADERS
+          },
+          multiValueHeaders: {
             'Set-Cookie': [
               'spotify_access_token=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/',
               'spotify_refresh_token=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/'
