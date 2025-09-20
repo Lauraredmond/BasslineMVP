@@ -225,13 +225,33 @@ export const handler: Handler = async (event, context) => {
           };
         }
         
-        const apiResponse = await makeSpotifyApiCall(endpoint, accessToken, method, body);
-        
-        return {
-          statusCode: 200,
-          headers: CORS_HEADERS,
-          body: JSON.stringify(apiResponse)
-        };
+        try {
+          const apiResponse = await makeSpotifyApiCall(endpoint, accessToken, method, body);
+          
+          return {
+            statusCode: 200,
+            headers: CORS_HEADERS,
+            body: JSON.stringify(apiResponse)
+          };
+        } catch (apiError) {
+          console.error('Spotify API call error:', apiError);
+          
+          // Extract status code from error message if available
+          const errorMessage = (apiError as Error).message;
+          const statusMatch = errorMessage.match(/failed: (\d+)/);
+          const spotifyStatus = statusMatch ? parseInt(statusMatch[1]) : 500;
+          
+          return {
+            statusCode: spotifyStatus >= 400 && spotifyStatus < 500 ? spotifyStatus : 500,
+            headers: CORS_HEADERS,
+            body: JSON.stringify({ 
+              error: 'Spotify API error',
+              message: errorMessage,
+              endpoint: endpoint,
+              method: method
+            })
+          };
+        }
 
       case 'logout':
         return {

@@ -1,42 +1,97 @@
 [Log] 🔍 [SPOTIFY CONFIG] Client ID configured: – true (index-r0Y-31La.js, line 386)
 [Log] 🔍 [SPOTIFY CONFIG] Environment: – "production" (index-r0Y-31La.js, line 386)
 [Log] 🔄 [CALLBACK] Starting Spotify callback handling... (index-r0Y-31La.js, line 750)
-[Log] 🔄 [CALLBACK] Current URL: – "https://trybassline.netlify.app/callback?code=AQDD_Hq3PJVuKG32VWecImu5wWVt3EoUO6GY2g11zxw5ozLZkwd8ShfAs1jb86sflRhjZg0_kYnxShT6iGr4i1k0dEw6PU…" (index-r0Y-31La.js, line 750)
-"https://trybassline.netlify.app/callback?code=AQDD_Hq3PJVuKG32VWecImu5wWVt3EoUO6GY2g11zxw5ozLZkwd8ShfAs1jb86sflRhjZg0_kYnxShT6iGr4i1k0dEw6PUwXIKxd7mjFoFY9FJLmxSZxKDK0QlJx57RSd0H10mebxS1CKu90bpJn8_Bzs9AkvukBu_2JIdLmX-CGmTE7kpAl_QK7vlRGuT1kh3S65bSv1w8P_F-ZdHjatFYKi-XUih0-KuuihhWyUPEvX4rfEmJQlJSUHuY_eNF8UqVp2RXs3vfgEJ5iIh-KwCCoZO8JxHn7ULYQjFJ9Uiyb_usMWCKxuDlr05A5Y4AmjHUN18IPB-sSdAAokCu31G5TcfhxasVbBQqQcy16R59OiGamUwAvlIDjgkUkOuI4-69yE5M9zVhZRl7W17RQRBaIdTbJfNtBZc6_wG1RwfR5VDin5ewS4lCjv9xFIDROKdMQZuZ9-qqimPIFmxaH788gKFImnLCTlQM8BVPvahobcwugeiUO_iFjRoJ62ygDEzhgdRfSBg-CJwM6r-pXkA"
-[Log] 🔄 [CALLBACK] URL params: – {code: "AQDD_Hq3PJ...", error: null} (index-r0Y-31La.js, line 750)
+[Log] 🔄 [CALLBACK] Current URL: – "https://trybassline.netlify.app/callback?code=AQCOlsXqINNuchprQKCwri-SbZaHx_hgKPN4I1Kyf5iH3e7IyvYyvTziPN-pxc2CKJ8cozbzhLLrnzHKu3_b6c4KcJ7BCq…" (index-r0Y-31La.js, line 750)
+"https://trybassline.netlify.app/callback?code=AQCOlsXqINNuchprQKCwri-SbZaHx_hgKPN4I1Kyf5iH3e7IyvYyvTziPN-pxc2CKJ8cozbzhLLrnzHKu3_b6c4KcJ7BCq25KAg1YE0WMCdjeGcTKnIvYhc5yiFt1ieIg3qpeI2aUTXuV1gIX1oR7PmbseBeWmr722lYzq8mToqP0pyF5-c9IAmjSO_K5pRgKgaB0LKG2XwMIst6DK0GSw4a61u3D0wz-PzpvIbuwGA10VD734OJGCWJlbyzTUxzyNE8_0cLMBo5XKcx4n-qFnqrv6vlU9tyQBMHOv7cuaNv0WwFl3HPysq8DJMpAQxZIfWjB-18Ek4ubstcsKgk6monM5k6ZDCHTdp8HuNPo-f5mldMreIgLzNb920RXRIYBJCz4G4fSpOKdrDf_QQQbqZvndehI8erTlJE9CB4G6F2SWSzUrN-rKnw4DLoe8JiveDd-zP40RR8_NinFaJDOmqtHOLd-btsWH9OOsTlHgy3YzWTNBZ_6uu_xqoTby8iuaeZxqTn7b8pJEpKVmTWfQ"
+[Log] 🔄 [CALLBACK] URL params: – Object (index-r0Y-31La.js, line 750)
+Object
 [Log] 🔄 [CALLBACK] Attempting token exchange... (index-r0Y-31La.js, line 750)
-[Log] 🔄 [TOKEN EXCHANGE] Starting token exchange with code: – "AQDD_Hq3PJ..." (index-r0Y-31La.js, line 386)
+[Log] 🔄 [TOKEN EXCHANGE] Starting token exchange with code: – "AQCOlsXqIN..." (index-r0Y-31La.js, line 386)
 [Log] 🔑 [TOKEN EXCHANGE] Found code verifier, calling server proxy... (index-r0Y-31La.js, line 386)
 [Log] 📡 [PROXY CALL] Calling spotify-proxy with action: exchangeCode (index-r0Y-31La.js, line 386)
-[Error] Failed to load resource: the server responded with a status of 502 () (spotify-proxy, line 0)
-[Log] 📡 [PROXY CALL] Response status: 502  (index-r0Y-31La.js, line 386)
-[Error] ❌ [PROXY CALL] Spotify proxy error: 502 - error decoding lambda response: error decoding lambda response: invalid type "[]interface {}" for "headers" key "Set-Cookie"
-	(anonymous function) (index-r0Y-31La.js:386:2330)
-[Error] ❌ [TOKEN EXCHANGE] Error exchanging code for token: – Error: Spotify proxy error: 502 — index-r0Y-31La.js:386:2398
-Error: Spotify proxy error: 502 — index-r0Y-31La.js:386:2398
-	(anonymous function) (index-r0Y-31La.js:386:4025)
-[Log] 🔄 [CALLBACK] Token exchange result: – false (index-r0Y-31La.js, line 750)
-[Log] ❌ [CALLBACK] Token exchange failed (index-r0Y-31La.js, line 750)
+[Log] 📡 [PROXY CALL] Response status: 200  (index-r0Y-31La.js, line 386)
+[Log] 📡 [PROXY CALL] Response data: – Object (index-r0Y-31La.js, line 386)
+Object
+[Log] 📡 [TOKEN EXCHANGE] Server response: – Object (index-r0Y-31La.js, line 386)
+Object
+[Log] ✅ [TOKEN EXCHANGE] Token exchange successful! (index-r0Y-31La.js, line 386)
+[Log] 🔄 [CALLBACK] Token exchange result: – true (index-r0Y-31La.js, line 750)
+[Log] ✅ [CALLBACK] Token exchange successful, redirecting... (index-r0Y-31La.js, line 750)
 [Log] 🔧 Functions available: window.runMigration(), window.testTable(), window.fixMissingBPMs(), window.testTempoResolver(), window.validateTempoCorrections() (index-r0Y-31La.js, line 631)
-[Log] 🏋️ [DEBUG] Workout state changed: – {isWorkoutActive: false} (index-r0Y-31La.js, line 631)
-[Error] Spotify connection error: – "token_exchange_failed"
-	(anonymous function) (index-r0Y-31La.js:639:1623)
-	(anonymous function) (index-r0Y-31La.js:639:1800)
-	(anonymous function) (index-r0Y-31La.js:639:1801)
-	rf (index-r0Y-31La.js:41:24538)
-	vo (index-r0Y-31La.js:41:43056)
-	Qk (index-r0Y-31La.js:41:37086)
-	ii (index-r0Y-31La.js:39:3275)
-	H3 (index-r0Y-31La.js:41:41854)
-	ts (index-r0Y-31La.js:41:40819)
-	Jk (index-r0Y-31La.js:41:36190)
-	P (index-r0Y-31La.js:26:1597)
-	q (index-r0Y-31La.js:26:1959)
+[Log] 🏋️ [DEBUG] Workout state changed: – Object (index-r0Y-31La.js, line 631)
+Object
 [Log] 🔍 [AUTH CHECK] Starting authentication check... (index-r0Y-31La.js, line 386)
-[Error] Failed to load resource: the server responded with a status of 401 () (spotify-proxy, line 0)
-[Error] Error getting current user: – Error: Authentication required — index-r0Y-31La.js:386:4681
-Error: Authentication required — index-r0Y-31La.js:386:4681
-	(anonymous function) (index-r0Y-31La.js:386:4759)
-[Log] ❌ [AUTH CHECK] Authentication failed: – Error: Authentication required — index-r0Y-31La.js:386:4681 (index-r0Y-31La.js, line 386)
-Error: Authentication required — index-r0Y-31La.js:386:4681
+[Log] 🔄 [FALLBACK START] Auto-starting playback monitoring for authenticated Spotify (index-r0Y-31La.js, line 639)
 [Log] ✅ Session already locked, using existing snapshot (index-r0Y-31La.js, line 639)
+[Log] ✅ [AUTH CHECK] Authentication successful: – "Laura Redmond" (index-r0Y-31La.js, line 386)
+[Log] 🎯 [AUTH CHECK] User details: – Object (index-r0Y-31La.js, line 386)
+Object
+[Log] 🔄 [FALLBACK FETCH] Got playback state: – undefined (index-r0Y-31La.js, line 639)
+[Log] 🔍 [AUTH CHECK] Starting authentication check... (index-r0Y-31La.js, line 386)
+[Log] 🔍 [DEVICE DEBUG] Fetching available devices... (index-r0Y-31La.js, line 631)
+[Log] 🔄 [AUTO START] Starting playback monitoring due to authentication (index-r0Y-31La.js, line 639)
+[Log] 🔄 [INITIAL FETCH] Got initial playback state: – undefined (index-r0Y-31La.js, line 639)
+[Log] ✅ [AUTH CHECK] Authentication successful: – "Laura Redmond" (index-r0Y-31La.js, line 386)
+[Log] 🎯 [AUTH CHECK] User details: – Object (index-r0Y-31La.js, line 386)
+Object
+[Log] 🔍 [DEVICE DEBUG] Devices fetched: – Object (index-r0Y-31La.js, line 631)
+Object
+[Log] 🔍 [DEVICE DEBUG] No active device found or device already selected (index-r0Y-31La.js, line 631)
+[Log] 🔍 [PLAYBACK POLL] Spotify polling result: – Object (index-r0Y-31La.js, line 639)
+Object
+[Log] 🔍 [DEVICE DEBUG] Fetching available devices... (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEVICE DEBUG] Devices fetched: – Object (index-r0Y-31La.js, line 631)
+Object
+[Log] 🔍 [DEVICE DEBUG] No active device found or device already selected (index-r0Y-31La.js, line 631)
+[Log] 🏋️ [DEBUG] Start Workout button clicked! (index-r0Y-31La.js, line 654)
+[Log] 🏋️ [DEBUG] handleStartWorkout called - beginning workout start process (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEBUG] Current state: – Object (index-r0Y-31La.js, line 631)
+Object
+[Log] 📊 [DB ADMIN] Skipping all workout_types operations - table is redundant (index-r0Y-31La.js, line 631)
+[Log] ✅ [DB ADMIN] Proceeding without database admin initialization (index-r0Y-31La.js, line 631)
+[Log] ✅ [CHECK PASS] Spotify service and playlist validated (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEVICE CHECK] Refreshing Spotify devices... (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEVICE DEBUG] Fetching available devices... (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEVICE DEBUG] Devices fetched: – Object (index-r0Y-31La.js, line 631)
+Object
+[Log] 🔍 [DEVICE DEBUG] No active device found or device already selected (index-r0Y-31La.js, line 631)
+[Log] 📱 [DEVICE CHECK] Found 2 devices: – Array (2) (index-r0Y-31La.js, line 631)
+Array (2)
+[Log] 📱 [DEVICE CHECK] Selected device: Laura’s MacBook Air (677dac2ba37a6b6c58605c8f03353684925e94d1) - Active: false (index-r0Y-31La.js, line 631)
+[Log] 🎼 [TRACKS CHECK] Getting tracks for playlist: 1zPvYv1dD6wL2DwrO914gu (index-r0Y-31La.js, line 631)
+[Log] 🎼 [TRACKS CHECK] Found 8 tracks in playlist (index-r0Y-31La.js, line 631)
+[Log] 🎯 [PLAN CHECK] Generating workout plan for 8 tracks... (index-r0Y-31La.js, line 631)
+[Log] 🔄 [PLAN CHECK] Using established workout plan generation (bypassing new system) (index-r0Y-31La.js, line 631)
+[Log] 📊 [PLAN CHECK] Generated plan with 8 phases (index-r0Y-31La.js, line 631)
+[Log] ✅ [CHECK PASS] Workout plan created and set (index-r0Y-31La.js, line 631)
+[Log] 🎵 [SPOTIFY START] === ATTEMPTING SPOTIFY PLAYBACK === (index-r0Y-31La.js, line 631)
+[Log] 📱 [SPOTIFY START] Device: Laura’s MacBook Air (677dac2ba37a6b6c58605c8f03353684925e94d1) - Active: false (index-r0Y-31La.js, line 631)
+[Log] 🎼 [SPOTIFY START] Playlist ID: 1zPvYv1dD6wL2DwrO914gu (index-r0Y-31La.js, line 631)
+[Log] 📊 [SPOTIFY START] Plan phases: 8 (index-r0Y-31La.js, line 631)
+[Log] 🔍 [AUTH CHECK] Starting authentication check... (index-r0Y-31La.js, line 386)
+[Log] ✅ [AUTH CHECK] Authentication successful: – "Laura Redmond" (index-r0Y-31La.js, line 386)
+[Log] 🎯 [AUTH CHECK] User details: – Object (index-r0Y-31La.js, line 386)
+Object
+[Log] 🔐 [SPOTIFY START] Auth status: true (index-r0Y-31La.js, line 631)
+[Error] Failed to load resource: the server responded with a status of 500 () (spotify-proxy, line 0)
+[Log] 🎵 [SPOTIFY START] startPlaylistPlayback returned: false (index-r0Y-31La.js, line 631)
+[Error] ❌ PLAYBACK BLOCKED: Spotify startPlaylistPlayback returned false
+	(anonymous function) (index-r0Y-31La.js:631:12960)
+[Error] 📱 [SPOTIFY START] Device info: – Object
+Object
+	(anonymous function) (index-r0Y-31La.js:631:13042)
+[Error] 🎼 [SPOTIFY START] Playlist ID: – "1zPvYv1dD6wL2DwrO914gu"
+	(anonymous function) (index-r0Y-31La.js:631:13184)
+[Log] 🔍 [AUTH CHECK] Starting authentication check... (index-r0Y-31La.js, line 386)
+[Log] ✅ [AUTH CHECK] Authentication successful: – "Laura Redmond" (index-r0Y-31La.js, line 386)
+[Log] 🎯 [AUTH CHECK] User details: – Object (index-r0Y-31La.js, line 386)
+Object
+[Error] 🔐 [SPOTIFY START] Auth check: – true
+	(anonymous function) (index-r0Y-31La.js:631:13235)
+[Error] 🎵 [SPOTIFY START] Current playback state: – Object
+Object
+	(anonymous function) (index-r0Y-31La.js:631:13353)
+[Log] 🔍 [DEVICE DEBUG] Fetching available devices... (index-r0Y-31La.js, line 631)
+[Log] 🔍 [DEVICE DEBUG] Devices fetched: – Object (index-r0Y-31La.js, line 631)
+Object
+[Log] 🔍 [DEVICE DEBUG] No active device found or device already selected (index-r0Y-31La.js, line 631)

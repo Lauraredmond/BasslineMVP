@@ -675,3 +675,11 @@ Netlify functions require consistent header format across all responses.
 ✅ **Build successful** - No compilation errors
 ✅ **Deployed to GitHub** - commit 434976a pushed successfully  
 ✅ **Ready for testing** - Spotify login flow should now complete without 502 errors
+
+### Follow-up Fix - 2025-09-20 10:17:15
+❌ **Initial fix insufficient** - Same 502 error persisted after first deployment
+✅ **Root cause identified** - Netlify Functions require specific header format:
+- Single cookies: `headers: { 'Set-Cookie': 'value' }`  
+- Multiple cookies: `multiValueHeaders: { 'Set-Cookie': ['value1', 'value2'] }`
+✅ **Corrected implementation** - Updated both exchangeCode (single cookie) and logout (multiple cookies) cases
+✅ **Final deployment** - commit 3602998 with proper Netlify Functions header formatting
