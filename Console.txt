@@ -1,24 +1,26 @@
 [Log] 🔍 [SPOTIFY CONFIG] Client ID configured: – true (index-r0Y-31La.js, line 386)
 [Log] 🔍 [SPOTIFY CONFIG] Environment: – "production" (index-r0Y-31La.js, line 386)
 [Log] 🔄 [CALLBACK] Starting Spotify callback handling... (index-r0Y-31La.js, line 750)
-[Log] 🔄 [CALLBACK] Current URL: – "https://trybassline.netlify.app/callback?code=AQDqRhx8PwjVZv5eOICfCSQ3JklD0oKv1olqpdBZEzItzCgGw75KpGT6RaOwGQT3adC-QTBI2tCEjjNcN8RRUPwGb8G4SF…" (index-r0Y-31La.js, line 750)
-"https://trybassline.netlify.app/callback?code=AQDqRhx8PwjVZv5eOICfCSQ3JklD0oKv1olqpdBZEzItzCgGw75KpGT6RaOwGQT3adC-QTBI2tCEjjNcN8RRUPwGb8G4SFBXUtsJwUIp2wTxdGbWaz4z4VUiYoeC_6MymlkHadkYR15ZqjDyTP_V2WczbR5lwxfhBKCTDY3Nvi5hxhcwqeDRq2QwHJvcgG3vfLGWGo_VGSj4czWLDrVlJ71g2OVINJJWXuj1f_T6yM57N-ReG_umnaPHNSJ-6jvMJsL9JKRcTudMkL3lVNQ39aLR8Xc2SBcZNCjgAR64mcnAf7K12ANRtedp1FD-A2ckJJACx6JrTohRNJKsGPiirrYiSgFUEoRN336uoGwY_gPOnFUyb0vSatieM5bTJW7DlNw0zEhnN16sEymDM7B7QvIp9Cxx3RW8FFPrZzMdI3sQnfyWQawH6B4pHxVOpw1-A33ukVSbVlPZ31zvwvPVkzoJk9V9zUlpOUoZbhOa6S1SR-4Lyd5WYDyeo7T2Xg-p3wRwZHoKI_9j7JeNEXaDLw"
-[Log] 🔄 [CALLBACK] URL params: – {code: "AQDqRhx8Pw...", error: null} (index-r0Y-31La.js, line 750)
+[Log] 🔄 [CALLBACK] Current URL: – "https://trybassline.netlify.app/callback?code=AQCYVlqp9OlsheksHbxNt4DGpvm3CoRKlJ_m5wEhxHFD7apqMo_Ti4k02_gXot1WLHhFBTOjpMmurV29M_yFnIbbgnrf5w…" (index-r0Y-31La.js, line 750)
+"https://trybassline.netlify.app/callback?code=AQCYVlqp9OlsheksHbxNt4DGpvm3CoRKlJ_m5wEhxHFD7apqMo_Ti4k02_gXot1WLHhFBTOjpMmurV29M_yFnIbbgnrf5wjx3sAIWUj0mEP7hmy3rJxEBodz2K1Tc6BpieVh8UhTbwWWVGvA7oLFzr9h7vIZgVv1-8NVzylA20gwoYQFMbjHE9V2o6kQ_4-CgoGD4Ro-jW-9IcXXmiSNy8FsZwBVjGTCD3Ar1RU-V9SOKojI-jZOYP94-h8VkjafLuryDHnJ1AJqK8x8azeLqBKX5dXKcIe7ByVJxJ5qRby34tcUIH8y9-tiLNSfjrFm_dJmzlp8vqjef7YBnt_MWq_GqWwgDAk0HaKtcqH5M8HxMMv19W2Mnc75ZGVWBOfvjnyHAXnOLE8yF61pPh7Ns_3rXqoWwphiOJgovtf-fQ2KoWQv7DXe2Mo1k5zuS4t0m1zkIyNZzPCEjFbaKAi0owe35Ho3BtjEfMMGbBEySnVkXnTyo3NP5gVtoyIiNmlKtmDQRONWu-bpL53BArzBYA"
+[Log] 🔄 [CALLBACK] URL params: – Object (index-r0Y-31La.js, line 750)
+Object
 [Log] 🔄 [CALLBACK] Attempting token exchange... (index-r0Y-31La.js, line 750)
-[Log] 🔄 [TOKEN EXCHANGE] Starting token exchange with code: – "AQDqRhx8Pw..." (index-r0Y-31La.js, line 386)
+[Log] 🔄 [TOKEN EXCHANGE] Starting token exchange with code: – "AQCYVlqp9O..." (index-r0Y-31La.js, line 386)
 [Log] 🔑 [TOKEN EXCHANGE] Found code verifier, calling server proxy... (index-r0Y-31La.js, line 386)
 [Log] 📡 [PROXY CALL] Calling spotify-proxy with action: exchangeCode (index-r0Y-31La.js, line 386)
-[Error] Failed to load resource: the server responded with a status of 500 () (spotify-proxy, line 0)
-[Log] 📡 [PROXY CALL] Response status: 500  (index-r0Y-31La.js, line 386)
-[Error] ❌ [PROXY CALL] Spotify proxy error: 500 - {"error":"Server configuration error","message":"Missing Spotify credentials"}
+[Error] Failed to load resource: the server responded with a status of 502 () (spotify-proxy, line 0)
+[Log] 📡 [PROXY CALL] Response status: 502  (index-r0Y-31La.js, line 386)
+[Error] ❌ [PROXY CALL] Spotify proxy error: 502 - error decoding lambda response: error decoding lambda response: invalid type "[]interface {}" for "headers" key "Set-Cookie"
 	(anonymous function) (index-r0Y-31La.js:386:2330)
-[Error] ❌ [TOKEN EXCHANGE] Error exchanging code for token: – Error: Spotify proxy error: 500 — index-r0Y-31La.js:386:2398
-Error: Spotify proxy error: 500 — index-r0Y-31La.js:386:2398
+[Error] ❌ [TOKEN EXCHANGE] Error exchanging code for token: – Error: Spotify proxy error: 502
+Error: Spotify proxy error: 502
 	(anonymous function) (index-r0Y-31La.js:386:4025)
 [Log] 🔄 [CALLBACK] Token exchange result: – false (index-r0Y-31La.js, line 750)
 [Log] ❌ [CALLBACK] Token exchange failed (index-r0Y-31La.js, line 750)
 [Log] 🔧 Functions available: window.runMigration(), window.testTable(), window.fixMissingBPMs(), window.testTempoResolver(), window.validateTempoCorrections() (index-r0Y-31La.js, line 631)
-[Log] 🏋️ [DEBUG] Workout state changed: – {isWorkoutActive: false} (index-r0Y-31La.js, line 631)
+[Log] 🏋️ [DEBUG] Workout state changed: – Object (index-r0Y-31La.js, line 631)
+Object
 [Error] Spotify connection error: – "token_exchange_failed"
 	(anonymous function) (index-r0Y-31La.js:639:1623)
 	(anonymous function) (index-r0Y-31La.js:639:1800)
@@ -33,10 +35,10 @@ Error: Spotify proxy error: 500 — index-r0Y-31La.js:386:2398
 	P (index-r0Y-31La.js:26:1597)
 	q (index-r0Y-31La.js:26:1959)
 [Log] 🔍 [AUTH CHECK] Starting authentication check... (index-r0Y-31La.js, line 386)
-[Log] ✅ Session already locked, using existing snapshot (index-r0Y-31La.js, line 639)
-[Error] Failed to load resource: the server responded with a status of 500 () (spotify-proxy, line 0)
-[Error] Error getting current user: – Error: Authentication required — index-r0Y-31La.js:386:4681
-Error: Authentication required — index-r0Y-31La.js:386:4681
+[Error] Failed to load resource: the server responded with a status of 401 () (spotify-proxy, line 0)
+[Error] Error getting current user: – Error: Authentication required
+Error: Authentication required
 	(anonymous function) (index-r0Y-31La.js:386:4759)
-[Log] ❌ [AUTH CHECK] Authentication failed: – Error: Authentication required — index-r0Y-31La.js:386:4681 (index-r0Y-31La.js, line 386)
-Error: Authentication required — index-r0Y-31La.js:386:4681
+[Log] ❌ [AUTH CHECK] Authentication failed: – Error: Authentication required (index-r0Y-31La.js, line 386)
+Error: Authentication required
+[Log] ✅ Session already locked, using existing snapshot (index-r0Y-31La.js, line 639)

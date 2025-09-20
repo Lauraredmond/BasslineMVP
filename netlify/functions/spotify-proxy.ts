@@ -170,15 +170,13 @@ export const handler: Handler = async (event, context) => {
           statusCode: 200,
           headers: {
             ...CORS_HEADERS,
-            'Set-Cookie': [
-              `spotify_access_token=${tokens.access_token}; ${cookieOptions}`,
-              `spotify_refresh_token=${tokens.refresh_token}; ${cookieOptions.replace(`Max-Age=${tokens.expires_in}`, 'Max-Age=2592000')}` // 30 days for refresh token
-            ]
+            'Set-Cookie': [`spotify_access_token=${tokens.access_token}; ${cookieOptions}`]
           },
           body: JSON.stringify({ 
             success: true,
             expires_in: tokens.expires_in,
-            scope: tokens.scope
+            scope: tokens.scope,
+            refresh_token: tokens.refresh_token // Include refresh token in response for client storage
           })
         };
 
