@@ -1,44 +1,18 @@
-[Log] 🔍 [SPOTIFY CONFIG] Client ID configured: – true (index-r0Y-31La.js, line 386)
-[Log] 🔍 [SPOTIFY CONFIG] Environment: – "production" (index-r0Y-31La.js, line 386)
-[Log] 🎵 [REGISTER] Starting register new song process... (index-r0Y-31La.js, line 751)
-[Error] ❌ [unknown:unknown] – "Unhandled promise rejection: ReferenceError: Can't find variable: spotifyService" – Object
+[Log] 🔍 [SPOTIFY CONFIG] Client ID configured: – true (index-nEzOJrBq.js, line 386)
+[Log] 🔍 [SPOTIFY CONFIG] Environment: – "production" (index-nEzOJrBq.js, line 386)
+[Log] 🎵 [REGISTER] Starting register new song process... (index-nEzOJrBq.js, line 751)
+[Log] 🔍 [AUTH CHECK] Starting authentication check... (index-nEzOJrBq.js, line 386)
+[Log] 🎵 [REGISTER] Fetching current playback state (same as music-sync)... (index-nEzOJrBq.js, line 751)
+[Error] Failed to load resource: the server responded with a status of 401 () (spotify-proxy, line 0)
+[Error] Error getting current user: – Error: Authentication required
+Error: Authentication required
+	(anonymous function) (index-nEzOJrBq.js:386:4759)
+[Log] ❌ [AUTH CHECK] Authentication failed: – Error: Authentication required (index-nEzOJrBq.js, line 386)
+Error: Authentication required
+[Error] Failed to load resource: the server responded with a status of 401 () (spotify-proxy, line 0)
+[Error] Error getting currently playing track: – Error: Failed to get currently playing track
+Error: Failed to get currently playing track
+	(anonymous function) (index-nEzOJrBq.js:386:6003)
+[Log] 🎵 [REGISTER] Playback state: – Object (index-nEzOJrBq.js, line 751)
 Object
-	consoleLog (index-r0Y-31La.js:505:4369)
-	log (index-r0Y-31La.js:505:1513)
-	logError (index-r0Y-31La.js:505:1685)
-	(anonymous function) (index-r0Y-31La.js:505:5605)
-[Error] Unhandled Promise Rejection: ReferenceError: Can't find variable: spotifyService
-	(anonymous function) (index-r0Y-31La.js:751:2458)
-	he (index-r0Y-31La.js:751:3729)
-	qi (index-r0Y-31La.js:38:9841)
-	pd (index-r0Y-31La.js:38:9998)
-	Nm (index-r0Y-31La.js:38:10055)
-	Ej (index-r0Y-31La.js:38:31419)
-	Pj (index-r0Y-31La.js:38:31839)
-	(anonymous function) (index-r0Y-31La.js:38:37028)
-	ty (index-r0Y-31La.js:41:37419)
-	zl (index-r0Y-31La.js:38:8974)
-	tg (index-r0Y-31La.js:38:33132)
-	Dm (index-r0Y-31La.js:38:17366)
-	AB (index-r0Y-31La.js:38:17150)
-[Log] 🎵 [REGISTER] Starting register new song process... (index-r0Y-31La.js, line 751)
-[Error] ❌ [unknown:unknown] – "Unhandled promise rejection: ReferenceError: Can't find variable: spotifyService" – Object
-Object
-	consoleLog (index-r0Y-31La.js:505:4369)
-	log (index-r0Y-31La.js:505:1513)
-	logError (index-r0Y-31La.js:505:1685)
-	(anonymous function) (index-r0Y-31La.js:505:5605)
-[Error] Unhandled Promise Rejection: ReferenceError: Can't find variable: spotifyService
-	(anonymous function) (index-r0Y-31La.js:751:2458)
-	he (index-r0Y-31La.js:751:3729)
-	qi (index-r0Y-31La.js:38:9841)
-	pd (index-r0Y-31La.js:38:9998)
-	Nm (index-r0Y-31La.js:38:10055)
-	Ej (index-r0Y-31La.js:38:31419)
-	Pj (index-r0Y-31La.js:38:31839)
-	(anonymous function) (index-r0Y-31La.js:38:37028)
-	ty (index-r0Y-31La.js:41:37419)
-	zl (index-r0Y-31La.js:38:8974)
-	tg (index-r0Y-31La.js:38:33132)
-	Dm (index-r0Y-31La.js:38:17366)
-	AB (index-r0Y-31La.js:38:17150)
+[Log] 🎵 [REGISTER] No current track found (index-nEzOJrBq.js, line 751)

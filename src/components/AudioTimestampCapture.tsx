@@ -613,15 +613,38 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Track Information</h3>
-                <Button
-                  onClick={registerNewSong}
-                  disabled={isRegisteringSpotify || isRecording}
-                  size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
-                >
-                  {isRegisteringSpotify ? '🔄 Getting Song...' : '🎵 Register New Song'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={registerNewSong}
+                    disabled={isRegisteringSpotify || isRecording}
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
+                  >
+                    {isRegisteringSpotify ? '🔄 Getting Song...' : '🎵 Register New Song'}
+                  </Button>
+                  <Button
+                    onClick={() => window.open('/music-sync', '_blank')}
+                    size="sm"
+                    variant="outline"
+                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                  >
+                    🔗 Connect Spotify
+                  </Button>
+                </div>
               </div>
+              
+              {/* Authentication Status Alert */}
+              {error && error.includes('connect to Spotify') && (
+                <Alert>
+                  <AlertDescription>
+                    <strong>Spotify Connection Required:</strong> To auto-populate track information, please{' '}
+                    <a href="/music-sync" target="_blank" className="underline text-blue-600">
+                      connect to Spotify on the Music Sync page
+                    </a>{' '}
+                    first. You can still manually enter track information below.
+                  </AlertDescription>
+                </Alert>
+              )}
               
               <div className="grid grid-cols-2 gap-4">
                 <div>

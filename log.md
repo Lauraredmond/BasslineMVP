@@ -713,3 +713,7 @@ Console.txt showed successful auth but 500 error during playlist start:
 ✅ **Build successful** - No compilation errors
 ✅ **Deployed to GitHub** - commit 007bf0d pushed successfully
 ✅ **Ready for testing** - Should now get specific error messages for playback issues
+
+**September 21, 2025 - 20:18:00** - Fixed audio-timestamping page compatibility with secure Spotify service: Updated references from deprecated spotifyService to secureSpotifyService in AudioTimestampCapture.tsx and spotify-bpm-fetcher.ts. Added non-deprecated getWorkoutTrackFromBPM function for UI display. Build verified successful with no compilation errors. Security architecture maintained.
+- **Frontend changes:** Updated AudioTimestampCapture.tsx to use secureSpotifyService, fixed spotify-bmp-fetcher.ts service references
+- **Security:** No security regressions - all changes maintain secure server-side token management
