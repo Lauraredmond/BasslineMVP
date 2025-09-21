@@ -99,7 +99,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
   const registerNewSong = async () => {
     console.log('🎵 [REGISTER] Starting register new song process...');
     
-    if (!spotifyService.isAuthenticated()) {
+    if (!secureSpotifyService.isAuthenticated()) {
       setError('Please connect to Spotify first from the Music Sync page');
       console.log('🎵 [REGISTER] Not authenticated');
       return;
@@ -111,7 +111,7 @@ export const AudioTimestampCapture: React.FC<AudioTimestampCaptureProps> = ({ sp
     try {
       // Use the exact same method as music-sync polling: getCurrentPlayback()
       console.log('🎵 [REGISTER] Fetching current playback state (same as music-sync)...');
-      const playbackState = await spotifyService.getCurrentPlayback();
+      const playbackState = await secureSpotifyService.getCurrentPlayback();
       
       console.log('🎵 [REGISTER] Playback state:', {
         hasState: !!playbackState,

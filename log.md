@@ -683,3 +683,33 @@ Netlify functions require consistent header format across all responses.
 - Multiple cookies: `multiValueHeaders: { 'Set-Cookie': ['value1', 'value2'] }`
 ✅ **Corrected implementation** - Updated both exchangeCode (single cookie) and logout (multiple cookies) cases
 ✅ **Final deployment** - commit 3602998 with proper Netlify Functions header formatting
+
+## 2025-09-20 10:21:19 - Spotify Playback 500 Error Fix
+
+### Issue Identified
+✅ **Authentication working** - Spotify login now successful after Set-Cookie header fix
+❌ **Playback failing with 500 error** - "startPlaylistPlayback returned false" due to unhandled Spotify API errors
+
+### Root Cause Analysis
+Console.txt showed successful auth but 500 error during playlist start:
+- Authentication: ✅ "Token exchange successful"
+- Playback attempt: ❌ "Failed to load resource: the server responded with a status of 500"
+- Issue: Spotify API errors (403, 404, etc.) were being thrown as unhandled exceptions instead of proper HTTP responses
+
+### Fix Applied
+✅ **Added proper error handling to apiCall case** - Wrap makeSpotifyApiCall in try-catch
+- Catches Spotify API errors and returns proper HTTP status codes
+- Extracts original Spotify status code from error message
+- Returns detailed error information including endpoint and method
+- Prevents generic 500 errors, provides specific Spotify API feedback
+
+### Technical Details (Netlify Serverless Function)
+- **File**: netlify/functions/spotify-proxy.ts
+- **Change**: Added try-catch around makeSpotifyApiCall in apiCall case (lines 228-254)
+- **Impact**: Better error reporting for Spotify API issues (device not available, permissions, etc.)
+- **Debugging**: Now returns specific error messages instead of generic 500s
+
+### Verification
+✅ **Build successful** - No compilation errors
+✅ **Deployed to GitHub** - commit 007bf0d pushed successfully
+✅ **Ready for testing** - Should now get specific error messages for playback issues

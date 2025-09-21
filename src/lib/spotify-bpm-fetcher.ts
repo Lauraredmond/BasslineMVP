@@ -22,7 +22,7 @@ export class SpotifyBPMFetcher {
       
       // Search for the track
       const searchQuery = `track:"${trackName}" artist:"${artistName}"`;
-      const searchResults = await spotifyService.search(searchQuery, 'track', 1);
+      const searchResults = await secureSpotifyService.search(searchQuery, 'track', 1);
       
       if (!searchResults.tracks.items.length) {
         console.log('⚠️ Track not found on Spotify');
@@ -33,7 +33,7 @@ export class SpotifyBPMFetcher {
       console.log(`✅ Found track: ${track.name} by ${track.artists[0].name}`);
       
       // Get audio features with BPM
-      const audioFeatures = await spotifyService.getAudioFeatures(track.id);
+      const audioFeatures = await secureSpotifyService.getAudioFeatures(track.id);
       
       if (!audioFeatures || !audioFeatures.tempo) {
         console.log('⚠️ No audio features/tempo available');
@@ -56,6 +56,20 @@ export class SpotifyBPMFetcher {
     }
   }
   
+  /**
+   * Simple BPM to workout track mapping for UI display only
+   * Note: This is for display purposes only. Production mapping should use the database workout_phases table
+   */
+  static getWorkoutTrackFromBPM(bpm: number): string {
+    if (bpm <= 0) return 'unknown';
+    if (bpm < 90) return 'warmup';
+    if (bpm < 120) return 'resistance';
+    if (bpm < 140) return 'cardio';
+    if (bpm < 160) return 'hiit';
+    if (bpm < 180) return 'sprint';
+    return 'peak_intensity';
+  }
+
   /**
    * DEPRECATED: Get workout track based on BPM - Use database workout_phases table instead
    * This function is kept for reference but should not be used in production
