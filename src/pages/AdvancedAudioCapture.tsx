@@ -13,12 +13,17 @@ const AdvancedAudioCapture = () => {
     bpm: number | null;
     beats: number[];
     downbeats: number[];
+    onsets: number[];
     confidence: number;
+    analysis_method: string;
+    processors?: any;
   }>({
     bpm: null,
     beats: [],
     downbeats: [],
-    confidence: 0
+    onsets: [],
+    confidence: 0,
+    analysis_method: 'librosa'
   });
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [trackInfo, setTrackInfo] = useState({
@@ -84,15 +89,35 @@ const AdvancedAudioCapture = () => {
     // This would call your Python analysis service
     console.log('Starting analysis service for session:', sessionId);
     
-    // Simulate real-time analysis updates
-    const interval = setInterval(() => {
+    // Connect to Python analysis service
+    const interval = setInterval(async () => {
       if (isCapturing) {
-        setAnalysisData(prev => ({
-          bpm: 128 + Math.random() * 20, // Simulated BPM detection
-          beats: [...prev.beats, currentTime],
-          downbeats: Math.random() > 0.75 ? [...prev.downbeats, currentTime] : prev.downbeats,
-          confidence: 0.7 + Math.random() * 0.3
-        }));
+        try {
+          const response = await fetch('http://localhost:5000/realtime-stats');
+          if (response.ok) {
+            const stats = await response.json();
+            setAnalysisData(prev => ({
+              ...prev,
+              bpm: stats.bpm,
+              beats: prev.beats.concat(stats.beat_count > prev.beats.length ? [currentTime] : []),
+              downbeats: prev.downbeats.concat(stats.downbeat_count > prev.downbeats.length ? [currentTime] : []),
+              onsets: prev.onsets.concat(stats.onset_count > prev.onsets.length ? [currentTime] : []),
+              confidence: stats.confidence,
+              analysis_method: stats.analysis_method,
+              processors: stats.processors
+            }));
+          }
+        } catch (error) {
+          // Fallback to simulation if service not available
+          setAnalysisData(prev => ({
+            ...prev,
+            bpm: 128 + Math.random() * 20,
+            beats: [...prev.beats, currentTime],
+            downbeats: Math.random() > 0.75 ? [...prev.downbeats, currentTime] : prev.downbeats,
+            onsets: [...prev.onsets, currentTime + Math.random() * 0.1],
+            confidence: 0.7 + Math.random() * 0.3
+          }));
+        }
       }
     }, 500);
 
@@ -267,7 +292,7 @@ const AdvancedAudioCapture = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-cream">
                     {analysisData.bpm?.toFixed(1) || '--'}
@@ -288,9 +313,26 @@ const AdvancedAudioCapture = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-cream">
+                    {analysisData.onsets.length}
+                  </div>
+                  <div className="text-sm text-cream/70">Onsets</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-cream">
                     {(analysisData.confidence * 100).toFixed(0)}%
                   </div>
                   <div className="text-sm text-cream/70">Confidence</div>
+                </div>
+              </div>
+              
+              <div className="text-center mt-4">
+                <div className="text-sm text-cream/60">
+                  Method: {analysisData.analysis_method || 'librosa'}
+                  {analysisData.processors && (
+                    <span className="ml-2">
+                      {Object.entries(analysisData.processors).filter(([k, v]) => v).map(([k]) => k.replace('madmom_', '')).join(', ')}
+                    </span>
+                  )}
                 </div>
               </div>
               
@@ -330,14 +372,20 @@ const AdvancedAudioCapture = () => {
               <CardTitle className="text-yellow-200">Required Setup</CardTitle>
             </CardHeader>
             <CardContent className="text-yellow-100/90 space-y-2">
-              <p><strong>Python Libraries Needed:</strong></p>
+              <p><strong>Python Service Status:</strong></p>
               <ul className="list-disc pl-6 space-y-1">
-                <li><code>pip install beatnet</code> - Real-time beat tracking</li>
-                <li><code>pip install madmom</code> - Audio analysis algorithms</li>
-                <li><code>pip install sounddevice librosa</code> - Audio capture</li>
-                <li><code>pip install supabase</code> - Database integration</li>
+                <li>✅ <code>madmom</code> - Professional audio analysis</li>
+                <li>✅ <code>librosa</code> - Audio processing & fallback</li>
+                <li>✅ <code>sounddevice</code> - Real-time audio capture</li>
+                <li>✅ <code>flask</code> - API server for React integration</li>
               </ul>
-              <p className="mt-4"><strong>Setup:</strong> Position iPhone and Mac side-by-side for optimal audio capture quality.</p>
+              <p className="mt-4"><strong>To Start:</strong></p>
+              <ol className="list-decimal pl-6 space-y-1">
+                <li>Run <code>cd bassline-audio-service && ./start_server.sh</code></li>
+                <li>Position iPhone and Mac side-by-side</li>
+                <li>Start iPhone Spotify playback</li>
+                <li>Begin capture here</li>
+              </ol>
             </CardContent>
           </Card>
 

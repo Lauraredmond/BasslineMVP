@@ -79,9 +79,9 @@ const Index = () => {
           
           <Button 
             onClick={() => navigate('/advanced-audio-capture')}
-            className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-purple-800 shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-purple-800 border border-purple-400/30"
+            className="w-full h-14 text-lg bg-burgundy-dark shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-maroon border border-cream/30"
           >
-            🎵 Advanced Audio Capture (Trial)
+            Advanced Audio Capture
           </Button>
         </div>
 
