@@ -717,3 +717,7 @@ Console.txt showed successful auth but 500 error during playlist start:
 **September 21, 2025 - 20:18:00** - Fixed audio-timestamping page compatibility with secure Spotify service: Updated references from deprecated spotifyService to secureSpotifyService in AudioTimestampCapture.tsx and spotify-bpm-fetcher.ts. Added non-deprecated getWorkoutTrackFromBPM function for UI display. Build verified successful with no compilation errors. Security architecture maintained.
 - **Frontend changes:** Updated AudioTimestampCapture.tsx to use secureSpotifyService, fixed spotify-bmp-fetcher.ts service references
 - **Security:** No security regressions - all changes maintain secure server-side token management
+
+**September 21, 2025 - 20:22:00** - Enhanced audio-timestamping page authentication UX: Added better user guidance for unauthenticated state. Added "Connect Spotify" button that opens music-sync page in new tab. Added authentication alert that appears when user tries to register song without being connected. Page now works completely for manual entry even without Spotify authentication.
+- **Frontend changes:** Updated AudioTimestampCapture.tsx with improved authentication prompts and user guidance
+- **UX:** Page is now fully functional for manual timestamp capture without Spotify connection required
