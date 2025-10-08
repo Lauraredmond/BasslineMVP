@@ -1,3 +1,4 @@
+  - The code in this folder relates to an application called "Bassline"
   - Goal of code in this folder is to build a web app that syncs music played separatey in my Spotify app to appropriate PT (Personal Trainer) fitness class narrative.
   - Current application constraints are described in the SECTIONAL_ANALYSIS_CONSTRAINTS.md file
   - Tech stack & key modules:TypeScript React frontend with Netlify serverless functions (Node.js runtime) and Supabase for database, authentication, and storage.

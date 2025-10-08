@@ -19,6 +19,7 @@ import CommunitySupport from "./pages/community-support";
 import ProfilePrivacyTrust from "./pages/profile-privacy-trust";
 import SpotifyCallback from "./pages/SpotifyCallback";
 import AudioTimestamping from "./pages/AudioTimestamping";
+import AdvancedAudioCapture from "./pages/AdvancedAudioCapture";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/profile-privacy-trust" element={<ProfilePrivacyTrust />} />
           <Route path="/callback" element={<SpotifyCallback />} />
           <Route path="/audio-timestamping" element={<AudioTimestamping />} />
+          <Route path="/advanced-audio-capture" element={<AdvancedAudioCapture />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -76,6 +76,13 @@ const Index = () => {
           >
             Audio Timestamping Tool
           </Button>
+          
+          <Button 
+            onClick={() => navigate('/advanced-audio-capture')}
+            className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-purple-800 shadow-button transition-smooth text-cream font-medium hover:!bg-cream hover:!text-purple-800 border border-purple-400/30"
+          >
+            🎵 Advanced Audio Capture (Trial)
+          </Button>
         </div>
 
         {/* Artistic Mission Statement */}
