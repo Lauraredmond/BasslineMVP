@@ -784,7 +784,7 @@ Your analysis data has been captured but could not be saved. Please try again or
           </Card>
 
           {/* Spotify Device Selection */}
-          {isSpotifyAuthenticated && spotifyDevices.length > 0 && (
+          {selectedService === 'spotify' && isSpotifyAuthenticated && (
             <Card className="bg-cream/10 border-cream/20">
               <CardHeader>
                 <CardTitle className="text-cream flex items-center gap-2">
@@ -804,45 +804,61 @@ Your analysis data has been captured but could not be saved. Please try again or
                     🔄 Refresh Devices
                   </Button>
                 </div>
-                <div className="space-y-2">
-                  {spotifyDevices.map((device) => (
-                    <div
-                      key={device.id}
-                      onClick={() => setSelectedDevice(device.id)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedDevice === device.id
-                          ? 'bg-energy-gradient border-accent text-cream'
-                          : 'bg-cream/5 border-cream/20 text-cream/80 hover:bg-cream/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg">
-                            {device.type === 'smartphone' ? '📱' : 
-                             device.type === 'computer' ? '💻' : 
-                             device.type === 'speaker' ? '🔊' : '🎵'}
-                          </span>
-                          <div>
-                            <div className="font-medium">{device.name}</div>
-                            <div className="text-xs opacity-75">
-                              {device.type} • {device.volume_percent}% volume
+                
+                {spotifyDevices.length > 0 ? (
+                  <div className="space-y-2">
+                    {spotifyDevices.map((device) => (
+                      <div
+                        key={device.id}
+                        onClick={() => setSelectedDevice(device.id)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                          selectedDevice === device.id
+                            ? 'bg-energy-gradient border-accent text-cream'
+                            : 'bg-cream/5 border-cream/20 text-cream/80 hover:bg-cream/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">
+                              {device.type === 'smartphone' ? '📱' : 
+                               device.type === 'computer' ? '💻' : 
+                               device.type === 'speaker' ? '🔊' : '🎵'}
+                            </span>
+                            <div>
+                              <div className="font-medium">{device.name}</div>
+                              <div className="text-xs opacity-75">
+                                {device.type} • {device.volume_percent}% volume
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {device.is_active && (
-                            <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">
-                              Active
-                            </span>
-                          )}
-                          {selectedDevice === device.id && (
-                            <span className="text-accent">✓</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {device.is_active && (
+                              <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">
+                                Active
+                              </span>
+                            )}
+                            {selectedDevice === device.id && (
+                              <span className="text-accent">✓</span>
+                            )}
+                          </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-cream/70 mb-4">No Spotify devices found</div>
+                    <div className="text-cream/60 text-sm mb-4">
+                      Make sure Spotify is open on your phone, computer, or other device
                     </div>
-                  ))}
-                </div>
+                    <Button 
+                      onClick={refreshSpotifyDevices}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      🔍 Check for Devices
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
