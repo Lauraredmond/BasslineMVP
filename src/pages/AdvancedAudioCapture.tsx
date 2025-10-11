@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Play, Pause, RotateCcw, Activity, Music } from 'lucide-react';
 import { secureSpotifyService } from '@/lib/spotify-secure';
-import { SpotifyDevice, SpotifyPlaybackState } from '@/lib/spotify-types';
+import { SpotifyDevice, SpotifyPlaybackState, SpotifyPlaylist } from '@/lib/spotify-types';
 
 const AdvancedAudioCapture = () => {
   const [isCapturing, setIsCapturing] = useState(false);
@@ -39,35 +39,223 @@ const AdvancedAudioCapture = () => {
   const streamRef = useRef<MediaStream | null>(null);
   
   // Spotify integration states
+  const [selectedService, setSelectedService] = useState<string>('');
   const [isSpotifyAuthenticated, setIsSpotifyAuthenticated] = useState(false);
   const [spotifyDevices, setSpotifyDevices] = useState<SpotifyDevice[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [playbackState, setPlaybackState] = useState<SpotifyPlaybackState | null>(null);
   const [isRegisteringFromSpotify, setIsRegisteringFromSpotify] = useState(false);
+  const [spotifyPlaylists, setSpotifyPlaylists] = useState<SpotifyPlaylist[]>([]);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<string>('');
+  const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(false);
+  
+  // Playback monitoring ref
+  const playbackMonitoringRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize session
   useEffect(() => {
     setSessionId(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   }, []);
 
-  // Check Spotify authentication and load devices
+  // Check Spotify authentication and handle OAuth callback
   useEffect(() => {
-    const checkSpotifyAuth = async () => {
+    const checkAuth = async () => {
       try {
-        const isAuth = secureSpotifyService.isAuthenticated();
-        setIsSpotifyAuthenticated(isAuth);
-        console.log('🎵 [SPOTIFY AUTH] Authenticated:', isAuth);
+        // Handle OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
         
-        if (isAuth) {
+        if (code) {
+          console.log('🎵 [AUTH] Processing OAuth callback...');
+          const success = await secureSpotifyService.exchangeCodeForToken(code);
+          if (success) {
+            console.log('✅ [AUTH] Successfully authenticated with Spotify');
+            setIsSpotifyAuthenticated(true);
+            setSelectedService('spotify');
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            await loadSpotifyPlaylists();
+            await refreshSpotifyDevices();
+          } else {
+            console.error('❌ [AUTH] Failed to exchange code for token');
+          }
+        } else if (secureSpotifyService.isAuthenticated()) {
+          console.log('✅ [AUTH] Already authenticated');
+          setIsSpotifyAuthenticated(true);
+          setSelectedService('spotify');
+          await loadSpotifyPlaylists();
           await refreshSpotifyDevices();
         }
       } catch (error) {
-        console.error('🚨 [SPOTIFY AUTH] Failed to check authentication:', error);
+        console.error('🚨 [AUTH] Authentication check failed:', error);
         setIsSpotifyAuthenticated(false);
       }
     };
 
-    checkSpotifyAuth();
+    checkAuth();
+  }, []);
+
+  // Load Spotify playlists
+  const loadSpotifyPlaylists = async () => {
+    if (!secureSpotifyService.isAuthenticated()) {
+      console.log('🎵 [PLAYLISTS] Not authenticated, skipping playlist load');
+      return;
+    }
+    
+    setIsLoadingPlaylists(true);
+    try {
+      console.log('🎵 [PLAYLISTS] Loading user playlists...');
+      const playlists = await secureSpotifyService.getUserPlaylists();
+      console.log('✅ [PLAYLISTS] Loaded', playlists.length, 'playlists');
+      setSpotifyPlaylists(playlists);
+    } catch (error) {
+      console.error('❌ [PLAYLISTS] Failed to load playlists:', error);
+    } finally {
+      setIsLoadingPlaylists(false);
+    }
+  };
+
+  // Spotify login handler
+  const handleSpotifyLogin = () => {
+    console.log('🎵 [LOGIN] Redirecting to Spotify auth...');
+    window.location.href = secureSpotifyService.getAuthUrl();
+  };
+
+  // Playback controls
+  const handleSpotifyPlay = async () => {
+    if (!selectedDevice) {
+      alert('Please select a device first');
+      return;
+    }
+    try {
+      console.log('▶️ [PLAYBACK] Starting playback on device:', selectedDevice);
+      await secureSpotifyService.startPlayback({ device_id: selectedDevice });
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('❌ [PLAYBACK] Failed to start playback:', error);
+    }
+  };
+
+  const handleSpotifyPause = async () => {
+    if (!selectedDevice) return;
+    try {
+      console.log('⏸️ [PLAYBACK] Pausing playback');
+      await secureSpotifyService.pausePlayback(selectedDevice);
+      setIsPlaying(false);
+    } catch (error) {
+      console.error('❌ [PLAYBACK] Failed to pause:', error);
+    }
+  };
+
+  const handleSpotifyNext = async () => {
+    if (!selectedDevice) return;
+    try {
+      console.log('⏭️ [PLAYBACK] Skipping to next track');
+      await secureSpotifyService.skipToNext(selectedDevice);
+    } catch (error) {
+      console.error('❌ [PLAYBACK] Failed to skip next:', error);
+    }
+  };
+
+  const handleSpotifyPrevious = async () => {
+    if (!selectedDevice) return;
+    try {
+      console.log('⏮️ [PLAYBACK] Skipping to previous track');
+      await secureSpotifyService.skipToPrevious(selectedDevice);
+    } catch (error) {
+      console.error('❌ [PLAYBACK] Failed to skip previous:', error);
+    }
+  };
+
+  // Start playlist playback
+  const startPlaylistPlayback = async () => {
+    if (!selectedPlaylist || !selectedDevice) {
+      alert('Please select both a playlist and device');
+      return;
+    }
+    
+    try {
+      console.log('🎵 [PLAYLIST] Starting playlist playback:', selectedPlaylist);
+      await secureSpotifyService.startPlayback({
+        device_id: selectedDevice,
+        context_uri: `spotify:playlist:${selectedPlaylist}`
+      });
+      setIsPlaying(true);
+      startPlaybackMonitoring();
+    } catch (error) {
+      console.error('❌ [PLAYLIST] Failed to start playlist:', error);
+    }
+  };
+
+  // Playback monitoring for real-time track updates and auto-capture
+  const startPlaybackMonitoring = () => {
+    if (playbackMonitoringRef.current) {
+      clearInterval(playbackMonitoringRef.current);
+    }
+    
+    playbackMonitoringRef.current = setInterval(async () => {
+      try {
+        const state = await secureSpotifyService.getCurrentPlayback();
+        setPlaybackState(state);
+        
+        if (state) {
+          setIsPlaying(state.is_playing);
+          
+          // Auto-register current track info if changed
+          if (state.item && state.item.id !== trackInfo.spotifyId) {
+            console.log('🎵 [AUTO-CAPTURE] New track detected:', state.item.name);
+            
+            setTrackInfo({
+              name: state.item.name,
+              artist: state.item.artists?.[0]?.name || '',
+              spotifyId: state.item.id
+            });
+            
+            // Auto-start capture for new tracks if not already capturing
+            if (!isCapturing && isCapturing !== null) {
+              console.log('🎤 [AUTO-CAPTURE] Starting automatic audio capture for new track...');
+              try {
+                await startCapture();
+              } catch (error) {
+                console.error('❌ [AUTO-CAPTURE] Failed to auto-start capture:', error);
+              }
+            }
+          }
+          
+          // If capturing and track is ending (less than 10 seconds left), save current analysis
+          if (isCapturing && state.item && state.progress_ms && state.item.duration_ms) {
+            const timeLeft = state.item.duration_ms - state.progress_ms;
+            if (timeLeft < 10000 && timeLeft > 8000) { // 8-10 seconds left
+              console.log('🎵 [AUTO-SAVE] Track ending soon, auto-saving analysis...');
+              if (analysisData.bpm && analysisData.beats.length > 0) {
+                try {
+                  await saveToDatabase();
+                  console.log('✅ [AUTO-SAVE] Analysis auto-saved for:', trackInfo.name);
+                } catch (error) {
+                  console.error('❌ [AUTO-SAVE] Failed to auto-save:', error);
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('❌ [MONITORING] Playback monitoring error:', error);
+      }
+    }, 2000); // Check every 2 seconds
+  };
+
+  const stopPlaybackMonitoring = () => {
+    if (playbackMonitoringRef.current) {
+      clearInterval(playbackMonitoringRef.current);
+      playbackMonitoringRef.current = null;
+    }
+  };
+
+  // Cleanup monitoring on unmount
+  useEffect(() => {
+    return () => {
+      stopPlaybackMonitoring();
+    };
   }, []);
 
   // Refresh Spotify devices (mirrored from MusicSync)
@@ -252,21 +440,111 @@ const AdvancedAudioCapture = () => {
       return;
     }
 
-    const captureData = {
-      session_id: sessionId,
-      track_name: trackInfo.name,
-      artist: trackInfo.artist,
-      spotify_id: trackInfo.spotifyId || null,
-      captured_bpm: analysisData.bpm,
-      beat_timestamps: analysisData.beats,
-      downbeat_timestamps: analysisData.downbeats,
-      confidence_score: analysisData.confidence,
-      captured_at: new Date().toISOString()
-    };
+    if (!analysisData.bpm || analysisData.beats.length === 0) {
+      alert('No analysis data to save. Please ensure audio capture has generated analysis results.');
+      return;
+    }
 
-    console.log('Saving capture data:', captureData);
-    // This would call your Netlify function to save to Supabase
-    alert('Analysis data saved! (This is a trial implementation)');
+    try {
+      console.log('💾 [SVA] Preparing to save madmom analysis data to streaming_vendor_attributes...');
+      
+      // Prepare SVA data with madmom analysis results
+      const svaData = {
+        // Track identification
+        track_name: trackInfo.name,
+        artist_name: trackInfo.artist,
+        spotify_track_id: trackInfo.spotifyId || null,
+        
+        // Core tempo/BPM data from madmom
+        spotify_tempo: analysisData.bpm,
+        tempo_confidence: analysisData.confidence,
+        analysis_method: analysisData.analysis_method || 'madmom',
+        
+        // Beat tracking data
+        beat_timestamps: analysisData.beats,
+        downbeat_timestamps: analysisData.downbeats,
+        onset_timestamps: analysisData.onsets,
+        
+        // Session metadata
+        capture_session_id: sessionId,
+        captured_at: new Date().toISOString(),
+        capture_method: 'advanced_audio_capture',
+        
+        // Madmom-specific processor data
+        processor_config: analysisData.processors ? {
+          madmom_processors: analysisData.processors,
+          beatnet_enabled: analysisData.processors?.beatnet || false,
+          librosa_fallback: analysisData.analysis_method === 'librosa'
+        } : null,
+        
+        // Audio analysis quality metrics
+        analysis_duration_ms: currentTime,
+        total_beats_detected: analysisData.beats.length,
+        total_downbeats_detected: analysisData.downbeats.length,
+        total_onsets_detected: analysisData.onsets.length,
+        
+        // Default section info (will be enhanced by subsequent analysis)
+        section_type: 'full_track',
+        section_number: 1,
+        timestamp_ms: 0
+      };
+
+      console.log('💾 [SVA] Prepared data for streaming_vendor_attributes:', {
+        track: svaData.track_name,
+        artist: svaData.artist_name,
+        bpm: svaData.spotify_tempo,
+        beats: svaData.total_beats_detected,
+        downbeats: svaData.total_downbeats_detected,
+        onsets: svaData.total_onsets_detected,
+        confidence: svaData.tempo_confidence,
+        method: svaData.analysis_method
+      });
+
+      // Save to Supabase via Netlify function
+      const response = await fetch('/.netlify/functions/save-madmom-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(svaData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ [SVA] Successfully saved madmom analysis to streaming_vendor_attributes:', result);
+        
+        alert(`✅ Analysis saved to SVA database!
+        
+Track: ${trackInfo.name} by ${trackInfo.artist}
+BPM: ${Math.round(analysisData.bpm)} (${Math.round(analysisData.confidence * 100)}% confidence)
+Beats: ${analysisData.beats.length} detected
+Downbeats: ${analysisData.downbeats.length} detected
+Onsets: ${analysisData.onsets.length} detected
+Method: ${analysisData.analysis_method}
+
+Data is now available for workout phase mapping!`);
+        
+        // Reset analysis data for next capture
+        setAnalysisData({
+          bpm: null,
+          beats: [],
+          downbeats: [],
+          onsets: [],
+          confidence: 0,
+          analysis_method: 'librosa'
+        });
+        
+      } else {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+    } catch (error) {
+      console.error('❌ [SVA] Failed to save madmom analysis:', error);
+      alert(`❌ Failed to save analysis to database: ${error.message}
+      
+Your analysis data has been captured but could not be saved. Please try again or check the console for details.`);
+    }
   };
 
   const resetSession = () => {
@@ -304,9 +582,134 @@ const AdvancedAudioCapture = () => {
               🎵 Advanced Audio Capture (Trial)
             </h1>
             <p className="text-lg text-cream/80 max-w-3xl mx-auto">
-              Capture music from iPhone → Mac microphone with real-time beat detection using BeatNet and madmom libraries
+              Connect to Spotify, select playlist and device, then capture audio with real-time beat detection using BeatNet and madmom libraries
             </p>
           </div>
+
+          {/* Service Selection */}
+          {!selectedService && (
+            <Card className="bg-cream/10 border-cream/20">
+              <CardHeader>
+                <CardTitle className="text-cream text-center">Choose Music Service</CardTitle>
+                <CardDescription className="text-cream/70 text-center">
+                  Select your streaming service to begin audio capture
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card
+                    onClick={() => setSelectedService('spotify')}
+                    className="cursor-pointer transition-all hover:border-green-500 border-cream/30 hover:bg-cream/5"
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className="text-4xl mb-2">🎵</div>
+                      <h3 className="text-cream font-semibold">Spotify</h3>
+                      <p className="text-cream/60 text-sm">Connect your Spotify account</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="opacity-50 border-cream/20">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-4xl mb-2">🍎</div>
+                      <h3 className="text-cream/50 font-semibold">Apple Music</h3>
+                      <p className="text-cream/40 text-sm">Coming soon</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="opacity-50 border-cream/20">
+                    <CardContent className="p-4 text-center">
+                      <div className="text-4xl mb-2">▶️</div>
+                      <h3 className="text-cream/50 font-semibold">YouTube Music</h3>
+                      <p className="text-cream/40 text-sm">Coming soon</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Spotify Authentication */}
+          {selectedService === 'spotify' && !isSpotifyAuthenticated && (
+            <Card className="bg-cream/10 border-cream/20">
+              <CardHeader>
+                <CardTitle className="text-cream text-center flex items-center justify-center gap-2">
+                  🎵 Connect to Spotify
+                </CardTitle>
+                <CardDescription className="text-cream/70 text-center">
+                  Login to access your playlists and control playback
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <Button 
+                  onClick={handleSpotifyLogin}
+                  className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3"
+                >
+                  Login with Spotify
+                </Button>
+                <p className="text-cream/60 text-sm mt-3">
+                  You'll be redirected to Spotify to authorize access
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Playlist Selection */}
+          {selectedService === 'spotify' && isSpotifyAuthenticated && (
+            <Card className="bg-cream/10 border-cream/20">
+              <CardHeader>
+                <CardTitle className="text-cream flex items-center gap-2">
+                  🎵 Select Playlist
+                </CardTitle>
+                <CardDescription className="text-cream/70">
+                  Choose a playlist to capture and analyze
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingPlaylists ? (
+                  <div className="text-center py-8">
+                    <div className="text-cream/70">🔄 Loading your playlists...</div>
+                  </div>
+                ) : spotifyPlaylists.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                    {spotifyPlaylists.map((playlist) => (
+                      <div
+                        key={playlist.id}
+                        onClick={() => setSelectedPlaylist(playlist.id)}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                          selectedPlaylist === playlist.id
+                            ? 'bg-energy-gradient border-accent text-cream'
+                            : 'bg-cream/5 border-cream/20 text-cream/80 hover:bg-cream/10'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium truncate">{playlist.name}</div>
+                            <div className="text-xs opacity-75">
+                              {playlist.tracks.total} tracks
+                            </div>
+                          </div>
+                          {selectedPlaylist === playlist.id && (
+                            <span className="text-accent">✓</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-cream/70">No playlists found</div>
+                    <Button 
+                      onClick={loadSpotifyPlaylists}
+                      variant="outline"
+                      className="mt-2 border-cream/30 text-cream hover:bg-cream/20"
+                    >
+                      🔄 Refresh Playlists
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Session Info */}
           <Card className="bg-cream/10 border-cream/20">
@@ -444,15 +847,98 @@ const AdvancedAudioCapture = () => {
             </Card>
           )}
 
-          {/* Capture Controls */}
+          {/* Playback Controls */}
+          {selectedService === 'spotify' && isSpotifyAuthenticated && selectedPlaylist && selectedDevice && (
+            <Card className="bg-cream/10 border-cream/20">
+              <CardHeader>
+                <CardTitle className="text-cream">🎵 Spotify Playback Controls</CardTitle>
+                <CardDescription className="text-cream/70">
+                  Control music playback on your selected device
+                  <div className="mt-1 text-sm text-green-300">
+                    🎵 Device: {spotifyDevices.find(d => d.id === selectedDevice)?.name}
+                  </div>
+                  {playbackState?.item && (
+                    <div className="mt-1 text-sm text-blue-300">
+                      ♪ Now Playing: {playbackState.item.name} - {playbackState.item.artists?.[0]?.name}
+                    </div>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-4 justify-center items-center">
+                  <Button
+                    onClick={startPlaylistPlayback}
+                    disabled={isCapturing}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    🎵 Start Playlist
+                  </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleSpotifyPrevious}
+                      disabled={!playbackState || isCapturing}
+                      variant="outline"
+                      className="border-cream/30 text-cream hover:bg-cream/20"
+                    >
+                      ⏮️
+                    </Button>
+                    
+                    <Button
+                      onClick={isPlaying ? handleSpotifyPause : handleSpotifyPlay}
+                      disabled={!playbackState || isCapturing}
+                      variant="outline"
+                      className="border-cream/30 text-cream hover:bg-cream/20"
+                    >
+                      {isPlaying ? '⏸️' : '▶️'}
+                    </Button>
+                    
+                    <Button
+                      onClick={handleSpotifyNext}
+                      disabled={!playbackState || isCapturing}
+                      variant="outline"
+                      className="border-cream/30 text-cream hover:bg-cream/20"
+                    >
+                      ⏭️
+                    </Button>
+                  </div>
+                </div>
+                
+                {playbackState && (
+                  <div className="text-center">
+                    <div className="text-sm text-cream/70">
+                      Progress: {Math.floor((playbackState.progress_ms || 0) / 1000)}s / {Math.floor((playbackState.item?.duration_ms || 0) / 1000)}s
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Audio Capture Controls */}
           <Card className="bg-cream/10 border-cream/20">
             <CardHeader>
-              <CardTitle className="text-cream">Audio Capture Controls</CardTitle>
+              <CardTitle className="text-cream">🎤 Audio Capture Controls</CardTitle>
               <CardDescription className="text-cream/70">
-                Start Spotify playback on selected device, then begin microphone capture
-                {selectedDevice && spotifyDevices.length > 0 && (
-                  <div className="mt-1 text-sm text-green-300">
-                    🎵 Playing on: {spotifyDevices.find(d => d.id === selectedDevice)?.name || 'Selected Device'}
+                Start music playback above, then begin microphone capture for analysis
+                {!selectedService && (
+                  <div className="mt-2 text-yellow-300 text-sm">
+                    ⚠️ Please select a music service first
+                  </div>
+                )}
+                {selectedService && !isSpotifyAuthenticated && (
+                  <div className="mt-2 text-yellow-300 text-sm">
+                    ⚠️ Please connect to Spotify first
+                  </div>
+                )}
+                {isSpotifyAuthenticated && !selectedPlaylist && (
+                  <div className="mt-2 text-yellow-300 text-sm">
+                    ⚠️ Please select a playlist first
+                  </div>
+                )}
+                {selectedPlaylist && !selectedDevice && (
+                  <div className="mt-2 text-yellow-300 text-sm">
+                    ⚠️ Please select a playback device first
                   </div>
                 )}
               </CardDescription>
@@ -558,7 +1044,7 @@ const AdvancedAudioCapture = () => {
             <CardHeader>
               <CardTitle className="text-cream">Save to Database</CardTitle>
               <CardDescription className="text-cream/70">
-                Store analysis results in Supabase streaming_vendor_attributes
+                Save madmom analysis data to SVA database for workout phase mapping. Auto-saves when tracks end during playlist playback.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -567,7 +1053,7 @@ const AdvancedAudioCapture = () => {
                 disabled={!analysisData.bpm || isCapturing}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
               >
-                Save Analysis Results
+                💾 Save Madmom Analysis to SVA Database
               </Button>
             </CardContent>
           </Card>
