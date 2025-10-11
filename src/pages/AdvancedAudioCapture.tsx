@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Play, Pause, RotateCcw, Activity, Music } from 'lucide-react';
+import { secureSpotifyService } from '@/lib/spotify-secure';
+import { SpotifyDevice, SpotifyPlaybackState } from '@/lib/spotify-types';
 
 const AdvancedAudioCapture = () => {
   const [isCapturing, setIsCapturing] = useState(false);
@@ -35,11 +37,126 @@ const AdvancedAudioCapture = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  
+  // Spotify integration states
+  const [isSpotifyAuthenticated, setIsSpotifyAuthenticated] = useState(false);
+  const [spotifyDevices, setSpotifyDevices] = useState<SpotifyDevice[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string>('');
+  const [playbackState, setPlaybackState] = useState<SpotifyPlaybackState | null>(null);
+  const [isRegisteringFromSpotify, setIsRegisteringFromSpotify] = useState(false);
 
   // Initialize session
   useEffect(() => {
     setSessionId(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
   }, []);
+
+  // Check Spotify authentication and load devices
+  useEffect(() => {
+    const checkSpotifyAuth = async () => {
+      try {
+        const isAuth = secureSpotifyService.isAuthenticated();
+        setIsSpotifyAuthenticated(isAuth);
+        console.log('🎵 [SPOTIFY AUTH] Authenticated:', isAuth);
+        
+        if (isAuth) {
+          await refreshSpotifyDevices();
+        }
+      } catch (error) {
+        console.error('🚨 [SPOTIFY AUTH] Failed to check authentication:', error);
+        setIsSpotifyAuthenticated(false);
+      }
+    };
+
+    checkSpotifyAuth();
+  }, []);
+
+  // Refresh Spotify devices (mirrored from MusicSync)
+  const refreshSpotifyDevices = async () => {
+    if (!isSpotifyAuthenticated) {
+      console.log('🔍 [DEVICE DEBUG] Not authenticated, returning empty devices');
+      return [];
+    }
+    
+    try {
+      console.log('🔍 [DEVICE DEBUG] Fetching available devices...');
+      const devices = await secureSpotifyService.getAvailableDevices();
+      console.log('🔍 [DEVICE DEBUG] Devices fetched:', {
+        totalDevices: devices.length,
+        devices: devices.map(d => ({ name: d.name, id: d.id, is_active: d.is_active }))
+      });
+      
+      setSpotifyDevices(devices);
+      
+      // Auto-select active device if none is selected
+      const activeDevice = devices.find(d => d.is_active);
+      if (activeDevice && !selectedDevice) {
+        console.log('🔍 [DEVICE DEBUG] Auto-selecting active device:', activeDevice.name);
+        setSelectedDevice(activeDevice.id);
+      } else {
+        console.log('🔍 [DEVICE DEBUG] No active device found or device already selected');
+      }
+      
+      return devices;
+    } catch (error) {
+      console.error('🔍 [DEVICE DEBUG] Error refreshing devices:', error);
+      return [];
+    }
+  };
+
+  // Auto-detect track from current Spotify playback (mirrored from AudioTimestampCapture)
+  const registerNewSongFromSpotify = async () => {
+    console.log('🎵 [REGISTER] Starting register new song process...');
+    
+    if (!secureSpotifyService.isAuthenticated()) {
+      console.log('🎵 [REGISTER] Not authenticated');
+      alert('Please connect to Spotify first from the Music Sync page');
+      return;
+    }
+
+    setIsRegisteringFromSpotify(true);
+
+    try {
+      // Use the exact same method as music-sync polling: getCurrentPlayback()
+      console.log('🎵 [REGISTER] Fetching current playback state (same as music-sync)...');
+      const playbackState = await secureSpotifyService.getCurrentPlayback();
+      
+      console.log('🎵 [REGISTER] Playback state:', {
+        hasState: !!playbackState,
+        hasItem: !!playbackState?.item,
+        isPlaying: playbackState?.is_playing,
+        trackName: playbackState?.item?.name,
+        artist: playbackState?.item?.artists?.[0]?.name
+      });
+      
+      if (!playbackState?.item) {
+        const errorMsg = 'No song found in Spotify. Please make sure Spotify is open and has a song selected (playing or paused).';
+        alert(errorMsg);
+        console.log('🎵 [REGISTER] No current track found');
+        return;
+      }
+
+      const trackName = playbackState.item.name;
+      const artistName = playbackState.item.artists?.[0]?.name || '';
+      const spotifyId = playbackState.item.id;
+
+      console.log('🎵 [REGISTER] Found track:', trackName, 'by', artistName);
+
+      // Update track info
+      setTrackInfo({
+        name: trackName,
+        artist: artistName,
+        spotifyId: spotifyId
+      });
+
+      console.log('🎵 Registered new song from Spotify:', trackName, 'by', artistName);
+
+    } catch (error) {
+      console.error('🎵 [REGISTER] Failed to register new song:', error);
+      alert(`Failed to get current song: ${error instanceof Error ? error.message : 'Unknown error'}. Make sure Spotify is connected and open.`);
+    } finally {
+      setIsRegisteringFromSpotify(false);
+    }
+  };
 
   const startCapture = async () => {
     try {
@@ -240,15 +357,104 @@ const AdvancedAudioCapture = () => {
                   className="bg-cream/20 border-cream/30 text-cream"
                 />
               </div>
+              
+              {/* Auto-register from Spotify button */}
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={registerNewSongFromSpotify}
+                  disabled={isRegisteringFromSpotify || isCapturing || !isSpotifyAuthenticated}
+                  className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                >
+                  {isRegisteringFromSpotify ? '🔄 Getting Song...' : '🎵 Register From Mac Spotify'}
+                </Button>
+                {!isSpotifyAuthenticated && (
+                  <Button
+                    onClick={() => window.open('/music-sync', '_blank')}
+                    variant="outline"
+                    className="border-cream/30 text-cream hover:bg-cream/20"
+                  >
+                    🔗 Connect Spotify
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
+
+          {/* Spotify Device Selection */}
+          {isSpotifyAuthenticated && spotifyDevices.length > 0 && (
+            <Card className="bg-cream/10 border-cream/20">
+              <CardHeader>
+                <CardTitle className="text-cream flex items-center gap-2">
+                  🎧 Choose Playback Device
+                </CardTitle>
+                <CardDescription className="text-cream/70">
+                  Select which device to play Spotify music on for capture
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Button
+                    onClick={refreshSpotifyDevices}
+                    variant="outline"
+                    className="border-cream/30 text-cream hover:bg-cream/20"
+                  >
+                    🔄 Refresh Devices
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {spotifyDevices.map((device) => (
+                    <div
+                      key={device.id}
+                      onClick={() => setSelectedDevice(device.id)}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        selectedDevice === device.id
+                          ? 'bg-energy-gradient border-accent text-cream'
+                          : 'bg-cream/5 border-cream/20 text-cream/80 hover:bg-cream/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">
+                            {device.type === 'smartphone' ? '📱' : 
+                             device.type === 'computer' ? '💻' : 
+                             device.type === 'speaker' ? '🔊' : '🎵'}
+                          </span>
+                          <div>
+                            <div className="font-medium">{device.name}</div>
+                            <div className="text-xs opacity-75">
+                              {device.type} • {device.volume_percent}% volume
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {device.is_active && (
+                            <span className="px-2 py-1 bg-green-500 text-white text-xs rounded">
+                              Active
+                            </span>
+                          )}
+                          {selectedDevice === device.id && (
+                            <span className="text-accent">✓</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Capture Controls */}
           <Card className="bg-cream/10 border-cream/20">
             <CardHeader>
               <CardTitle className="text-cream">Audio Capture Controls</CardTitle>
               <CardDescription className="text-cream/70">
-                Start iPhone playback, then begin capture
+                Start Spotify playback on selected device, then begin microphone capture
+                {selectedDevice && spotifyDevices.length > 0 && (
+                  <div className="mt-1 text-sm text-green-300">
+                    🎵 Playing on: {spotifyDevices.find(d => d.id === selectedDevice)?.name || 'Selected Device'}
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
