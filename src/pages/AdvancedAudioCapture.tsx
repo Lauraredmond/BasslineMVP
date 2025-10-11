@@ -51,6 +51,13 @@ const AdvancedAudioCapture = () => {
   
   // Playback monitoring ref
   const playbackMonitoringRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Analysis interval ref for madmom analysis simulation
+  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Timer ref for tracking recording duration
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   // Initialize session
   useEffect(() => {
@@ -258,10 +265,14 @@ const AdvancedAudioCapture = () => {
     }
   };
 
-  // Cleanup monitoring on unmount
+  // Cleanup monitoring and analysis on unmount
   useEffect(() => {
     return () => {
       stopPlaybackMonitoring();
+      stopAnalysisService();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     };
   }, []);
 
@@ -371,11 +382,21 @@ const AdvancedAudioCapture = () => {
       audioContextRef.current = new AudioContext({ sampleRate: 48000 });
       const source = audioContextRef.current.createMediaStreamSource(stream);
       
+      // Start timing
+      startTimeRef.current = Date.now();
+      setCurrentTime(0);
+      
+      // Start timer to track recording duration
+      timerRef.current = setInterval(() => {
+        const elapsed = (Date.now() - startTimeRef.current) / 1000;
+        setCurrentTime(elapsed);
+      }, 100); // Update every 100ms for smooth display
+      
       // Start analysis service (this would connect to Python service)
       await startAnalysisService();
       
       setIsCapturing(true);
-      console.log('Audio capture started with session:', sessionId);
+      console.log('🎤 [CAPTURE] Audio capture started with session:', sessionId);
     } catch (error) {
       console.error('Failed to start audio capture:', error);
     }
@@ -392,22 +413,39 @@ const AdvancedAudioCapture = () => {
       audioContextRef.current = null;
     }
     
+    // Stop timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
     setIsCapturing(false);
     stopAnalysisService();
-    console.log('Audio capture stopped');
+    console.log('🛑 [CAPTURE] Audio capture stopped - final duration:', currentTime.toFixed(1), 's');
   };
 
   const startAnalysisService = async () => {
-    // This would call your Python analysis service
-    console.log('Starting analysis service for session:', sessionId);
+    console.log('🎵 [ANALYSIS] Starting analysis service for session:', sessionId);
     
-    // Connect to Python analysis service
-    const interval = setInterval(async () => {
+    // Clear any existing interval
+    if (analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+    }
+    
+    // Start analysis interval
+    analysisIntervalRef.current = setInterval(async () => {
       if (isCapturing) {
         try {
-          const response = await fetch('http://localhost:5000/realtime-stats');
+          // Try to connect to Python madmom service
+          console.log('🔍 [ANALYSIS] Attempting to connect to madmom service...');
+          const response = await fetch('http://localhost:5000/realtime-stats', {
+            method: 'GET',
+            timeout: 1000 // 1 second timeout
+          });
+          
           if (response.ok) {
             const stats = await response.json();
+            console.log('✅ [ANALYSIS] Received madmom data:', stats);
             setAnalysisData(prev => ({
               ...prev,
               bpm: stats.bpm,
@@ -418,27 +456,65 @@ const AdvancedAudioCapture = () => {
               analysis_method: stats.analysis_method,
               processors: stats.processors
             }));
+          } else {
+            throw new Error('Madmom service not responding');
           }
         } catch (error) {
-          // Fallback to simulation if service not available
-          setAnalysisData(prev => ({
-            ...prev,
-            bpm: 128 + Math.random() * 20,
-            beats: [...prev.beats, currentTime],
-            downbeats: Math.random() > 0.75 ? [...prev.downbeats, currentTime] : prev.downbeats,
-            onsets: [...prev.onsets, currentTime + Math.random() * 0.1],
-            confidence: 0.7 + Math.random() * 0.3
-          }));
+          // Fallback to simulation if madmom service not available
+          console.log('⚠️ [ANALYSIS] Madmom service not available, using simulation:', error.message);
+          
+          const simulatedBpm = 120 + Math.random() * 40; // 120-160 BPM range
+          const beatInterval = 60 / simulatedBpm; // seconds per beat
+          
+          setAnalysisData(prev => {
+            const newBeats = [...prev.beats, currentTime];
+            const newDownbeats = currentTime % (beatInterval * 4) < beatInterval * 0.1 ? 
+              [...prev.downbeats, currentTime] : prev.downbeats;
+            const newOnsets = [...prev.onsets, currentTime + Math.random() * 0.05];
+            
+            console.log('🎵 [SIMULATION] Updated analysis:', {
+              bpm: simulatedBpm,
+              beats: newBeats.length,
+              downbeats: newDownbeats.length,
+              onsets: newOnsets.length,
+              currentTime
+            });
+            
+            return {
+              ...prev,
+              bpm: simulatedBpm,
+              beats: newBeats,
+              downbeats: newDownbeats,
+              onsets: newOnsets,
+              confidence: 0.8 + Math.random() * 0.2,
+              analysis_method: 'simulation_fallback'
+            };
+          });
         }
       }
-    }, 500);
-
-    return () => clearInterval(interval);
+    }, 500); // Update every 500ms
+    
+    console.log('✅ [ANALYSIS] Analysis service started with interval ID:', analysisIntervalRef.current);
   };
 
   const stopAnalysisService = () => {
-    console.log('Stopping analysis service for session:', sessionId);
+    console.log('🛑 [ANALYSIS] Stopping analysis service for session:', sessionId);
+    
+    // Clear the analysis interval
+    if (analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+      analysisIntervalRef.current = null;
+      console.log('✅ [ANALYSIS] Analysis interval cleared');
+    }
+    
     // This would call your Python service to stop and process final results
+    console.log('🎵 [ANALYSIS] Final analysis data:', {
+      bpm: analysisData.bpm,
+      beats: analysisData.beats.length,
+      downbeats: analysisData.downbeats.length,
+      onsets: analysisData.onsets.length,
+      confidence: analysisData.confidence
+    });
   };
 
   const saveToDatabase = async () => {
