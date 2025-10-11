@@ -123,9 +123,10 @@ const AdvancedAudioCapture = () => {
   };
 
   // Spotify login handler
-  const handleSpotifyLogin = () => {
+  const handleSpotifyLogin = async () => {
     console.log('🎵 [LOGIN] Redirecting to Spotify auth...');
-    window.location.href = secureSpotifyService.getAuthUrl();
+    const authUrl = await secureSpotifyService.getAuthUrl();
+    window.location.href = authUrl;
   };
 
   // Playback controls
