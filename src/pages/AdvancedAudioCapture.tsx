@@ -175,15 +175,22 @@ const AdvancedAudioCapture = () => {
     }
     
     try {
-      console.log('🎵 [PLAYLIST] Starting playlist playback:', selectedPlaylist);
-      await secureSpotifyService.startPlayback({
-        device_id: selectedDevice,
-        context_uri: `spotify:playlist:${selectedPlaylist}`
-      });
-      setIsPlaying(true);
-      startPlaybackMonitoring();
+      console.log('🎵 [PLAYLIST] Starting playlist playback:', selectedPlaylist, 'on device:', selectedDevice);
+      
+      // Use the proper startPlaylistPlayback method instead of startPlayback
+      const success = await secureSpotifyService.startPlaylistPlayback(selectedPlaylist, selectedDevice);
+      
+      if (success) {
+        console.log('✅ [PLAYLIST] Playlist started successfully');
+        setIsPlaying(true);
+        startPlaybackMonitoring();
+      } else {
+        console.error('❌ [PLAYLIST] Failed to start playlist - Spotify returned false');
+        alert('Failed to start playlist. Make sure the selected device is active and Spotify is open on that device.');
+      }
     } catch (error) {
       console.error('❌ [PLAYLIST] Failed to start playlist:', error);
+      alert(`Failed to start playlist: ${error.message || 'Unknown error'}. Make sure Spotify is open and active on the selected device.`);
     }
   };
 

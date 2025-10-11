@@ -332,18 +332,24 @@ class SecureSpotifyService {
   // Start playlist playback through secure proxy
   async startPlaylistPlayback(playlistId: string, deviceId?: string): Promise<boolean> {
     try {
+      console.log('🎵 [SECURE SERVICE] Starting playlist playback:', playlistId, 'on device:', deviceId);
+      
+      // Build endpoint with device_id as query parameter if provided
+      let endpoint = '/me/player/play';
+      if (deviceId) {
+        endpoint += `?device_id=${deviceId}`;
+      }
+      
       const body: any = {
         action: 'apiCall',
-        endpoint: '/me/player/play',
+        endpoint: endpoint,
         method: 'PUT',
         body: {
           context_uri: `spotify:playlist:${playlistId}`
         }
       };
 
-      if (deviceId) {
-        body.body.device_id = deviceId;
-      }
+      console.log('🎵 [SECURE SERVICE] API call body:', body);
 
       const response = await fetch('/.netlify/functions/spotify-proxy', {
         method: 'POST',
@@ -351,6 +357,13 @@ class SecureSpotifyService {
         credentials: 'include',
         body: JSON.stringify(body)
       });
+
+      console.log('🎵 [SECURE SERVICE] Response status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🎵 [SECURE SERVICE] Error response:', errorText);
+      }
 
       return response.ok;
     } catch (error) {
