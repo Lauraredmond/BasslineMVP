@@ -863,67 +863,93 @@ Your analysis data has been captured but could not be saved. Please try again or
             </Card>
           )}
 
+          {/* Debug Info - Temporary */}
+          {selectedService === 'spotify' && isSpotifyAuthenticated && (
+            <div className="text-cream/60 text-xs p-2 bg-cream/5 rounded">
+              Debug: Service={selectedService}, Auth={isSpotifyAuthenticated ? 'Yes' : 'No'}, 
+              Playlist={selectedPlaylist || 'None'}, Device={selectedDevice || 'None'}
+            </div>
+          )}
+
           {/* Playback Controls */}
-          {selectedService === 'spotify' && isSpotifyAuthenticated && selectedPlaylist && selectedDevice && (
+          {selectedService === 'spotify' && isSpotifyAuthenticated && selectedPlaylist && (
             <Card className="bg-cream/10 border-cream/20">
               <CardHeader>
                 <CardTitle className="text-cream">🎵 Spotify Playback Controls</CardTitle>
                 <CardDescription className="text-cream/70">
-                  Control music playback on your selected device
-                  <div className="mt-1 text-sm text-green-300">
-                    🎵 Device: {spotifyDevices.find(d => d.id === selectedDevice)?.name}
-                  </div>
-                  {playbackState?.item && (
-                    <div className="mt-1 text-sm text-blue-300">
-                      ♪ Now Playing: {playbackState.item.name} - {playbackState.item.artists?.[0]?.name}
+                  {selectedDevice ? (
+                    <>
+                      Control music playback on your selected device
+                      <div className="mt-1 text-sm text-green-300">
+                        🎵 Device: {spotifyDevices.find(d => d.id === selectedDevice)?.name}
+                      </div>
+                      {playbackState?.item && (
+                        <div className="mt-1 text-sm text-blue-300">
+                          ♪ Now Playing: {playbackState.item.name} - {playbackState.item.artists?.[0]?.name}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-yellow-300">
+                      ⚠️ Please select a playback device above to start playlist
                     </div>
                   )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-4 justify-center items-center">
-                  <Button
-                    onClick={startPlaylistPlayback}
-                    disabled={isCapturing}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    🎵 Start Playlist
-                  </Button>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleSpotifyPrevious}
-                      disabled={!playbackState || isCapturing}
-                      variant="outline"
-                      className="border-cream/30 text-cream hover:bg-cream/20"
-                    >
-                      ⏮️
-                    </Button>
+                {selectedDevice ? (
+                  <>
+                    <div className="flex gap-4 justify-center items-center">
+                      <Button
+                        onClick={startPlaylistPlayback}
+                        disabled={isCapturing}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        🎵 Start Playlist
+                      </Button>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleSpotifyPrevious}
+                          disabled={!playbackState || isCapturing}
+                          variant="outline"
+                          className="border-cream/30 text-cream hover:bg-cream/20"
+                        >
+                          ⏮️
+                        </Button>
+                        
+                        <Button
+                          onClick={isPlaying ? handleSpotifyPause : handleSpotifyPlay}
+                          disabled={!playbackState || isCapturing}
+                          variant="outline"
+                          className="border-cream/30 text-cream hover:bg-cream/20"
+                        >
+                          {isPlaying ? '⏸️' : '▶️'}
+                        </Button>
+                        
+                        <Button
+                          onClick={handleSpotifyNext}
+                          disabled={!playbackState || isCapturing}
+                          variant="outline"
+                          className="border-cream/30 text-cream hover:bg-cream/20"
+                        >
+                          ⏭️
+                        </Button>
+                      </div>
+                    </div>
                     
-                    <Button
-                      onClick={isPlaying ? handleSpotifyPause : handleSpotifyPlay}
-                      disabled={!playbackState || isCapturing}
-                      variant="outline"
-                      className="border-cream/30 text-cream hover:bg-cream/20"
-                    >
-                      {isPlaying ? '⏸️' : '▶️'}
-                    </Button>
-                    
-                    <Button
-                      onClick={handleSpotifyNext}
-                      disabled={!playbackState || isCapturing}
-                      variant="outline"
-                      className="border-cream/30 text-cream hover:bg-cream/20"
-                    >
-                      ⏭️
-                    </Button>
-                  </div>
-                </div>
-                
-                {playbackState && (
-                  <div className="text-center">
-                    <div className="text-sm text-cream/70">
-                      Progress: {Math.floor((playbackState.progress_ms || 0) / 1000)}s / {Math.floor((playbackState.item?.duration_ms || 0) / 1000)}s
+                    {playbackState && (
+                      <div className="text-center">
+                        <div className="text-sm text-cream/70">
+                          Progress: {Math.floor((playbackState.progress_ms || 0) / 1000)}s / {Math.floor((playbackState.item?.duration_ms || 0) / 1000)}s
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="text-cream/60">
+                      Select a device above to enable playback controls
                     </div>
                   </div>
                 )}
