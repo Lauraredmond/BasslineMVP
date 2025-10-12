@@ -173,8 +173,7 @@ class SecureSpotifyService {
     try {
       console.log('🔍 [AUTH CHECK] Starting authentication check...');
       const user = await this.getCurrentUser();
-      console.log('✅ [AUTH CHECK] Authentication successful:', user?.display_name || 'Unknown user');
-      console.log('🎯 [AUTH CHECK] User details:', user);
+      console.log('✅ [AUTH CHECK] Authentication successful');
       return true;
     } catch (error) {
       console.log('❌ [AUTH CHECK] Authentication failed:', error);
