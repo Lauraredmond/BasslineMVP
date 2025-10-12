@@ -446,9 +446,9 @@ const AdvancedAudioCapture = () => {
         try {
           // Try to connect to Python madmom service via HTTPS tunnel
           console.log('🔍 [ANALYSIS] Attempting to connect to madmom service...');
-          console.log('[BL for LR] Fetching https://lucky-kids-clean.loca.lt/realtime-stats');
+          console.log('[BL for LR] Fetching https://pretty-pets-begin.loca.lt/realtime-stats');
 
-          const response = await fetch('https://lucky-kids-clean.loca.lt/realtime-stats', {
+          const response = await fetch('https://pretty-pets-begin.loca.lt/realtime-stats', {
             method: 'GET'
           });
 
