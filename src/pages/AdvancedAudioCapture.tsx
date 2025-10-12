@@ -439,7 +439,7 @@ const AdvancedAudioCapture = () => {
         try {
           // Try to connect to Python madmom service
           console.log('🔍 [ANALYSIS] Attempting to connect to madmom service...');
-          const response = await fetch('http://localhost:5000/realtime-stats', {
+          const response = await fetch('http://localhost:5001/realtime-stats', {
             method: 'GET',
             timeout: 1000 // 1 second timeout
           });
