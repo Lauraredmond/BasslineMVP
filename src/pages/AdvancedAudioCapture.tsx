@@ -444,11 +444,11 @@ const AdvancedAudioCapture = () => {
       if (isCapturingRef.current) {  // Use ref instead of state
         console.log('[BL for LR] isCapturing is true, proceeding with madmom fetch...');
         try {
-          // Try to connect to Python madmom service
+          // Try to connect to Python madmom service via HTTPS tunnel
           console.log('🔍 [ANALYSIS] Attempting to connect to madmom service...');
-          console.log('[BL for LR] Fetching http://localhost:5001/realtime-stats');
+          console.log('[BL for LR] Fetching https://lucky-kids-clean.loca.lt/realtime-stats');
 
-          const response = await fetch('http://localhost:5001/realtime-stats', {
+          const response = await fetch('https://lucky-kids-clean.loca.lt/realtime-stats', {
             method: 'GET'
           });
 
