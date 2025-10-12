@@ -721,3 +721,62 @@ Console.txt showed successful auth but 500 error during playlist start:
 **September 21, 2025 - 20:22:00** - Enhanced audio-timestamping page authentication UX: Added better user guidance for unauthenticated state. Added "Connect Spotify" button that opens music-sync page in new tab. Added authentication alert that appears when user tries to register song without being connected. Page now works completely for manual entry even without Spotify authentication.
 - **Frontend changes:** Updated AudioTimestampCapture.tsx with improved authentication prompts and user guidance
 - **UX:** Page is now fully functional for manual timestamp capture without Spotify connection required
+
+## 2025-10-12 21:15:00 - Madmom Server Port Configuration & Numpy Compatibility Fix
+
+### Previous Task Failed
+❌ **Madmom server not connecting** - Port 5000 occupied by macOS AirPlay Receiver (ControlCenter)
+❌ **Numpy compatibility issue** - madmom 0.16.1 incompatible with NumPy 2.0+ (np.float deprecated)
+
+### Changes Made
+
+#### 1. Fixed Numpy Compatibility Issue
+- **Issue**: madmom library uses deprecated `np.float` alias removed in NumPy 2.0
+- **Fix**: Downgraded numpy from 2.0.2 to 1.23.5 using `pip install "numpy<1.24"`
+- **Impact**: madmom now loads successfully without AttributeError
+
+#### 2. Changed Madmom Server Port
+- **Backend**: Updated `bassline-audio-service/api_server.py` port from 5000 to 5001
+- **Frontend**: Updated `src/pages/AdvancedAudioCapture.tsx` fetch URL from localhost:5000 to localhost:5001
+- **Reason**: Port 5000 occupied by macOS ControlCenter (AirPlay Receiver service)
+
+#### 3. Verified Server Operation
+- ✅ Madmom server starts successfully on port 5001
+- ✅ Health endpoint responds: `{"status":"healthy","service":"bassline-audio-analyzer"}`
+- ✅ All madmom processors loaded (beats, downbeats, onsets, tempo)
+- ✅ Audio device detection working (iPhone Microphone, MacBook Air Microphone)
+
+### Technical Details
+
+#### Backend Changes (Python):
+- **File**: `bassline-audio-service/api_server.py`
+- **Line 240**: Changed `app.run(host='0.0.0.0', port=5000, debug=True)` to `port=5001`
+
+#### Frontend Changes (TypeScript React):
+- **File**: `src/pages/AdvancedAudioCapture.tsx`
+- **Line 442**: Changed `fetch('http://localhost:5000/realtime-stats')` to `localhost:5001`
+
+#### Python Environment:
+- numpy: 1.23.5 (downgraded from 2.0.2)
+- madmom: 0.16.1
+- librosa, sounddevice, flask, flask-cors: unchanged
+
+### Files Modified
+- Backend: 1 Python file (api_server.py)
+- Frontend: 1 TypeScript React file (AdvancedAudioCapture.tsx)
+- Deployment: Successfully pushed to GitHub (commit acd8f12)
+
+### Server Status
+- **Running**: http://localhost:5001 (background process)
+- **Health**: ✅ Responding to health checks
+- **Endpoints Available**: /health, /start-session, /stop-session, /realtime-stats, /session-results, /save-to-database, /device-info, /test-microphone
+
+### Next Steps (Still Pending)
+1. Test Spotify authentication on Advanced Audio Capture page
+2. Test end-to-end madmom pipeline with audio capture
+3. Consider Python hosting options for production deployment (Railway, Render, or Digital Ocean)
+
+### Deployment
+✅ **Committed**: acd8f12 "Fix madmom server port configuration - use port 5001 to avoid AirPlay conflict"
+✅ **Pushed to GitHub**: Successfully deployed to BasslineMVP repository
+✅ **Netlify**: Auto-deployment triggered (2-3 minutes)

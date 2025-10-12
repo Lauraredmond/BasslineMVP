@@ -219,22 +219,13 @@ const AdvancedAudioCapture = () => {
           // Auto-register current track info if changed
           if (state.item && state.item.id !== trackInfo.spotifyId) {
             console.log('🎵 [AUTO-CAPTURE] New track detected:', state.item.name);
-            
+
+            // Only update track info, don't auto-start capture (prevents infinite loop)
             setTrackInfo({
               name: state.item.name,
               artist: state.item.artists?.[0]?.name || '',
               spotifyId: state.item.id
             });
-            
-            // Auto-start capture for new tracks if not already capturing
-            if (!isCapturing && isCapturing !== null) {
-              console.log('🎤 [AUTO-CAPTURE] Starting automatic audio capture for new track...');
-              try {
-                await startCapture();
-              } catch (error) {
-                console.error('❌ [AUTO-CAPTURE] Failed to auto-start capture:', error);
-              }
-            }
           }
           
           // If capturing and track is ending (less than 10 seconds left), save current analysis
@@ -368,35 +359,37 @@ const AdvancedAudioCapture = () => {
   const startCapture = async () => {
     try {
       // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
           autoGainControl: false,
           sampleRate: 48000
-        } 
+        }
       });
-      
+
       streamRef.current = stream;
-      
+
       // Create audio context for real-time analysis
       audioContextRef.current = new AudioContext({ sampleRate: 48000 });
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      
+
       // Start timing
       startTimeRef.current = Date.now();
       setCurrentTime(0);
-      
+
       // Start timer to track recording duration
       timerRef.current = setInterval(() => {
         const elapsed = (Date.now() - startTimeRef.current) / 1000;
         setCurrentTime(elapsed);
       }, 100); // Update every 100ms for smooth display
-      
+
+      // Set capturing state BEFORE starting analysis service to avoid race condition
+      setIsCapturing(true);
+
       // Start analysis service (this would connect to Python service)
       await startAnalysisService();
-      
-      setIsCapturing(true);
+
       console.log('🎤 [CAPTURE] Audio capture started with session:', sessionId);
     } catch (error) {
       console.error('Failed to start audio capture:', error);
