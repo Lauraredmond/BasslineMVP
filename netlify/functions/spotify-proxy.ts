@@ -156,9 +156,9 @@ export const handler: Handler = async (event, context) => {
         }
         
         const tokens = await exchangeCodeForTokens(code, codeVerifier, redirectUri);
-        
-        // Return tokens in secure HTTP-only cookie format
-        const cookieOptions = [
+
+        // Cookie options for access token (short-lived)
+        const accessTokenCookieOptions = [
           'HttpOnly',
           'Secure',
           'SameSite=Strict',
@@ -166,37 +166,67 @@ export const handler: Handler = async (event, context) => {
           'Path=/'
         ].join('; ');
 
+        // Cookie options for refresh token (long-lived, 30 days)
+        const refreshTokenCookieOptions = [
+          'HttpOnly',
+          'Secure',
+          'SameSite=Strict',
+          'Max-Age=2592000', // 30 days in seconds
+          'Path=/'
+        ].join('; ');
+
         return {
           statusCode: 200,
           headers: {
-            ...CORS_HEADERS,
-            'Set-Cookie': `spotify_access_token=${tokens.access_token}; ${cookieOptions}`
+            ...CORS_HEADERS
           },
-          body: JSON.stringify({ 
+          multiValueHeaders: {
+            'Set-Cookie': [
+              `spotify_access_token=${tokens.access_token}; ${accessTokenCookieOptions}`,
+              `spotify_refresh_token=${tokens.refresh_token}; ${refreshTokenCookieOptions}`
+            ]
+          },
+          body: JSON.stringify({
             success: true,
             expires_in: tokens.expires_in,
-            scope: tokens.scope,
-            refresh_token: tokens.refresh_token // Include refresh token in response for client storage
+            scope: tokens.scope
+            // SECURITY: refresh_token now stored in HTTP-only cookie, not exposed to JavaScript
           })
         };
 
       case 'refreshToken':
-        const { refreshToken } = params;
+        // Get refresh token from HTTP-only cookie (not from request body)
+        const cookies = event.headers.cookie || '';
+        const refreshTokenMatch = cookies.match(/spotify_refresh_token=([^;]+)/);
+        const refreshToken = refreshTokenMatch ? refreshTokenMatch[1] : null;
+
         if (!refreshToken) {
           return {
-            statusCode: 400,
+            statusCode: 401,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ error: 'Missing refresh token' })
+            body: JSON.stringify({ error: 'No refresh token found in session' })
           };
         }
-        
+
         const refreshedTokens = await refreshAccessToken(refreshToken);
-        
+
+        // Update access token cookie with new token
+        const newAccessTokenCookieOptions = [
+          'HttpOnly',
+          'Secure',
+          'SameSite=Strict',
+          `Max-Age=${refreshedTokens.expires_in}`,
+          'Path=/'
+        ].join('; ');
+
         return {
           statusCode: 200,
-          headers: CORS_HEADERS,
+          headers: {
+            ...CORS_HEADERS,
+            'Set-Cookie': `spotify_access_token=${refreshedTokens.access_token}; ${newAccessTokenCookieOptions}`
+          },
           body: JSON.stringify({
-            access_token: refreshedTokens.access_token,
+            success: true,
             expires_in: refreshedTokens.expires_in,
             scope: refreshedTokens.scope
           })
