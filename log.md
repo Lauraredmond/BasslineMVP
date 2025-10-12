@@ -780,3 +780,66 @@ Console.txt showed successful auth but 500 error during playlist start:
 ✅ **Committed**: acd8f12 "Fix madmom server port configuration - use port 5001 to avoid AirPlay conflict"
 ✅ **Pushed to GitHub**: Successfully deployed to BasslineMVP repository
 ✅ **Netlify**: Auto-deployment triggered (2-3 minutes)
+
+## 2025-10-12 21:30:00 - Fixed Critical Bugs in Advanced Audio Capture
+
+### Previous Task Failed
+❌ **Madmom fetch attempts never executing** - Race condition and infinite restart loop
+❌ **Zero analysis data displayed** - Connection code never reached due to bugs
+
+### Root Causes Identified
+1. **Race condition in startCapture()**: `isCapturing` set AFTER `startAnalysisService()` called
+   - Interval callback checked `if (isCapturing)` but state was still `false`
+   - Result: Fetch to madmom never executed, hence no connection logs
+2. **Infinite auto-capture loop**: Track change handler restarted capture automatically
+   - Lines 230-237 called `await startCapture()` on every track detection
+   - Result: Capture kept restarting, flooding console with restart messages
+
+### Fixes Applied
+
+#### Bug Fix 1: Race Condition (lines 396-400)
+**Before:**
+```typescript
+await startAnalysisService();  // Line 397
+setIsCapturing(true);          // Line 399 - TOO LATE!
+```
+
+**After:**
+```typescript
+setIsCapturing(true);          // Line 397 - BEFORE service starts
+await startAnalysisService();  // Line 400 - Now interval can execute
+```
+
+#### Bug Fix 2: Infinite Loop (lines 221-229)
+**Before:**
+```typescript
+if (!isCapturing && isCapturing !== null) {
+  await startCapture();  // Auto-restart = infinite loop
+}
+```
+
+**After:**
+```typescript
+// Only update track info, user manually starts capture when ready
+setTrackInfo({ name, artist, spotifyId });
+```
+
+### Technical Details
+- **File**: src/pages/AdvancedAudioCapture.tsx (TypeScript React)
+- **Lines Changed**: 221-229 (auto-capture removal), 396-400 (state order fix)
+- **Expected Behavior**: Console should now show "🔍 [ANALYSIS] Attempting to connect to madmom service..." every 500ms when capturing
+
+### Files Modified
+- Frontend: 1 TypeScript React file (AdvancedAudioCapture.tsx)
+- Deployment: Successfully pushed to GitHub (commit 8bb172a)
+
+### Testing Status
+⏳ **Awaiting user testing** - Madmom server running on localhost:5001
+- User needs to refresh Netlify deployment and test with iPhone → Mac microphone setup
+- Quiet room environment confirmed for testing
+- Expected: Real-time BPM and beat data should now populate
+
+### Deployment
+✅ **Committed**: 8bb172a "Fix critical bugs in Advanced Audio Capture - enable madmom connection"
+✅ **Pushed to GitHub**: Successfully deployed to BasslineMVP repository
+✅ **Netlify**: Auto-deployment triggered (2-3 minutes)

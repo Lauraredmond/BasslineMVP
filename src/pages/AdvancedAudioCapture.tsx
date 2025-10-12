@@ -54,10 +54,13 @@ const AdvancedAudioCapture = () => {
   
   // Analysis interval ref for madmom analysis simulation
   const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Timer ref for tracking recording duration
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  // Ref to track capturing state synchronously (avoids React state delay)
+  const isCapturingRef = useRef<boolean>(false);
 
   // Initialize session
   useEffect(() => {
@@ -385,9 +388,12 @@ const AdvancedAudioCapture = () => {
       }, 100); // Update every 100ms for smooth display
 
       // Set capturing state BEFORE starting analysis service to avoid race condition
-      setIsCapturing(true);
+      console.log('[BL for LR] Setting isCapturing = true (both state and ref)');
+      isCapturingRef.current = true;  // Set ref immediately (synchronous)
+      setIsCapturing(true);            // Set state (asynchronous)
 
       // Start analysis service (this would connect to Python service)
+      console.log('[BL for LR] About to call startAnalysisService()');
       await startAnalysisService();
 
       console.log('🎤 [CAPTURE] Audio capture started with session:', sessionId);
@@ -413,33 +419,46 @@ const AdvancedAudioCapture = () => {
       timerRef.current = null;
     }
     
-    setIsCapturing(false);
+    console.log('[BL for LR] Setting isCapturing = false (both state and ref)');
+    isCapturingRef.current = false;  // Set ref immediately (synchronous)
+    setIsCapturing(false);            // Set state (asynchronous)
     stopAnalysisService();
     console.log('🛑 [CAPTURE] Audio capture stopped - final duration:', currentTime.toFixed(1), 's');
   };
 
   const startAnalysisService = async () => {
     console.log('🎵 [ANALYSIS] Starting analysis service for session:', sessionId);
-    
+    console.log('[BL for LR] startAnalysisService() called - isCapturingRef.current =', isCapturingRef.current);
+
     // Clear any existing interval
     if (analysisIntervalRef.current) {
+      console.log('[BL for LR] Clearing existing interval:', analysisIntervalRef.current);
       clearInterval(analysisIntervalRef.current);
     }
-    
+
     // Start analysis interval
+    console.log('[BL for LR] Creating new interval with 500ms frequency');
     analysisIntervalRef.current = setInterval(async () => {
-      if (isCapturing) {
+      console.log('[BL for LR] Interval callback fired - isCapturingRef.current =', isCapturingRef.current);
+
+      if (isCapturingRef.current) {  // Use ref instead of state
+        console.log('[BL for LR] isCapturing is true, proceeding with madmom fetch...');
         try {
           // Try to connect to Python madmom service
           console.log('🔍 [ANALYSIS] Attempting to connect to madmom service...');
+          console.log('[BL for LR] Fetching http://localhost:5001/realtime-stats');
+
           const response = await fetch('http://localhost:5001/realtime-stats', {
-            method: 'GET',
-            timeout: 1000 // 1 second timeout
+            method: 'GET'
           });
-          
+
+          console.log('[BL for LR] Fetch completed - response.ok =', response.ok, 'status =', response.status);
+
           if (response.ok) {
             const stats = await response.json();
             console.log('✅ [ANALYSIS] Received madmom data:', stats);
+            console.log('[BL for LR] Madmom response data:', JSON.stringify(stats, null, 2));
+
             setAnalysisData(prev => ({
               ...prev,
               bpm: stats.bpm,
@@ -451,11 +470,13 @@ const AdvancedAudioCapture = () => {
               processors: stats.processors
             }));
           } else {
-            throw new Error('Madmom service not responding');
+            console.log('[BL for LR] Response not OK, throwing error');
+            throw new Error(`Madmom service not responding - status ${response.status}`);
           }
         } catch (error) {
           // Fallback to simulation if madmom service not available
           console.log('⚠️ [ANALYSIS] Madmom service not available, using simulation:', error.message);
+          console.log('[BL for LR] Fetch error details:', error);
           
           const simulatedBpm = 120 + Math.random() * 40; // 120-160 BPM range
           const beatInterval = 60 / simulatedBpm; // seconds per beat
