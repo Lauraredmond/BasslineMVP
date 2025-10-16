@@ -8,7 +8,7 @@ import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { ScrollArea } from './ui/scroll-area';
 import { supabase } from '../lib/supabase';
-import { SpotifyAnalysisLoggerDemo } from './SpotifyAnalysisLoggerDemo';
+// Removed SpotifyAnalysisLoggerDemo - unused demo component
 import { AlertCircle, Download, Filter, RefreshCw, Activity, Clock, Database, TrendingUp } from 'lucide-react';
 import { secureSpotifyService } from '../lib/spotify-secure';
 
@@ -759,7 +759,13 @@ export const SpotifyAnalysisViewer: React.FC<SpotifyAnalysisViewerProps> = ({ au
         </div>
 
         <TabsContent value="demo" className="space-y-4">
-          <SpotifyAnalysisLoggerDemo />
+          <Card className="bg-burgundy-dark/30 border-cream/20">
+            <CardContent className="p-8 text-center">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-cream/60" />
+              <p className="text-cream text-lg">Demo component removed</p>
+              <p className="text-cream/70 mt-2">Use Live Data or Sessions tab to view analysis</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="live" className="space-y-4">

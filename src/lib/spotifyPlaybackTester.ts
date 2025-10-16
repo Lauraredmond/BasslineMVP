@@ -22,7 +22,7 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
   
   // Step 1: Check Spotify authentication
   try {
-    const isAuth = spotifyService.isAuthenticated();
+    const isAuth = await secureSpotifyService.isAuthenticated();
     results.push({
       step: 'Spotify Authentication Check',
       success: isAuth,
@@ -46,7 +46,7 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
   
   // Step 2: Get available devices
   try {
-    const devices = await spotifyService.getDevices();
+    const devices = await secureSpotifyService.getDevices();
     const hasDevices = devices && devices.length > 0;
     
     results.push({
@@ -74,7 +74,7 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
   let testPlaylistId = playlistId;
   if (!testPlaylistId) {
     try {
-      const playlists = await spotifyService.getUserPlaylists();
+      const playlists = await secureSpotifyService.getUserPlaylists();
       const hasPlaylists = playlists && playlists.length > 0;
       
       results.push({
@@ -104,7 +104,7 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
   
   // Step 4: Get playlist tracks
   try {
-    const tracks = await spotifyService.getPlaylistTracks(testPlaylistId);
+    const tracks = await secureSpotifyService.getPlaylistTracks(testPlaylistId);
     const hasTracks = tracks && tracks.length > 0;
     
     results.push({
@@ -130,16 +130,16 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
   
   // Step 5: Test startPlaylistPlayback (the critical function)
   try {
-    const devices = await spotifyService.getDevices();
+    const devices = await secureSpotifyService.getDevices();
     const activeDevice = devices.find(d => d.is_active) || devices[0];
-    
+
     if (!activeDevice) {
       throw new Error('No active device available for playback test');
     }
-    
+
     console.log(`🎵 [PLAYBACK TEST] Testing playback start on device: ${activeDevice.name}`);
-    
-    const playbackStarted = await spotifyService.startPlaylistPlayback(testPlaylistId, activeDevice.id);
+
+    const playbackStarted = await secureSpotifyService.startPlaylistPlayback(testPlaylistId, activeDevice.id);
     
     results.push({
       step: 'Start Playlist Playback',
@@ -159,7 +159,7 @@ export async function testPlaylistStartWorkflow(playlistId?: string): Promise<Pl
         // Wait a moment for playback to start
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        const playbackState = await spotifyService.getCurrentPlayback();
+        const playbackState = await secureSpotifyService.getCurrentPlayback();
         const isPlaying = playbackState?.is_playing || false;
         
         results.push({
@@ -220,12 +220,12 @@ export async function quickSpotifyTest(): Promise<boolean> {
   try {
     console.log('⚡ [QUICK TEST] Running quick Spotify test...');
     
-    if (!spotifyService.isAuthenticated()) {
+    if (!await secureSpotifyService.isAuthenticated()) {
       console.error('❌ [QUICK TEST] Not authenticated');
       return false;
     }
-    
-    const devices = await spotifyService.getDevices();
+
+    const devices = await secureSpotifyService.getDevices();
     if (!devices || devices.length === 0) {
       console.error('❌ [QUICK TEST] No devices available');
       return false;

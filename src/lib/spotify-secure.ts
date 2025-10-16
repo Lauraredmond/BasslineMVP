@@ -19,18 +19,13 @@ const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 console.log('🔍 [SPOTIFY CONFIG] Client ID configured:', !!CLIENT_ID);
 console.log('🔍 [SPOTIFY CONFIG] Environment:', import.meta.env.MODE);
 
-// Automatically detect environment and use appropriate redirect URI
-const getRedirectUri = (): string => {
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  
-  if (isLocalhost) {
-    return import.meta.env.VITE_SPOTIFY_REDIRECT_URI_LOCAL || 'http://localhost:5173/callback';
-  } else {
-    return import.meta.env.VITE_SPOTIFY_REDIRECT_URI_PROD || 'https://trybassline.netlify.app/callback';
-  }
-};
+// SPOTIFY OAUTH COMPLIANCE (Nov 27, 2025):
+// - Removed HTTP redirect URIs (no longer supported)
+// - Removed localhost aliases (no longer supported)
+// - Always use production HTTPS redirect URI
+const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || 'https://trybassline.netlify.app/callback';
 
-const REDIRECT_URI = getRedirectUri();
+console.log('🔍 [SPOTIFY CONFIG] Redirect URI:', REDIRECT_URI);
 
 // PKCE helper functions for secure authentication
 const generateCodeVerifier = (): string => {
