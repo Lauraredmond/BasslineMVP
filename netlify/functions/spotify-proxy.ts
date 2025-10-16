@@ -194,7 +194,7 @@ export const handler: Handler = async (event, context) => {
           })
         };
 
-      case 'refreshToken':
+      case 'refreshToken': {
         // Get refresh token from HTTP-only cookie (not from request body)
         const cookies = event.headers.cookie || '';
         const refreshTokenMatch = cookies.match(/spotify_refresh_token=([^;]+)/);
@@ -231,8 +231,9 @@ export const handler: Handler = async (event, context) => {
             scope: refreshedTokens.scope
           })
         };
+      }
 
-      case 'apiCall':
+      case 'apiCall': {
         const { endpoint, method = 'GET', body } = params;
         if (!endpoint) {
           return {
@@ -254,10 +255,10 @@ export const handler: Handler = async (event, context) => {
             body: JSON.stringify({ error: 'No access token found in session' })
           };
         }
-        
+
         try {
           const apiResponse = await makeSpotifyApiCall(endpoint, accessToken, method, body);
-          
+
           return {
             statusCode: 200,
             headers: CORS_HEADERS,
@@ -265,16 +266,16 @@ export const handler: Handler = async (event, context) => {
           };
         } catch (apiError) {
           console.error('Spotify API call error:', apiError);
-          
+
           // Extract status code from error message if available
           const errorMessage = (apiError as Error).message;
           const statusMatch = errorMessage.match(/failed: (\d+)/);
           const spotifyStatus = statusMatch ? parseInt(statusMatch[1]) : 500;
-          
+
           return {
             statusCode: spotifyStatus >= 400 && spotifyStatus < 500 ? spotifyStatus : 500,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ 
+            body: JSON.stringify({
               error: 'Spotify API error',
               message: errorMessage,
               endpoint: endpoint,
@@ -282,6 +283,7 @@ export const handler: Handler = async (event, context) => {
             })
           };
         }
+      }
 
       case 'logout':
         return {
